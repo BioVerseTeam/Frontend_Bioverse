@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô phỏng Sinh học 3D - Phân bào & Giải phẫu Hộp sọ</title>
+  <meta name="description" content="Ứng dụng tương tác 3D mô phỏng quá trình phân bào và giải phẫu hộp sọ người. Công cụ học Sinh học trực quan, sinh động.">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 3D Canvas Viewport -->
+    <main id="canvas-container" aria-label="Khung nhìn mô phỏng 3D"></main>
+
+    <!-- Floating 3D Labels Layer -->
+    <div id="labels-container" class="labels-overlay"></div>
+    <svg id="hud-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6;"></svg>
+
+    <!-- Skull hover tag (bone name following cursor) -->
+    <div id="skull-hover-tag" class="skull-hover-tag hidden"></div>
+
+    <!-- Skull Info Popup (shown when clicking a region) -->
+    <div id="skull-info-popup" class="skull-info-popup hidden" aria-label="Thông tin vùng xương">
+      <button id="skull-info-close" class="skull-info-close" title="Đóng" aria-label="Đóng popup">&times;</button>
+      <div class="skull-info-header">
+        <div id="skull-info-color-dot" class="skull-info-dot"></div>
+        <div>
+          <h3 id="skull-info-name" class="skull-info-name"></h3>
+          <span id="skull-info-latin" class="skull-info-latin"></span>
+        </div>
+      </div>
+      <div class="skull-info-body">
+        <div class="skull-info-section">
+          <div class="skull-info-label">📋 Mô tả</div>
+          <p id="skull-info-desc"></p>
+        </div>
+        <div class="skull-info-section">
+          <div class="skull-info-label">⚙️ Chức năng</div>
+          <p id="skull-info-function"></p>
+        </div>
+        <div class="skull-info-section">
+          <div class="skull-info-label">📍 Vị trí</div>
+          <p id="skull-info-location"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Interaction Overlay -->
+    <div class="ui-overlay">
+      
+      <!-- Header -->
+      <header class="glass-card header-card">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true"></div>
+          <h1 id="app-title">MÔ PHỎNG SINH HỌC 3D</h1>
+        </div>
+        <!-- Mode Switcher -->
+        <div class="mode-switcher">
+          <button id="mode-mitosis" class="mode-btn active" title="Mô phỏng phân bào nguyên phân">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+            Phân bào
+          </button>
+          <button id="mode-skull" class="mode-btn" title="Giải phẫu hộp sọ 3D tương tác">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 2.76 1.12 5.26 2.93 7.07l1.41-1.41A7.95 7.95 0 014 12c0-4.42 3.58-8 8-8s8 3.58 8 8a7.95 7.95 0 01-2.34 5.66l1.41 1.41A9.97 9.97 0 0022 12c0-5.52-4.48-10-10-10zm0 6c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm-1 6v2h2v-2h-2zm0-8v2h2V6h-2z"/></svg>
+            Hộp sọ
+          </button>
+          <button id="mode-paramecium" class="mode-btn" title="Trùng giày 3D tương tác">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><ellipse cx="12" cy="12" rx="9" ry="5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="8" cy="11" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg>
+            Trùng giày
+          </button>
+        </div>
+      </header>
+
+      <!-- Sidebar (Learning / Quiz panel) - MITOSIS MODE -->
+      <aside id="mitosis-sidebar" class="glass-card sidebar-card" aria-label="Bảng thông tin học tập">
+        <!-- Main dynamic content container -->
+        <div id="sidebar-content" style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Section 1: Lesson Content -->
+          <section class="sidebar-section" aria-labelledby="section-lesson-title">
+            <div id="section-lesson-title" class="sidebar-title">Nội dung học tập</div>
+            <div class="phase-info">
+              <h2 id="phase-title" style="transition: opacity 0.2s">Kỳ trung gian</h2>
+              <p id="phase-subtitle" class="phase-subtitle" style="transition: opacity 0.2s">Chuẩn bị phân chia</p>
+              <p id="phase-desc" class="phase-desc">Tế bào chuẩn bị các điều kiện cần thiết trước khi bước vào quá trình phân chia thực sự.</p>
+            </div>
+          </section>
+          
+          <!-- Section 2: Biological Events -->
+          <section class="sidebar-section" aria-labelledby="section-events-title">
+            <div id="section-events-title" class="sidebar-title">Diễn biến sinh học</div>
+            <ul id="events-list" class="events-list" style="transition: opacity 0.2s">
+              <!-- Dynamically populated -->
+            </ul>
+          </section>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
+
+        <!-- Section 3: Legend / Colors -->
+        <section class="sidebar-section" aria-labelledby="section-legend-title">
+          <div id="section-legend-title" class="sidebar-title">Chú thích màu sắc</div>
+          <div class="legend-grid">
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: var(--accent-pink);"></div>
+              <span>Nhiễm sắc thể</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: var(--accent-green);"></div>
+              <span>Trung tử</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: var(--accent-gold);"></div>
+              <span>Tơ vô sắc</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: var(--accent-blue);"></div>
+              <span>Màng nhân</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: Camera & Options -->
+        <section class="sidebar-section" aria-labelledby="section-settings-title">
+          <div id="section-settings-title" class="sidebar-title">Tùy chọn & Góc nhìn</div>
+          
+          <div class="camera-presets">
+            <div class="btn-group">
+              <button id="btn-persp" class="btn active" title="Góc nhìn phối cảnh toàn cảnh">Toàn cảnh</button>
+              <button id="btn-side" class="btn" title="Góc nhìn mặt bên">Mặt bên</button>
+              <button id="btn-equator" class="btn" title="Góc nhìn mặt phẳng xích đạo tế bào">Mặt xích đạo</button>
+            </div>
+          </div>
+
+          <div class="switch-container">
+            <span class="switch-label">Hiển thị nhãn chú thích</span>
+            <label class="switch">
+              <input id="labels-toggle" type="checkbox" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Quiz / Learn Action -->
+        <button id="quiz-btn" class="btn btn-primary" title="Làm bài kiểm tra trắc nghiệm ôn tập">Làm Trắc Nghiệm</button>
+      </aside>
+
+      <!-- Sidebar - SKULL MODE -->
+      <aside id="skull-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin giải phẫu hộp sọ">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Intro Section -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Giải phẫu hộp sọ</div>
+            <div class="phase-info">
+              <h2 style="font-size: 18px; font-weight: 600;">Hộp sọ người</h2>
+              <p class="phase-subtitle">Cranium</p>
+              <p class="phase-desc">Nhấn vào các vùng trên mô hình 3D hoặc chọn tên xương bên dưới để xem thông tin chi tiết về từng bộ phận.</p>
+            </div>
+          </section>
+
+          <!-- Bone List -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Danh sách xương</div>
+            <div id="skull-bone-list" class="skull-bone-list">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
+
+        <!-- Camera Presets for Skull -->
+        <section class="sidebar-section">
+          <div class="sidebar-title">Góc nhìn</div>
+          <div class="camera-presets">
+            <div class="btn-group">
+              <button id="skull-btn-front" class="btn active" title="Mặt trước">Trước</button>
+              <button id="skull-btn-side" class="btn" title="Mặt bên">Bên</button>
+              <button id="skull-btn-back" class="btn" title="Mặt sau">Sau</button>
+              <button id="skull-btn-top" class="btn" title="Nhìn từ trên">Trên</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Sidebar - PARAMECIUM MODE -->
+      <aside id="paramecium-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin trùng giày">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Intro Section -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Cấu tạo Trùng giày</div>
+            <div class="phase-info">
+              <h2 style="font-size: 18px; font-weight: 600;">Trùng giày</h2>
+              <p class="phase-subtitle">Paramecium caudatum</p>
+              <p class="phase-desc" id="paramecium-intro-desc">Đang xem nguyên con. Nhấn nút <b>“Xem bên trong”</b> (hoặc bấm thẳng vào con trùng) để bổ đôi và khám phá từng bào quan.</p>
+            </div>
+          </section>
+
+          <!-- Organelle List -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Các bộ phận</div>
+            <div id="paramecium-part-list" class="skull-bone-list">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
+
+        <!-- Camera Presets -->
+        <section class="sidebar-section">
+          <div class="sidebar-title">Góc nhìn</div>
+          <div class="camera-presets">
+            <div class="btn-group">
+              <button id="para-btn-front" class="btn active" title="Mặt trước">Trước</button>
+              <button id="para-btn-side" class="btn" title="Mặt bên">Bên</button>
+              <button id="para-btn-top" class="btn" title="Nhìn từ trên">Trên</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Bottom Control Bar (MITOSIS only) -->
+      <section id="mitosis-controls" class="glass-card controls-card" aria-label="Bộ điều khiển dòng thời gian">
+        <!-- Media Buttons -->
+        <div class="media-btns">
+          <button id="prev-btn" class="btn-icon" title="Kỳ trước" aria-label="Chuyển sang kỳ trước">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+          
+          <button id="play-btn" class="btn-icon" title="Phát mô phỏng" aria-label="Bắt đầu hoặc tạm dừng mô phỏng">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+          
+          <button id="next-btn" class="btn-icon" title="Kỳ tiếp theo" aria-label="Chuyển sang kỳ tiếp theo">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 18l8.5-6L6 6zm9-12h2v12h-2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Timeline slider -->
+        <div class="timeline-container">
+          <div class="slider-wrapper">
+            <input id="timeline-slider" type="range" class="timeline-slider" min="0" max="100" value="0" aria-label="Trục tiến trình phân bào">
+          </div>
+          
+          <div id="timeline" class="phase-ticks">
+            <span class="tick active" data-phase="0">Kỳ trung gian</span>
+            <span class="tick" data-phase="1">Kỳ đầu</span>
+            <span class="tick" data-phase="2">Kỳ giữa</span>
+            <span class="tick" data-phase="3">Kỳ sau</span>
+            <span class="tick" data-phase="4">Kỳ cuối & Phân chia</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Hint Bar (SKULL mode) -->
+      <section id="skull-controls" class="glass-card controls-card hidden" aria-label="Hướng dẫn tương tác hộp sọ">
+        <div class="skull-hint">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--accent-purple)" style="flex-shrink:0;">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          <span>Nhấn chuột vào mô hình 3D hoặc chọn tên xương ở sidebar để xem thông tin chi tiết. Kéo thả để xoay mô hình.</span>
+        </div>
+      </section>
+
+      <!-- Bottom Control Bar (PARAMECIUM mode) -->
+      <section id="paramecium-controls" class="glass-card controls-card hidden" aria-label="Điều khiển trùng giày">
+        <button id="para-reveal-btn" class="btn btn-primary reveal-btn" title="Bổ đôi để xem cấu tạo bên trong">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="flex-shrink:0;"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5c-1.7-4.4-6-7.5-11-7.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
+          <span id="para-reveal-label">Xem bên trong</span>
+        </button>
+        <div class="skull-hint para-hint">
+          <span id="para-hint-text">Đang xem nguyên con. Bấm “Xem bên trong” để vỏ tế bào mờ đi và lộ các bào quan — sau đó nhấn từng bộ phận để xem thông tin.</span>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
