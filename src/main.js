@@ -4,6 +4,8 @@ import { skullRegions } from './skullData.js';
 import { ParameciumViewer } from './paramecium.js';
 import { parameciumRegions } from './parameciumData.js';
 import { phases, quizQuestions } from './data.js';
+import { ChatBox } from './components/chatBox.js';
+
 
 // ============================================
 // STATE
@@ -97,6 +99,9 @@ function init() {
   // Start Loop
   lastTime = performance.now();
   requestAnimationFrame(animate);
+
+  // Initialize AI ChatBox
+  new ChatBox();
 }
 
 // ============================================
