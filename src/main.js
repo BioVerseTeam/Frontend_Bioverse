@@ -554,13 +554,9 @@ function setupControls() {
     }
   });
 
-  // Quiz Button Toggle
+  // Quiz Button Redirect to Exams page
   quizBtn.addEventListener('click', () => {
-    if (isQuizMode) {
-      exitQuizMode();
-    } else {
-      enterQuizMode();
-    }
+    window.location.href = '/exams.html';
   });
 }
 
