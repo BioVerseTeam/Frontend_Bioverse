@@ -1,0 +1,377 @@
+/* Exams Specific Styles */
+
+/* Override main app layout for exams page */
+.exam-app {
+  background-color: var(--bg-color, #06050b);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+.exam-app .ui-overlay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  padding: 24px;
+  gap: 24px;
+  grid-template-columns: unset;
+  grid-template-rows: unset;
+  grid-template-areas: unset;
+  pointer-events: auto;
+}
+
+/* Override body/app constraints from style.css (meant for 3D canvas) */
+body:has(.exam-app) {
+  overflow-y: auto;
+  height: auto;
+}
+
+.exam-app#app {
+  height: auto;
+  min-height: 100vh;
+}
+
+.exam-app .header-card {
+  width: 100%;
+  max-width: 1200px;
+  grid-area: unset;
+}
+
+.exam-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 20px 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.exam-view {
+  width: 100%;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.exam-view.active {
+  display: block;
+}
+
+.exam-main-card {
+  width: 100%;
+  padding: 30px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(var(--blur-amount));
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+/* Scrollbar for exam card */
+.exam-main-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.exam-main-card::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.exam-main-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.exam-main-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.search-bar {
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-light);
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+.exams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.exam-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.exam-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-blue);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.exam-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: var(--accent-blue);
+}
+
+.exam-card .exam-meta {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 15px;
+  flex: 1;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.badge-subject {
+  background: rgba(167, 139, 250, 0.2);
+  color: #c4b5fd;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.badge-type {
+  background: rgba(52, 211, 153, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.badge-code {
+  background: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+/* Details View */
+.back-btn {
+  margin-bottom: 20px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.exam-details-header {
+  margin-bottom: 20px;
+}
+
+.exam-details-header h2 {
+  font-size: 28px;
+  margin-bottom: 15px;
+  color: var(--accent-blue);
+}
+
+.exam-badges {
+  display: flex;
+  gap: 10px;
+}
+
+.exam-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #ddd;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.exam-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-large {
+  padding: 12px 30px;
+  font-size: 18px;
+}
+
+/* Taking Exam View */
+.questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.question-block {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 25px;
+}
+
+.question-text {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.question-number {
+  color: var(--accent-blue);
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.answers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.answer-option {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.answer-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.answer-option input[type="radio"] {
+  margin-right: 15px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-blue);
+}
+
+.answer-option.selected {
+  background: rgba(96, 165, 250, 0.15);
+  border-color: var(--accent-blue);
+}
+
+.answer-option.correct-answer {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: #34d399;
+}
+
+.answer-option.wrong-answer {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: #f87171;
+}
+
+.question-explanation {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 4px solid var(--accent-blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 14px;
+  display: none;
+}
+
+.question-explanation.visible {
+  display: block;
+}
+
+.sticky-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--panel-bg);
+  padding: 20px 0;
+  border-top: 1px solid var(--panel-border);
+  margin-top: 40px;
+  backdrop-filter: blur(var(--blur-amount));
+  z-index: 10;
+}
+
+/* Results View */
+.results-card {
+  text-align: center;
+  padding: 50px 30px;
+}
+
+.score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: 30px 0;
+}
+
+.score-number {
+  font-size: 80px;
+  font-weight: 700;
+  color: var(--accent-blue);
+}
+
+.score-divider {
+  font-size: 50px;
+  color: var(--text-muted);
+}
+
+.score-total {
+  font-size: 50px;
+  color: var(--text-light);
+}
+
+.result-message {
+  font-size: 22px;
+  margin-bottom: 40px;
+  color: #ddd;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: var(--text-muted);
+}
