@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trắc nghiệm Sinh học - Bioverse</title>
+  <meta name="description" content="Làm bài kiểm tra và thi trắc nghiệm môn Sinh học.">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" href="/src/style.css">
+  <link rel="stylesheet" href="/src/styles/exams.css">
+</head>
+
+<body>
+  <div id="app" class="exam-app">
+    <!-- UI Interaction Overlay -->
+    <div class="ui-overlay" style="pointer-events: auto;">
+
+      <!-- Header -->
+      <header class="glass-card header-card">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true"></div>
+          <h1 id="app-title">HỆ THỐNG TRẮC NGHIỆM</h1>
+        </div>
+        <!-- Mode Switcher -->
+        <div class="mode-switcher">
+          <button id="back-to-3d" class="mode-btn" title="Trở về mô phỏng 3D">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+            Quay lại Mô phỏng 3D
+          </button>
+        </div>
+      </header>
+
+      <div class="exam-container">
+        <!-- View 1: Exam List -->
+        <div id="view-exam-list" class="exam-view active">
+          <div class="glass-card exam-main-card">
+            <h2>Danh sách Đề thi</h2>
+            <div class="search-bar">
+              <input type="text" id="search-exam-input" placeholder="Tìm kiếm tên đề, mã đề, hoặc môn học...">
+            </div>
+            <div id="loading-exams" class="loading-spinner hidden">Đang tải dữ liệu...</div>
+            <div id="exams-grid" class="exams-grid">
+              <!-- Exams will be rendered here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- View 2: Exam Details -->
+        <div id="view-exam-details" class="exam-view hidden">
+          <div class="glass-card exam-main-card">
+            <button class="btn btn-secondary back-btn" id="btn-back-to-list">← Quay lại danh sách</button>
+            <div class="exam-details-header">
+              <h2 id="detail-exam-name">Tên đề thi</h2>
+              <div class="exam-badges">
+                <span id="detail-exam-subject" class="badge">Môn học</span>
+                <span id="detail-exam-type" class="badge">Loại</span>
+                <span id="detail-exam-code" class="badge badge-code">Mã đề</span>
+              </div>
+            </div>
+            <p id="detail-exam-desc" class="exam-desc">Mô tả đề thi</p>
+
+            <div class="exam-actions">
+              <button id="btn-start-exam" class="btn btn-primary btn-large">Bắt đầu làm bài</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- View 3: Taking Exam -->
+        <div id="view-take-exam" class="exam-view hidden">
+          <div class="glass-card exam-main-card taking-exam-card">
+            <div class="taking-exam-header">
+              <h2 id="taking-exam-title">Đang làm bài: </h2>
+            </div>
+
+            <div id="questions-container" class="questions-container">
+              <!-- Questions will be rendered here -->
+            </div>
+
+            <div class="exam-actions sticky-actions">
+              <button id="btn-submit-exam" class="btn btn-primary btn-large">Nộp Bài</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- View 4: Exam Results -->
+        <div id="view-exam-results" class="exam-view hidden">
+          <div class="glass-card exam-main-card results-card">
+            <h2>Kết Quả Làm Bài</h2>
+            <div class="score-display">
+              <span id="result-score" class="score-number">0</span>
+              <span class="score-divider">/</span>
+              <span id="result-total" class="score-total">0</span>
+            </div>
+            <p id="result-message" class="result-message">Tuyệt vời!</p>
+
+            <div class="exam-actions">
+              <button id="btn-review-exam" class="btn btn-secondary">Xem lại bài làm</button>
+              <button id="btn-finish-exam" class="btn btn-primary">Hoàn tất</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/exams.js"></script>
+</body>
+
+</html>
