@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { parameciumRegions, identifyParameciumRegion } from './parameciumData.js';
 
 /**
@@ -81,7 +82,16 @@ export class ParameciumViewer {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 0.7; // Giảm xuống 0.7 để chống chói mắt hoàn toàn
+
+    // Cấu hình PMREMGenerator và RoomEnvironment để tạo phản xạ môi trường chất lượng cao
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    pmremGenerator.compileEquirectangularShader();
+    const roomEnv = new RoomEnvironment();
+    const envMap = pmremGenerator.fromScene(roomEnv, 0.04).texture;
+    this.scene.environment = envMap;
+    this.scene.environmentIntensity = 0.3; // Giảm cường độ ánh sáng môi trường xuống 0.3 để không bị lóa trắng
+    pmremGenerator.dispose();
 
     this.container.appendChild(this.renderer.domElement);
 
@@ -112,17 +122,17 @@ export class ParameciumViewer {
   }
 
   initLights() {
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.15)); // Giảm xuống 0.15 để lấy lại chiều sâu vùng tối tự nhiên
 
-    const keyLight = new THREE.DirectionalLight(0xfff5e6, 1.1);
+    const keyLight = new THREE.DirectionalLight(0xfff5e6, 0.45); // Giảm xuống 0.45
     keyLight.position.set(3, 5, 4);
     this.scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0x9fe9ff, 0.55);
+    const fillLight = new THREE.DirectionalLight(0x9fe9ff, 0.25); // Giảm xuống 0.25
     fillLight.position.set(-4, 2, -2);
     this.scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0x7af0d0, 0.6);
+    const rimLight = new THREE.DirectionalLight(0x7af0d0, 0.3); // Giảm xuống 0.3
     rimLight.position.set(0, -3, -5);
     this.scene.add(rimLight);
   }
@@ -168,34 +178,109 @@ export class ParameciumViewer {
           obj.userData.regionId = region.id;
 
           if (region.isShell) {
-            // Lớp vỏ ngoài: vật liệu trong mờ kiểu màng tế bào
-            const shellMat = new THREE.MeshPhysicalMaterial({
-              color: new THREE.Color(region.color),
-              roughness: 0.25,
-              metalness: 0.0,
-              transmission: 0.0,
-              transparent: true,
-              opacity: 1.0,
-              clearcoat: 0.6,
-              clearcoatRoughness: 0.4,
-              side: THREE.FrontSide,
-            });
+            // Giữ nguyên vật liệu chất lượng cao từ GLB (Cytoplasm có transmission, roughness, v.v.)
+            const shellMat = obj.material.clone();
+            
+            // Cấu hình bổ sung để phục vụ cho hiệu ứng chuyển đổi bổ đôi
+            shellMat.transparent = true; // Bắt buộc true để shell có thể fade-out
+            shellMat.side = THREE.DoubleSide; // Cho phép nhìn thấy mặt trong vỏ khi cắt
+            
+            // Lưu lại thông số gốc
+            this.shellBaseColor = shellMat.color ? shellMat.color.clone() : new THREE.Color(0x5ad1c4);
+            this.shellBaseOpacity = shellMat.opacity !== undefined ? shellMat.opacity : 0.22;
+            this.shellBaseTransmission = shellMat.transmission !== undefined ? shellMat.transmission : 0.55;
+            
+            // Tối ưu hóa vỏ ngoài thành kính trong suốt cao cấp khi bổ đôi
+            if (shellMat.isMeshPhysicalMaterial) {
+              shellMat.roughness = 0.25; // Trạng thái đóng: mờ nhám nguyên bản
+              shellMat.clearcoat = 0.0;  // Trạng thái đóng: không bóng
+              shellMat.clearcoatRoughness = 0.15;
+              shellMat.thickness = 1.8;
+              shellMat.ior = 1.35;
+              shellMat.envMapIntensity = 0.1; // Trạng thái đóng: nhận phản chiếu tối thiểu
+            }
+
             obj.material = shellMat;
             obj.renderOrder = 10; // vẽ sau cùng để nhìn xuyên vào trong
             this.shellMesh = obj;
-            this.shellBaseColor = new THREE.Color(region.color);
           } else {
-            // Bào quan: giữ màu phân biệt, có thể phát sáng khi chọn
-            const baseColor = new THREE.Color(region.color);
-            const mat = new THREE.MeshStandardMaterial({
-              color: baseColor.clone(),
-              roughness: 0.45,
-              metalness: 0.05,
-              emissive: baseColor.clone(),
-              emissiveIntensity: 0.12,
-              transparent: true,
-              opacity: 0,
-            });
+            // Bào quan: nâng cấp lên MeshPhysicalMaterial sinh học chất lượng cao
+            const baseColor = obj.material.color ? obj.material.color.clone() : new THREE.Color(region.color);
+            
+            let mat;
+            if (region.id === 'contractile-vacuole') {
+              // Không bào co bóp: dạng nước, chiết suất cao, bóng loáng, tự phát sáng nổi bật
+              mat = new THREE.MeshPhysicalMaterial({
+                color: baseColor,
+                roughness: 0.05,
+                metalness: 0.1,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.05,
+                transmission: 0.45,
+                thickness: 0.6,
+                ior: 1.333,
+                emissive: baseColor,
+                emissiveIntensity: 0.35,
+                transparent: false,
+                side: THREE.DoubleSide
+              });
+            } else if (region.id === 'food-vacuole') {
+              // Không bào tiêu hóa: dạng thạch bán trong suốt sinh học
+              mat = new THREE.MeshPhysicalMaterial({
+                color: baseColor,
+                roughness: 0.12,
+                metalness: 0.05,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                transmission: 0.25,
+                thickness: 0.4,
+                ior: 1.40,
+                emissive: baseColor,
+                emissiveIntensity: 0.25,
+                transparent: false,
+                side: THREE.DoubleSide
+              });
+            } else if (region.id === 'macronucleus') {
+              // Nhân lớn: chất liệu đục đặc mịn, có ánh nhung sinh học (sheen)
+              mat = new THREE.MeshPhysicalMaterial({
+                color: baseColor,
+                roughness: 0.18,
+                metalness: 0.05,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                sheen: 0.8,
+                sheenColor: baseColor,
+                emissive: baseColor,
+                emissiveIntensity: 0.2,
+                transparent: false,
+                side: THREE.DoubleSide
+              });
+            } else if (region.id === 'micronucleus') {
+              // Nhân nhỏ: sáng bóng hơn nhân lớn một chút
+              mat = new THREE.MeshPhysicalMaterial({
+                color: baseColor,
+                roughness: 0.14,
+                metalness: 0.08,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.08,
+                emissive: baseColor,
+                emissiveIntensity: 0.3,
+                transparent: false,
+                side: THREE.DoubleSide
+              });
+            } else {
+              // Các bào quan khác (nếu có)
+              mat = new THREE.MeshPhysicalMaterial({
+                color: baseColor,
+                roughness: 0.2,
+                clearcoat: 0.8,
+                emissive: baseColor,
+                emissiveIntensity: 0.15,
+                transparent: false,
+                side: THREE.DoubleSide
+              });
+            }
+
             obj.material = mat;
             obj.renderOrder = 1;
             obj.userData.popDelay = 0; // gán sau khi gom xong
@@ -304,10 +389,11 @@ export class ParameciumViewer {
       roughness: 0.65,
       metalness: 0.0,
       emissive: new THREE.Color(0x2fd6c4),
-      emissiveIntensity: 0.06,
+      emissiveIntensity: 0.02, // Giảm phát sáng lông bơi dịu nhẹ hơn
       transparent: true,
       opacity: 0.95,
       side: THREE.DoubleSide,
+      envMapIntensity: 0.04, // Giảm tối đa để lông bơi giữ màu tự nhiên
     });
 
     // Chèn dao động gợn sóng vào vertex shader (ngọn lông lắc, gốc đứng yên)
@@ -398,11 +484,26 @@ export class ParameciumViewer {
       return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
     };
 
-    // Vỏ ngoài: mờ dần từ đặc (1.0) sang gần như thủy tinh (0.10)
+    // Vỏ ngoài: mờ dần và tăng độ truyền suốt (transmission) khi bổ đôi
     const k = easeInOut(r);
     if (this.shellMesh) {
-      const op = 1.0 - 0.9 * k;
+      // Khi r = 0: vỏ đục hơn (opacity = 1.0, transmission = 0.0)
+      // Khi r = 1: vỏ đạt độ trong suốt của GLB
+      const targetOp = Math.min(this.shellBaseOpacity, 0.12);
+      const op = 1.0 - (1.0 - targetOp) * k;
       this.shellMesh.material.opacity = op;
+      
+      if (this.shellMesh.material.isMeshPhysicalMaterial) {
+         this.shellMesh.material.transmission = this.shellBaseTransmission * k;
+         
+         // Biến đổi mượt mà các thuộc tính PBR của vỏ ngoài dựa theo mức độ bổ đôi (k):
+         // - r = 0: đục nhám gốc (roughness = 0.25), không bóng (clearcoat = 0.0), phản chiếu môi trường = 0.1
+         // - r = 1: trong suốt bóng (roughness = 0.15), phủ bóng thủy tinh (clearcoat = 1.0), phản chiếu môi trường = 0.3
+         this.shellMesh.material.roughness = 0.25 - 0.10 * k;
+         this.shellMesh.material.clearcoat = 0.0 + 1.0 * k;
+         this.shellMesh.material.clearcoatRoughness = 0.15 - 0.05 * k;
+         this.shellMesh.material.envMapIntensity = 0.1 + 0.2 * k;
+      }
       this.shellMesh.material.depthWrite = r < 0.04;
       this.shellMesh.visible = op > 0.02;
     }
@@ -429,7 +530,7 @@ export class ParameciumViewer {
       let t = (r - delay) / span;
       t = Math.max(0, Math.min(1, t));
 
-      baseMaterial.opacity = t;
+      // Không dùng opacity fade, vì vật liệu có thể là OPAQUE. Chỉ dùng scale.
       mesh.visible = t > 0.001;
       // scale nảy quanh tâm chính nó (origin mesh nằm ở tâm bào quan)
       const s = t <= 0 ? 0.0001 : easeOutBack(t);
@@ -533,15 +634,22 @@ export class ParameciumViewer {
 
     // Làm mờ nhẹ vỏ thêm khi đang soi một bào quan
     if (this.shellMesh && hasSelection) {
-      this.shellMesh.material.opacity = Math.min(this.shellMesh.material.opacity, 0.07);
+      this.shellMesh.material.opacity = Math.min(this.shellBaseOpacity, 0.05);
+    } else if (this.shellMesh) {
+      const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+      const k = easeInOut(this._revealTarget);
+      const targetOp = Math.min(this.shellBaseOpacity, 0.12);
+      this.shellMesh.material.opacity = 1.0 - (1.0 - targetOp) * k;
     }
   }
 
   clearHighlight() {
     this.highlightedRegion = null;
     this.organelles.forEach(({ baseMaterial, baseColor }) => {
-      baseMaterial.emissiveIntensity = 0.12;
-      baseMaterial.color.copy(baseColor);
+      if (baseMaterial.emissive) {
+        baseMaterial.emissiveIntensity = 0.15;
+        baseMaterial.color.copy(baseColor);
+      }
       baseMaterial.needsUpdate = true;
     });
   }
