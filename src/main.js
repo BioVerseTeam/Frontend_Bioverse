@@ -3,8 +3,13 @@ import { SkullViewer } from './skull.js';
 import { skullRegions } from './skullData.js';
 import { ParameciumViewer } from './paramecium.js';
 import { parameciumRegions } from './parameciumData.js';
+import { PlantViewer } from './plant.js';
+import { plantStages, plantRegions } from './plantData.js';
+import { TripoAPI } from './api/tripo.js';
 import { phases, quizQuestions } from './data.js';
 import { ChatBox } from './components/chatBox.js';
+import { ChemistryViewer } from './chemistry.js';
+import { chemistryCatalog, chemicalReactions } from './chemistryData.js';
 
 
 // ============================================
@@ -36,6 +41,25 @@ let selectedSkullRegion = null;
 let parameciumViewer = null;
 let selectedParameciumRegion = null;
 
+// Plant state
+let plantViewer = null;
+let selectedPlantRegion = null;
+let plantProgress = 0.0;
+let isPlantPlaying = false;
+let plantPlaySpeed = 0.025; // Tăng nhẹ tốc độ phát lớn lên tự động
+let activePlantStageIndex = 0;
+
+// Chemistry state
+let chemistryViewer = null;
+let chemistryState = 'selection'; // 'selection' | 'workspace'
+let chemistryCart = [];
+let activeAlmanacTab = 'chemicals'; // 'chemicals' | 'tools'
+let selectedAlmanacItem = null;
+let isMixingActive = false;
+let mixSourceId = null;
+let chemGraphData = [];
+let lastGraphUpdate = 0;
+
 // DOM Elements
 let playBtn, prevBtn, nextBtn, timeline, timelineSlider, phaseTicks;
 let phaseTitle, phaseSubtitle, phaseDesc, eventsList;
@@ -43,10 +67,23 @@ let sidebarContent, quizBtn, labelsToggle;
 let labelsContainer;
 
 // Mode UI elements
-let modeMitosisBtn, modeSkullBtn, modeParameciumBtn;
-let mitosisSidebar, skullSidebar, parameciumSidebar;
-let mitosisControls, skullControls, parameciumControls;
+let modeMitosisBtn, modeSkullBtn, modeParameciumBtn, modePlantBtn, modeChemistryBtn;
+let mitosisSidebar, skullSidebar, parameciumSidebar, plantSidebar, chemistrySidebar;
+let mitosisControls, skullControls, parameciumControls, plantControls, chemistryControls;
 let skullInfoPopup, skullHoverTag;
+
+// Plant DOM elements
+let plantPhaseTitle, plantPhaseSubtitle, plantPhaseDesc, plantEventsList, plantPartList;
+let plantSlider, plantTicks, plantPrevBtn, plantNextBtn, plantPlayBtn;
+
+// Chemistry DOM elements
+let chemistryAlmanac, chemTabChemicals, chemTabTools, chemAlmanacGrid;
+let chemDetailSymbol, chemDetailTitle, chemDetailLatin, chemDetailType, chemDetailCost, chemDetailDesc, chemDetailProperties, chemDetailHazards, chemAddCartBtn;
+let chemCartCount, chemCartSummaryText, chemCartPreview, chemInitBtn;
+let chemMaterialsList, chemReactionAlert, chemReactionAlertText, chemDockGrid;
+let chemBtnIgnite, chemBtnMix, chemBtnReset;
+let chemTelemetryTemp, chemTelemetryRate, chemTelemetryPh, chemTempBarFill, chemRateBarFill, chemPhBarFill;
+let chemGraphPath, chemGraphArea;
 
 // ============================================
 // INIT
@@ -62,7 +99,7 @@ function init() {
   nextBtn = document.getElementById('next-btn');
   timeline = document.getElementById('timeline');
   timelineSlider = document.getElementById('timeline-slider');
-  phaseTicks = document.querySelectorAll('.tick');
+  phaseTicks = document.querySelectorAll('#timeline .tick');
 
   phaseTitle = document.getElementById('phase-title');
   phaseSubtitle = document.getElementById('phase-subtitle');
@@ -78,23 +115,78 @@ function init() {
   modeMitosisBtn = document.getElementById('mode-mitosis');
   modeSkullBtn = document.getElementById('mode-skull');
   modeParameciumBtn = document.getElementById('mode-paramecium');
+  modePlantBtn = document.getElementById('mode-plant');
+  modeChemistryBtn = document.getElementById('mode-chemistry');
   mitosisSidebar = document.getElementById('mitosis-sidebar');
   skullSidebar = document.getElementById('skull-sidebar');
   parameciumSidebar = document.getElementById('paramecium-sidebar');
+  plantSidebar = document.getElementById('plant-sidebar');
+  chemistrySidebar = document.getElementById('chemistry-sidebar');
   mitosisControls = document.getElementById('mitosis-controls');
   skullControls = document.getElementById('skull-controls');
   parameciumControls = document.getElementById('paramecium-controls');
+  plantControls = document.getElementById('plant-controls');
+  chemistryControls = document.getElementById('chemistry-controls');
   skullInfoPopup = document.getElementById('skull-info-popup');
   skullHoverTag = document.getElementById('skull-hover-tag');
+
+  // Plant DOM cache
+  plantPhaseTitle = document.getElementById('plant-phase-title');
+  plantPhaseSubtitle = document.getElementById('plant-phase-subtitle');
+  plantPhaseDesc = document.getElementById('plant-phase-desc');
+  plantEventsList = document.getElementById('plant-events-list');
+  plantPartList = document.getElementById('plant-part-list');
+  plantSlider = document.getElementById('plant-slider');
+  plantTicks = document.getElementById('plant-timeline');
+  plantPrevBtn = document.getElementById('plant-prev-btn');
+  plantNextBtn = document.getElementById('plant-next-btn');
+  plantPlayBtn = document.getElementById('plant-play-btn');
+
+  // Chemistry DOM cache
+  chemistryAlmanac = document.getElementById('chemistry-almanac');
+  chemTabChemicals = document.getElementById('chem-tab-chemicals');
+  chemTabTools = document.getElementById('chem-tab-tools');
+  chemAlmanacGrid = document.getElementById('chemistry-almanac-grid');
+  chemDetailSymbol = document.getElementById('chem-detail-symbol');
+  chemDetailTitle = document.getElementById('chem-detail-title');
+  chemDetailLatin = document.getElementById('chem-detail-latin');
+  chemDetailType = document.getElementById('chem-detail-type');
+  chemDetailCost = document.getElementById('chem-detail-cost');
+  chemDetailDesc = document.getElementById('chem-detail-desc');
+  chemDetailProperties = document.getElementById('chem-detail-properties');
+  chemDetailHazards = document.getElementById('chem-detail-hazards');
+  chemAddCartBtn = document.getElementById('chem-add-cart-btn');
+  chemCartCount = document.getElementById('chemistry-cart-count');
+  chemCartSummaryText = document.getElementById('chemistry-cart-summary-text');
+  chemCartPreview = document.getElementById('chemistry-cart-preview');
+  chemInitBtn = document.getElementById('chemistry-init-btn');
+  chemMaterialsList = document.getElementById('chemistry-materials-list');
+  chemReactionAlert = document.getElementById('chemistry-reaction-alert');
+  chemReactionAlertText = document.getElementById('chemistry-reaction-alert-text');
+  chemDockGrid = document.getElementById('chemistry-dock-grid');
+  chemBtnIgnite = document.getElementById('chem-btn-ignite');
+  chemBtnMix = document.getElementById('chem-btn-mix');
+  chemBtnReset = document.getElementById('chem-btn-reset');
+  chemTelemetryTemp = document.getElementById('chem-telemetry-temp');
+  chemTelemetryRate = document.getElementById('chem-telemetry-rate');
+  chemTelemetryPh = document.getElementById('chem-telemetry-ph');
+  chemTempBarFill = document.getElementById('chem-temp-bar-fill');
+  chemRateBarFill = document.getElementById('chem-rate-bar-fill');
+  chemPhBarFill = document.getElementById('chem-ph-bar-fill');
+  chemGraphPath = document.getElementById('chem-graph-path');
+  chemGraphArea = document.getElementById('chem-graph-area');
 
   // Setup Event Listeners
   setupControls();
   setupModeSwitch();
   setupSkullUI();
   setupParameciumUI();
+  setupPlantUI();
+  setupChemistryUI();
   
   // Set initial phase UI
   updatePhaseUI(0);
+  updatePlantStageUI(0);
   
   // Start Loop
   lastTime = performance.now();
@@ -111,6 +203,8 @@ function setupModeSwitch() {
   modeMitosisBtn.addEventListener('click', () => switchMode('mitosis'));
   modeSkullBtn.addEventListener('click', () => switchMode('skull'));
   modeParameciumBtn.addEventListener('click', () => switchMode('paramecium'));
+  modePlantBtn.addEventListener('click', () => switchMode('plant'));
+  modeChemistryBtn.addEventListener('click', () => switchMode('chemistry'));
 }
 
 function switchMode(mode) {
@@ -121,6 +215,8 @@ function switchMode(mode) {
   modeMitosisBtn.classList.toggle('active', mode === 'mitosis');
   modeSkullBtn.classList.toggle('active', mode === 'skull');
   modeParameciumBtn.classList.toggle('active', mode === 'paramecium');
+  modePlantBtn.classList.toggle('active', mode === 'plant');
+  modeChemistryBtn.classList.toggle('active', mode === 'chemistry');
 
   // Ẩn toàn bộ UI của mọi mode, sau đó chỉ bật mode đang chọn
   mitosisSidebar.classList.add('hidden');
@@ -129,6 +225,11 @@ function switchMode(mode) {
   skullControls.classList.add('hidden');
   parameciumSidebar.classList.add('hidden');
   parameciumControls.classList.add('hidden');
+  plantSidebar.classList.add('hidden');
+  plantControls.classList.add('hidden');
+  chemistrySidebar.classList.add('hidden');
+  chemistryControls.classList.add('hidden');
+  chemistryAlmanac.classList.add('hidden');
   skullInfoPopup.classList.add('hidden');
   if (skullHoverTag) skullHoverTag.classList.add('hidden');
 
@@ -136,10 +237,14 @@ function switchMode(mode) {
   if (sim && sim.renderer) sim.renderer.domElement.style.display = 'none';
   if (skullViewer && skullViewer.renderer) skullViewer.renderer.domElement.style.display = 'none';
   if (parameciumViewer && parameciumViewer.renderer) parameciumViewer.renderer.domElement.style.display = 'none';
+  if (plantViewer && plantViewer.renderer) plantViewer.renderer.domElement.style.display = 'none';
+  if (chemistryViewer && chemistryViewer.renderer) chemistryViewer.renderer.domElement.style.display = 'none';
 
-  // Tạm dừng mô phỏng phân bào khi rời mode đó
+  // Tạm dừng mô phỏng phân bào và cây khi rời mode đó
   isPlaying = false;
   updatePlayButtonUI();
+  isPlantPlaying = false;
+  updatePlantPlayButtonUI();
 
   const labels = labelsContainer;
   const hud = document.getElementById('hud-overlay');
@@ -178,6 +283,47 @@ function switchMode(mode) {
       parameciumViewer.onRevealChange = handleParameciumRevealChange;
     } else {
       parameciumViewer.renderer.domElement.style.display = 'block';
+    }
+  } else if (mode === 'plant') {
+    plantSidebar.classList.remove('hidden');
+    plantControls.classList.remove('hidden');
+    labels.classList.add('hidden');
+    hud.style.display = 'none';
+
+    if (!plantViewer) {
+      plantViewer = new PlantViewer('canvas-container');
+      plantViewer.onRegionClick = handlePlantRegionClick;
+      plantViewer.onHover = handleSkullHover; // dùng chung nhãn bám chuột
+    } else {
+      plantViewer.renderer.domElement.style.display = 'block';
+    }
+  } else if (mode === 'chemistry') {
+    labels.classList.add('hidden');
+    hud.style.display = 'none';
+
+    if (chemistryState === 'selection') {
+      chemistryAlmanac.classList.remove('hidden');
+    } else {
+      chemistrySidebar.classList.remove('hidden');
+      chemistryControls.classList.remove('hidden');
+      if (chemistryViewer && chemistryViewer.renderer) {
+        chemistryViewer.renderer.domElement.style.display = 'block';
+      }
+    }
+
+    if (!chemistryViewer) {
+      chemistryViewer = new ChemistryViewer('canvas-container');
+      chemistryViewer.onVesselClick = handleChemistryVesselClick;
+      chemistryViewer.onReactionTrigger = handleChemistryReactionTrigger;
+      
+      // Hide 3D view while selecting elements initially
+      if (chemistryState === 'selection') {
+        chemistryViewer.renderer.domElement.style.display = 'none';
+      }
+    } else {
+      if (chemistryState === 'workspace') {
+        chemistryViewer.renderer.domElement.style.display = 'block';
+      }
     }
   }
 }
@@ -467,6 +613,405 @@ function updateParameciumListHighlight(regionId) {
       item.classList.remove('active');
     }
   });
+}
+
+// ============================================
+// PLANT (CÂY MÍT) UI
+// ============================================
+function setupPlantUI() {
+  // Populate part list in sidebar
+  const partList = document.getElementById('plant-part-list');
+  plantRegions.forEach(region => {
+    const item = document.createElement('div');
+    item.className = 'skull-bone-item';
+    item.dataset.regionId = region.id;
+    item.innerHTML = `
+      <div class="skull-bone-dot" style="background-color: ${region.color}; color: ${region.color}"></div>
+      <span class="skull-bone-name">${region.name}</span>
+      <span class="skull-bone-latin">${region.latin}</span>
+    `;
+    item.addEventListener('click', () => {
+      if (!plantViewer) return;
+      selectPlantRegion(region, null);
+      plantViewer.highlightRegion(region.id);
+      plantViewer.focusRegion(region.id);
+    });
+    partList.appendChild(item);
+  });
+
+  // Play/Pause growth
+  plantPlayBtn.addEventListener('click', () => {
+    isPlantPlaying = !isPlantPlaying;
+    updatePlantPlayButtonUI();
+  });
+
+  // Prev/Next Stage
+  plantPrevBtn.addEventListener('click', () => {
+    goToPlantStage(activePlantStageIndex - 1);
+  });
+  plantNextBtn.addEventListener('click', () => {
+    goToPlantStage(activePlantStageIndex + 1);
+  });
+
+  // Timeline Slider
+  plantSlider.addEventListener('input', (e) => {
+    isPlantPlaying = false;
+    updatePlantPlayButtonUI();
+    plantProgress = parseFloat(e.target.value) / 100;
+    if (plantViewer) plantViewer.update(plantProgress);
+    checkPlantStageChange();
+  });
+
+  // Timeline Ticks
+  const plantTicksElements = document.querySelectorAll('#plant-timeline .tick');
+  plantTicksElements.forEach(tick => {
+    tick.addEventListener('click', () => {
+      const targetStageId = parseInt(tick.dataset.stage);
+      goToPlantStage(targetStageId);
+    });
+  });
+
+  // Camera presets
+  document.getElementById('plant-btn-front').addEventListener('click', (e) => {
+    setActivePlantCameraBtn(e.target);
+    if (plantViewer) plantViewer.setCameraPreset('front');
+  });
+  document.getElementById('plant-btn-top').addEventListener('click', (e) => {
+    setActivePlantCameraBtn(e.target);
+    if (plantViewer) plantViewer.setCameraPreset('top');
+  });
+  document.getElementById('plant-btn-detail').addEventListener('click', (e) => {
+    setActivePlantCameraBtn(e.target);
+    if (plantViewer) plantViewer.setCameraPreset('detail');
+  });
+
+  // Khởi tạo bảng điều khiển Tripo3D
+  setupTripoUI();
+}
+
+function setActivePlantCameraBtn(activeBtn) {
+  document.querySelectorAll('#plant-sidebar .camera-presets .btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  activeBtn.classList.add('active');
+}
+
+// ============================================
+// TRIPO3D AI INTERFACES
+// ============================================
+function setupTripoUI() {
+  const apiKeyInput = document.getElementById('tripo-api-key');
+  const tabText = document.getElementById('tripo-tab-text');
+  const tabImage = document.getElementById('tripo-tab-image');
+  const textInputs = document.getElementById('tripo-text-inputs');
+  const imageInputs = document.getElementById('tripo-image-inputs');
+  const promptInput = document.getElementById('tripo-prompt');
+  const fileInput = document.getElementById('tripo-file');
+  const fileTrigger = document.getElementById('tripo-file-trigger');
+  const fileName = document.getElementById('tripo-file-name');
+  const generateBtn = document.getElementById('tripo-generate-btn');
+  const resetBtn = document.getElementById('tripo-reset-btn');
+  const statusContainer = document.getElementById('tripo-status-container');
+  const statusText = document.getElementById('tripo-status-text');
+  const statusPercentage = document.getElementById('tripo-status-percentage');
+  const progressFill = document.getElementById('tripo-progress-fill');
+
+  // Load API Key from localStorage
+  const savedKey = localStorage.getItem('tripo_api_key');
+  if (savedKey) {
+    apiKeyInput.value = savedKey;
+  }
+
+  // Switch tabs
+  tabText.addEventListener('click', () => {
+    tabText.classList.add('active');
+    tabImage.classList.remove('active');
+    textInputs.classList.remove('hidden');
+    imageInputs.classList.add('hidden');
+  });
+
+  tabImage.addEventListener('click', () => {
+    tabImage.classList.add('active');
+    tabText.classList.remove('active');
+    imageInputs.classList.remove('hidden');
+    textInputs.classList.add('hidden');
+  });
+
+  // File trigger click proxy
+  fileTrigger.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      fileName.textContent = file.name;
+    } else {
+      fileName.textContent = 'Chưa chọn ảnh nào';
+    }
+  });
+
+  // Reset model
+  resetBtn.addEventListener('click', () => {
+    if (plantViewer) {
+      plantViewer.restoreProceduralPlant();
+      resetBtn.classList.add('hidden');
+      statusContainer.classList.add('hidden');
+    }
+  });
+
+  // Generate action
+  generateBtn.addEventListener('click', async () => {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+      alert('Vui lòng nhập API Key Tripo3D để bắt đầu!');
+      return;
+    }
+    // Lưu tạm Key lại cho lần sau
+    localStorage.setItem('tripo_api_key', apiKey);
+
+    const isTextMode = tabText.classList.contains('active');
+    let taskId = null;
+
+    try {
+      generateBtn.disabled = true;
+      generateBtn.textContent = '⌛ Đang khởi tạo...';
+      statusContainer.classList.remove('hidden');
+      statusText.textContent = 'Đang gửi yêu cầu...';
+      statusPercentage.textContent = '0%';
+      progressFill.style.width = '0%';
+
+      if (isTextMode) {
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+          alert('Vui lòng nhập mô tả prompt của mô hình!');
+          generateBtn.disabled = false;
+          generateBtn.textContent = '⚡ Tạo mô hình 3D bằng AI';
+          return;
+        }
+        taskId = await TripoAPI.createTextToModelTask(apiKey, prompt);
+      } else {
+        const file = fileInput.files[0];
+        if (!file) {
+          alert('Vui lòng chọn một hình ảnh từ thiết bị của bạn!');
+          generateBtn.disabled = false;
+          generateBtn.textContent = '⚡ Tạo mô hình 3D bằng AI';
+          return;
+        }
+        statusText.textContent = 'Đang tải ảnh lên máy chủ Tripo3D...';
+        const fileToken = await TripoAPI.uploadFile(apiKey, file);
+        
+        statusText.textContent = 'Đang gửi yêu cầu sinh mô hình từ ảnh...';
+        const fileExt = file.name.split('.').pop().toLowerCase() || 'png';
+        taskId = await TripoAPI.createImageToModelTask(apiKey, fileToken, fileExt);
+      }
+
+      if (!taskId) {
+        throw new Error('Tripo3D không trả về Task ID.');
+      }
+
+      statusText.textContent = 'Đang xếp hàng trên Tripo3D...';
+      pollTripoStatus(apiKey, taskId, generateBtn, resetBtn, statusContainer, statusText, statusPercentage, progressFill);
+
+    } catch (err) {
+      console.error(err);
+      alert(`Lỗi Tripo3D: ${err.message}`);
+      statusContainer.classList.add('hidden');
+      generateBtn.disabled = false;
+      generateBtn.textContent = '⚡ Tạo mô hình 3D bằng AI';
+    }
+  });
+}
+
+function pollTripoStatus(apiKey, taskId, generateBtn, resetBtn, statusContainer, statusText, statusPercentage, progressFill) {
+  const checkInterval = setInterval(async () => {
+    try {
+      const taskData = await TripoAPI.checkTaskStatus(apiKey, taskId);
+      const progress = taskData.progress || 0;
+      statusPercentage.textContent = `${progress}%`;
+      progressFill.style.width = `${progress}%`;
+
+      if (taskData.status === 'success') {
+        clearInterval(checkInterval);
+        statusText.textContent = 'Đang tải tệp GLB vào Scene...';
+        
+        const glbUrl = taskData.result.model.glb || taskData.result.model.gltf;
+        if (plantViewer) {
+          plantViewer.loadGLBFromUrl(
+            glbUrl,
+            () => {
+              statusText.textContent = 'Đã tải mô hình Tripo3D thành công!';
+              generateBtn.disabled = false;
+              generateBtn.textContent = '⚡ Tạo mô hình 3D bằng AI';
+              resetBtn.classList.remove('hidden');
+            },
+            (err) => {
+              statusText.textContent = 'Lỗi nạp mô hình vào WebGL.';
+              alert(`Không thể render mô hình 3D: ${err.message}`);
+              generateBtn.disabled = false;
+              generateBtn.textContent = '⚡ Tạo mô hình 3D bằng AI';
+            }
+          );
+        }
+      } else if (taskData.status === 'failed') {
+        clearInterval(checkInterval);
+        statusText.textContent = 'Tác vụ sinh mô hình thất bại.';
+        alert('Tripo3D báo lỗi: Không thể xử lý yêu cầu này.');
+        generateBtn.disabled = false;
+        generateBtn.textContent = '⚡ Tạo mô hình 3D bằng AI';
+      } else if (taskData.status === 'running') {
+        statusText.textContent = 'Tripo3D đang dựng mô hình...';
+      } else if (taskData.status === 'queued') {
+        statusText.textContent = 'Đang chờ đến lượt xử lý...';
+      }
+    } catch (err) {
+      clearInterval(checkInterval);
+      console.error(err);
+      statusText.textContent = 'Lỗi kiểm tra tiến độ.';
+      alert(`Lỗi polling: ${err.message}`);
+      generateBtn.disabled = false;
+      generateBtn.textContent = '⚡ Tạo mô hình 3D bằng AI';
+    }
+  }, 2500);
+}
+
+function handlePlantRegionClick(region, screenPos) {
+  if (region) {
+    selectPlantRegion(region, screenPos);
+  } else {
+    skullInfoPopup.classList.add('hidden');
+    selectedPlantRegion = null;
+    updatePlantListHighlight(null);
+  }
+}
+
+function selectPlantRegion(region, screenPos) {
+  selectedPlantRegion = region;
+
+  skullInfoPopup.style.setProperty('--region-color', region.color);
+  document.getElementById('skull-info-color-dot').style.backgroundColor = region.color;
+  document.getElementById('skull-info-color-dot').style.color = region.color;
+  document.getElementById('skull-info-name').textContent = region.name;
+  document.getElementById('skull-info-latin').textContent = region.latin;
+  document.getElementById('skull-info-desc').textContent = region.description;
+  document.getElementById('skull-info-function').textContent = region.function;
+  document.getElementById('skull-info-location').textContent = region.location;
+
+  positionPopupAt(screenPos);
+
+  skullInfoPopup.classList.remove('hidden');
+  skullInfoPopup.style.animation = 'none';
+  skullInfoPopup.offsetHeight; // force reflow
+  skullInfoPopup.style.animation = '';
+
+  updatePlantListHighlight(region.id);
+}
+
+function updatePlantListHighlight(regionId) {
+  document.querySelectorAll('#plant-part-list .skull-bone-item').forEach(item => {
+    if (item.dataset.regionId === regionId) {
+      item.classList.add('active');
+      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+function checkPlantStageChange() {
+  let matchedIndex = 0;
+  for (let i = 0; i < plantStages.length; i++) {
+    const [start, end] = plantStages[i].range;
+    if (plantProgress >= start - 0.001 && plantProgress <= end + 0.001) {
+      matchedIndex = i;
+      break;
+    }
+  }
+
+  if (matchedIndex !== activePlantStageIndex) {
+    activePlantStageIndex = matchedIndex;
+    updatePlantStageUI(activePlantStageIndex);
+  }
+}
+
+function updatePlantStageUI(stageIndex) {
+  const stage = plantStages[stageIndex];
+  
+  const plantTicksElements = document.querySelectorAll('#plant-timeline .tick');
+  plantTicksElements.forEach(tick => {
+    const tickStage = parseInt(tick.dataset.stage);
+    if (tickStage === stageIndex) {
+      tick.classList.add('active');
+    } else {
+      tick.classList.remove('active');
+    }
+  });
+
+  plantPhaseTitle.style.opacity = 0;
+  plantPhaseSubtitle.style.opacity = 0;
+  plantEventsList.style.opacity = 0;
+
+  setTimeout(() => {
+    plantPhaseTitle.innerHTML = `${stage.title} <span class="phase-badge" style="background-color:${stage.color}33; color:${stage.color}; border: 1px solid ${stage.color}55">Giai đoạn ${stage.id + 1}</span>`;
+    plantPhaseTitle.style.setProperty('color', stage.color);
+    plantPhaseSubtitle.textContent = stage.subtitle;
+    plantPhaseDesc.textContent = stage.description;
+    
+    plantEventsList.innerHTML = stage.events
+      .map(event => `<li>${event}</li>`)
+      .join('');
+
+    const bullets = plantEventsList.querySelectorAll('li');
+    bullets.forEach(li => {
+      li.style.setProperty('--accent-purple', stage.color);
+    });
+
+    plantPhaseTitle.style.opacity = 1;
+    plantPhaseSubtitle.style.opacity = 1;
+    plantEventsList.style.opacity = 1;
+  }, 150);
+}
+
+function goToPlantStage(stageIndex) {
+  if (stageIndex < 0 || stageIndex >= plantStages.length) return;
+  isPlantPlaying = false;
+  updatePlantPlayButtonUI();
+
+  const stage = plantStages[stageIndex];
+  const targetProgress = stage.range[0];
+  animatePlantProgressSlider(targetProgress);
+}
+
+function animatePlantProgressSlider(targetProgress) {
+  const startProgress = plantProgress;
+  const duration = 500;
+  const startTime = performance.now();
+
+  const easeOutQuad = t => t * (2 - t);
+
+  const step = (now) => {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1.0);
+    const easedT = easeOutQuad(t);
+
+    plantProgress = startProgress + (targetProgress - startProgress) * easedT;
+    if (plantViewer) plantViewer.update(plantProgress);
+    plantSlider.value = plantProgress * 100;
+    checkPlantStageChange();
+
+    if (t < 1.0) {
+      requestAnimationFrame(step);
+    }
+  };
+  requestAnimationFrame(step);
+}
+
+function updatePlantPlayButtonUI() {
+  if (isPlantPlaying) {
+    plantPlayBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+  } else {
+    plantPlayBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+  }
 }
 
 // ============================================
@@ -765,6 +1310,21 @@ function animate(timestamp) {
 
       sim.render();
       updateLabels();
+    } else if (currentMode === 'plant') {
+      if (isPlantPlaying) {
+        plantProgress += plantPlaySpeed * delta;
+        if (plantProgress >= 1.0) {
+          plantProgress = 0.0;
+        }
+        if (plantViewer) plantViewer.update(plantProgress);
+        plantSlider.value = plantProgress * 100;
+        checkPlantStageChange();
+      }
+    } else if (currentMode === 'chemistry') {
+      if (timestamp - lastGraphUpdate > 100) {
+        updateChemGraph();
+        lastGraphUpdate = timestamp;
+      }
     }
     // Skull viewer has its own animation loop
   } catch (err) {
@@ -931,6 +1491,521 @@ function renderQuizResults() {
   document.getElementById('quiz-exit-btn').addEventListener('click', () => {
     exitQuizMode();
   });
+}
+
+// ============================================================
+// CHEMISTRY LAB INTERACTIONS & ALMANAC SELECTOR LOGIC
+// ============================================================
+
+function setupChemistryUI() {
+  // Tab switching in Almanac
+  chemTabChemicals.addEventListener('click', () => {
+    activeAlmanacTab = 'chemicals';
+    chemTabChemicals.classList.add('active');
+    chemTabTools.classList.remove('active');
+    renderChemistryAlmanac();
+  });
+
+  chemTabTools.addEventListener('click', () => {
+    activeAlmanacTab = 'tools';
+    chemTabTools.classList.add('active');
+    chemTabChemicals.classList.remove('active');
+    renderChemistryAlmanac();
+  });
+
+  // Add to cart click
+  chemAddCartBtn.addEventListener('click', () => {
+    if (!selectedAlmanacItem) return;
+    const inCart = chemistryCart.some(i => i.id === selectedAlmanacItem.id);
+    if (inCart) {
+      removeFromCart(selectedAlmanacItem.id);
+    } else {
+      addToCart(selectedAlmanacItem);
+    }
+  });
+
+  // Initialise workspace button click
+  chemInitBtn.addEventListener('click', () => {
+    initializeWorkspace();
+  });
+
+  // Dock buttons click handlers
+  chemBtnIgnite.addEventListener('click', () => {
+    if (chemistryViewer) {
+      chemistryViewer.toggleBurner();
+      chemBtnIgnite.classList.toggle('active', chemistryViewer.isBurnerLit);
+      updateMaterialsList();
+    }
+  });
+
+  chemBtnMix.addEventListener('click', () => {
+    if (!chemistryViewer) return;
+    if (isMixingActive) {
+      resetMixingState();
+    } else {
+      isMixingActive = true;
+      mixSourceId = null;
+      chemBtnMix.classList.add('active');
+      document.getElementById('chemistry-lab-desc').textContent = "Pha Trộn Đang Bật: Nhấp chọn dụng cụ chứa nguồn trên bàn 3D...";
+    }
+  });
+
+  chemBtnReset.addEventListener('click', () => {
+    if (chemistryViewer) {
+      chemistryViewer.resetLaboratory();
+      resetMixingState();
+      updateMaterialsList();
+      chemBtnIgnite.classList.remove('active');
+    }
+  });
+
+  // Mặc định nạp sẵn Nước cất và Cốc mỏ vào giỏ hàng
+  const defaultWater = chemistryCatalog.chemicals.find(c => c.id === 'h2o');
+  const defaultBeaker = chemistryCatalog.tools.find(t => t.id === 'beaker');
+  if (defaultWater) chemistryCart.push(defaultWater);
+  if (defaultBeaker) chemistryCart.push(defaultBeaker);
+  updateCartUI();
+}
+
+function renderChemistryAlmanac() {
+  const items = chemistryCatalog[activeAlmanacTab];
+  chemAlmanacGrid.innerHTML = '';
+  
+  items.forEach(item => {
+    const card = document.createElement('div');
+    const isSelectedInAlmanac = selectedAlmanacItem && selectedAlmanacItem.id === item.id;
+    const isInCart = chemistryCart.some(i => i.id === item.id);
+    
+    card.className = `chem-card ${isSelectedInAlmanac ? 'selected-preview' : ''}`;
+    if (isInCart) {
+      card.classList.add('selected');
+    }
+    
+    card.innerHTML = `
+      <div class="chem-card-body">
+        <span class="chem-card-symbol" style="color: ${item.color || '#333'}">${item.symbol}</span>
+        <div class="chem-card-cost">${item.cost}</div>
+      </div>
+      <div class="chem-card-footer">
+        <span>${item.name}</span>
+      </div>
+    `;
+    
+    card.addEventListener('click', () => {
+      selectAlmanacItem(item);
+      document.querySelectorAll('#chemistry-almanac-grid .chem-card').forEach(c => {
+        c.classList.remove('selected-preview');
+      });
+      card.classList.add('selected-preview');
+    });
+    
+    chemAlmanacGrid.appendChild(card);
+  });
+
+  // Chọn phần tử đầu tiên nếu chưa chọn
+  if (items.length > 0) {
+    const activeSelected = items.find(i => selectedAlmanacItem && i.id === selectedAlmanacItem.id) || items[0];
+    selectAlmanacItem(activeSelected);
+    
+    // Highlight thẻ tương ứng
+    setTimeout(() => {
+      const cards = chemAlmanacGrid.querySelectorAll('.chem-card');
+      cards.forEach((c, idx) => {
+        if (items[idx].id === activeSelected.id) {
+          c.classList.add('selected-preview');
+        }
+      });
+    }, 10);
+  }
+}
+
+function selectAlmanacItem(item) {
+  selectedAlmanacItem = item;
+  
+  chemDetailSymbol.textContent = item.symbol;
+  chemDetailSymbol.style.color = item.color || 'var(--accent-blue)';
+  chemDetailSymbol.style.textShadow = `0 0 16px ${item.color || 'var(--accent-blue)'}66`;
+  document.querySelector('.chem-detail-circle').style.borderColor = `${item.color || 'var(--accent-blue)'}55`;
+  
+  chemDetailTitle.textContent = item.name;
+  chemDetailLatin.textContent = item.latin;
+  chemDetailType.textContent = item.type;
+  chemDetailCost.textContent = item.cost;
+  chemDetailDesc.textContent = item.description;
+  chemDetailProperties.textContent = item.properties;
+  
+  chemDetailHazards.innerHTML = '';
+  if (item.hazards) {
+    item.hazards.forEach(h => {
+      const badge = document.createElement('span');
+      badge.className = 'chem-hazard-badge';
+      badge.style.backgroundColor = `${item.hazardColor || '#ef4444'}22`;
+      badge.style.color = item.hazardColor || '#ef4444';
+      badge.style.borderColor = `${item.hazardColor || '#ef4444'}44`;
+      badge.textContent = h;
+      chemDetailHazards.appendChild(badge);
+    });
+  }
+
+  const isInCart = chemistryCart.some(i => i.id === item.id);
+  if (isInCart) {
+    chemAddCartBtn.textContent = "Xóa khỏi giỏ hàng";
+    chemAddCartBtn.className = "chem-action-btn remove";
+  } else {
+    chemAddCartBtn.textContent = "Thêm vào giỏ hàng";
+    chemAddCartBtn.className = "chem-action-btn primary";
+  }
+}
+
+function addToCart(item) {
+  if (item.category === 'Tool') {
+    // Chỉ cho chọn mỗi loại dụng cụ 1 chiếc
+    if (chemistryCart.some(i => i.id === item.id)) return;
+  }
+  
+  chemistryCart.push(item);
+  updateCartUI();
+  renderChemistryAlmanac();
+  selectAlmanacItem(item);
+}
+
+function removeFromCart(itemId) {
+  chemistryCart = chemistryCart.filter(i => i.id !== itemId);
+  updateCartUI();
+  renderChemistryAlmanac();
+  const currentSelected = chemistryCatalog[activeAlmanacTab].find(i => i.id === itemId);
+  if (currentSelected) selectAlmanacItem(currentSelected);
+}
+
+function updateCartUI() {
+  const count = chemistryCart.length;
+  chemCartCount.textContent = count;
+  
+  const hasTool = chemistryCart.some(i => i.category === 'Tool');
+  const hasChemical = chemistryCart.some(i => i.category === 'Chemical');
+  
+  if (count === 0) {
+    chemCartSummaryText.textContent = "Chưa chọn gì";
+  } else {
+    chemCartSummaryText.textContent = `${count} vật liệu đã chọn`;
+  }
+  
+  chemCartPreview.innerHTML = '';
+  chemistryCart.forEach(item => {
+    const dot = document.createElement('div');
+    dot.className = 'chem-cart-item-dot';
+    dot.innerHTML = `
+      <span style="color: ${item.color || 'var(--text-secondary)'}">${item.symbol}</span>
+      <button class="chem-cart-item-dot-del" title="Xóa">&times;</button>
+    `;
+    dot.querySelector('.chem-cart-item-dot-del').addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeFromCart(item.id);
+    });
+    chemCartPreview.appendChild(dot);
+  });
+  
+  const isValid = hasTool && hasChemical;
+  chemInitBtn.disabled = !isValid;
+  
+  if (chemistryState === 'workspace') {
+    chemInitBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M12 2L2 22h20L12 2z"></path></svg>
+      Cập Nhật Bàn Thí Nghiệm
+    `;
+  } else {
+    chemInitBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M12 2L2 22h20L12 2z"></path></svg>
+      Bước vào Phòng Lab
+    `;
+  }
+}
+
+function initializeWorkspace() {
+  chemistryState = 'workspace';
+  
+  // Ẩn Almanac
+  chemistryAlmanac.classList.add('hidden');
+  
+  // Hiện HUD và Sidebar
+  chemistrySidebar.classList.remove('hidden');
+  chemistryControls.classList.remove('hidden');
+  
+  // Bật Three.js canvas renderer
+  if (chemistryViewer) {
+    if (chemistryViewer.renderer) {
+      chemistryViewer.renderer.domElement.style.display = 'block';
+    }
+    chemistryViewer.setupWorkbench(chemistryCart);
+    chemistryViewer.clearSelection();
+  }
+  
+  updateDockUI();
+  updateMaterialsList();
+  resetMixingState();
+  initChemGraph();
+}
+
+function updateDockUI() {
+  chemDockGrid.innerHTML = '';
+  
+  const tools = chemistryCart.filter(i => i.category === 'Tool');
+  tools.forEach(tool => {
+    const item = document.createElement('div');
+    const isSelected = chemistryViewer && chemistryViewer.selectedVesselId === tool.id;
+    item.className = `chem-dock-item ${isSelected ? 'active' : ''}`;
+    item.dataset.toolId = tool.id;
+    
+    // Icon đại diện hoặc chữ
+    item.innerHTML = `
+      <span class="chem-dock-item-sym">${tool.symbol}</span>
+      <span class="chem-dock-item-name">${tool.name}</span>
+    `;
+    
+    item.addEventListener('click', () => {
+      if (chemistryViewer) {
+        if (chemistryViewer.selectedVesselId === tool.id) {
+          chemistryViewer.clearSelection();
+          item.classList.remove('active');
+        } else {
+          chemistryViewer.selectVessel(tool.id);
+          document.querySelectorAll('#chemistry-dock-grid .chem-dock-item').forEach(c => {
+            c.classList.remove('active');
+          });
+          item.classList.add('active');
+        }
+      }
+    });
+    
+    chemDockGrid.appendChild(item);
+  });
+  
+  // Thêm nút "+"
+  const addBtn = document.createElement('div');
+  addBtn.className = 'chem-dock-item add-btn';
+  addBtn.title = 'Thêm dụng cụ hoặc hóa chất';
+  addBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  `;
+  addBtn.addEventListener('click', () => {
+    updateCartUI(); // cập nhật nút thành "Cập nhật bàn thí nghiệm"
+    chemistryAlmanac.classList.remove('hidden');
+    chemistrySidebar.classList.add('hidden');
+    chemistryControls.classList.add('hidden');
+    if (chemistryViewer && chemistryViewer.renderer) {
+      chemistryViewer.renderer.domElement.style.display = 'none';
+    }
+  });
+  
+  chemDockGrid.appendChild(addBtn);
+}
+
+function updateMaterialsList() {
+  chemMaterialsList.innerHTML = '';
+  
+  if (!chemistryViewer) return;
+  
+  let count = 0;
+  for (const id in chemistryViewer.vessels) {
+    if (id === 'burner') continue;
+    const v = chemistryViewer.vessels[id];
+    if (!v) continue;
+    
+    count++;
+    const item = document.createElement('div');
+    const isSelected = chemistryViewer.selectedVesselId === id;
+    item.className = `chem-list-item ${isSelected ? 'active' : ''}`;
+    
+    const chemName = v.userData.chemical ? v.userData.chemical.name : 'Rỗng';
+    const temp = v.userData.temp.toFixed(1);
+    const pH = v.userData.pH.toFixed(1);
+    const color = v.userData.chemical ? v.userData.chemical.color : '#cbd5e1';
+    
+    item.innerHTML = `
+      <div>
+        <span class="chem-list-dot" style="background-color: ${color};"></span>
+        <span class="chem-list-name"><b>${v.userData.title}</b> (${chemName})</span>
+      </div>
+      <span class="chem-list-value">${temp} K | pH ${pH}</span>
+    `;
+    
+    item.addEventListener('click', () => {
+      chemistryViewer.selectVessel(id);
+    });
+    
+    chemMaterialsList.appendChild(item);
+  }
+
+  if (count === 0) {
+    chemMaterialsList.innerHTML = `<div class="text-center py-6 text-on-surface-variant/40" style="font-size: 13px;">Không có thiết bị chứa nào</div>`;
+  }
+}
+
+function handleChemistryVesselClick(id, name, pH, temp, reactants, chemical) {
+  if (isMixingActive) {
+    if (!id) return;
+    
+    if (mixSourceId === null) {
+      mixSourceId = id;
+      document.getElementById('chemistry-lab-desc').textContent = `Đã chọn nguồn: ${name}. Hãy nhấp chọn dụng cụ đích trên bàn 3D để đổ lẫn vào...`;
+      
+      // Highlight dock nguồn
+      document.querySelectorAll('#chemistry-dock-grid .chem-dock-item').forEach(c => {
+        c.classList.toggle('active', c.dataset.toolId === id);
+      });
+      return;
+    } else {
+      if (id === mixSourceId) {
+        resetMixingState();
+        return;
+      }
+      
+      const targetId = id;
+      document.getElementById('chemistry-lab-desc').textContent = "Đang thực hiện rót hóa chất và phản ứng...";
+      isMixingActive = false;
+      
+      chemistryViewer.pourVessel(mixSourceId, targetId, () => {
+        resetMixingState();
+        updateMaterialsList();
+        updateDockUI();
+      });
+      return;
+    }
+  }
+
+  // Cập nhật thông số đo lường Telemetry
+  if (id) {
+    chemTelemetryTemp.textContent = `${temp.toFixed(1)} K`;
+    chemTelemetryRate.textContent = `${chemistryViewer.reactionRate.toFixed(3)} mol/s`;
+    chemTelemetryPh.textContent = pH.toFixed(1);
+    
+    const tempPct = Math.max(0, Math.min(100, ((temp - 298.15) / 75) * 100));
+    chemTempBarFill.style.width = `${tempPct}%`;
+    
+    const ratePct = chemistryViewer.reactionRate * 100;
+    chemRateBarFill.style.width = `${ratePct}%`;
+    
+    const pHPct = (pH / 14) * 100;
+    chemPhBarFill.style.width = `${pHPct}%`;
+    
+    if (pH < 5) {
+      chemPhBarFill.style.backgroundColor = 'var(--accent-pink)';
+    } else if (pH > 9) {
+      chemPhBarFill.style.backgroundColor = 'var(--accent-purple)';
+    } else {
+      chemPhBarFill.style.backgroundColor = 'var(--accent-green)';
+    }
+  } else {
+    chemTelemetryTemp.textContent = '298.1 K';
+    chemTelemetryRate.textContent = '0.000 mol/s';
+    chemTelemetryPh.textContent = '7.0';
+    chemTempBarFill.style.width = '0%';
+    chemRateBarFill.style.width = '0%';
+    chemPhBarFill.style.width = '50%';
+    chemPhBarFill.style.backgroundColor = 'var(--accent-green)';
+  }
+  
+  // Cập nhật active dock highlight
+  document.querySelectorAll('#chemistry-dock-grid .chem-dock-item').forEach(c => {
+    c.classList.toggle('active', c.dataset.toolId === id);
+  });
+
+  updateMaterialsList();
+}
+
+function handleChemistryReactionTrigger(reactionText) {
+  document.getElementById('chemistry-lab-desc').textContent = reactionText;
+  
+  if (chemistryViewer.activeReaction) {
+    chemReactionAlert.classList.remove('hidden');
+    
+    let eq = "";
+    if (chemistryViewer.activeReaction === 'neutralization') eq = "HCl + NaOH → NaCl + H₂O (Trung hòa)";
+    else if (chemistryViewer.activeReaction === 'precipitate') eq = "CuSO₄ + 2NaOH → Cu(OH)₂↓ + Na₂SO₄ (Kết tủa)";
+    else if (chemistryViewer.activeReaction === 'gas_h2') eq = "Zn + 2HCl → ZnCl₂ + H₂↑ (Thế H₂)";
+    else if (chemistryViewer.activeReaction === 'gas_co2') eq = "Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂↑";
+    
+    chemReactionAlertText.innerHTML = `Phản ứng tỏa nhiệt đang xảy ra!<br><b style="color:var(--accent-teal)">${eq}</b>`;
+  } else {
+    chemReactionAlert.classList.add('hidden');
+  }
+
+  // Làm mới đo lường của vessel hiện tại
+  if (chemistryViewer.selectedVesselId) {
+    const v = chemistryViewer.vessels[chemistryViewer.selectedVesselId];
+    if (v) {
+      handleChemistryVesselClick(
+        chemistryViewer.selectedVesselId,
+        v.userData.title,
+        v.userData.pH,
+        v.userData.temp,
+        [],
+        v.userData.chemical
+      );
+    }
+  }
+}
+
+function resetMixingState() {
+  isMixingActive = false;
+  mixSourceId = null;
+  chemBtnMix.classList.remove('active');
+  document.getElementById('chemistry-lab-desc').textContent = "Hãy kích hoạt các dụng cụ và thêm hóa chất từ dock dưới để tiến hành các phản ứng pha chế.";
+  
+  // Trả về highlight dock
+  if (chemistryViewer && chemistryViewer.selectedVesselId) {
+    document.querySelectorAll('#chemistry-dock-grid .chem-dock-item').forEach(c => {
+      c.classList.toggle('active', c.dataset.toolId === chemistryViewer.selectedVesselId);
+    });
+  }
+}
+
+function initChemGraph() {
+  chemGraphData = Array(40).fill(298.15);
+  drawChemGraph();
+}
+
+function updateChemGraph() {
+  if (currentMode !== 'chemistry' || chemistryState !== 'workspace' || !chemistryViewer) return;
+  
+  let currentTemp = 298.15;
+  if (chemistryViewer.selectedVesselId) {
+    const v = chemistryViewer.vessels[chemistryViewer.selectedVesselId];
+    if (v) currentTemp = v.userData.temp;
+  } else if (chemistryViewer.isBurnerLit && chemistryViewer.vessels['burner']) {
+    currentTemp = chemistryViewer.currentHeat;
+  }
+
+  chemGraphData.push(currentTemp);
+  if (chemGraphData.length > 40) {
+    chemGraphData.shift();
+  }
+
+  drawChemGraph();
+}
+
+function drawChemGraph() {
+  if (!chemGraphPath || !chemGraphArea) return;
+  
+  const points = [];
+  const minTemp = 290.0;
+  const maxTemp = 380.0;
+  const width = 100;
+  const height = 40;
+  
+  const stepX = width / (chemGraphData.length - 1);
+  
+  chemGraphData.forEach((temp, idx) => {
+    const x = idx * stepX;
+    const y = height - ((temp - minTemp) / (maxTemp - minTemp)) * (height - 6) - 3;
+    points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  });
+  
+  const pathD = `M ${points.join(' L ')}`;
+  chemGraphPath.setAttribute('d', pathD);
+  
+  const areaD = `${pathD} L 100,45 L 0,45 Z`;
+  chemGraphArea.setAttribute('d', areaD);
 }
 
 // Boot application

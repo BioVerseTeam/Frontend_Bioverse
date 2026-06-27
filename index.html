@@ -69,6 +69,14 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><ellipse cx="12" cy="12" rx="9" ry="5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="8" cy="11" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg>
             Trùng giày
           </button>
+          <button id="mode-plant" class="mode-btn" title="Vòng đời Cây Mít 3D tương tác">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8A7 7 0 0 1 11 20z"></path><path d="M9 22V11"></path></svg>
+            Cây Mít
+          </button>
+          <button id="mode-chemistry" class="mode-btn" title="Phòng Thí Nghiệm Hóa học 3D tương tác">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3h15M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3M9 11h6M8 15h8"></path></svg>
+            Lab Hóa học
+          </button>
           <button id="mode-exams" class="mode-btn" title="Làm bài thi trắc nghiệm ôn tập" onclick="window.location.href='/exams.html'">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
             Thi Trắc Nghiệm
@@ -224,6 +232,186 @@
         </section>
       </aside>
 
+      <!-- Sidebar - PLANT MODE -->
+      <aside id="plant-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin vòng đời cây mít">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Intro Section -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Vòng đời Cây Mít</div>
+            <div class="phase-info">
+              <h2 id="plant-phase-title" style="font-size: 18px; font-weight: 600; color: #854d0e;">Hạt Mít</h2>
+              <p id="plant-phase-subtitle" class="phase-subtitle">Trạng thái ngủ nghỉ của hạt</p>
+              <p id="plant-phase-desc" class="phase-desc">Hạt mít nằm dưới lớp đất, hấp thụ nước để nứt vỏ và bắt đầu nảy mầm.</p>
+            </div>
+          </section>
+
+          <!-- Biological Events -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Diễn biến sinh học</div>
+            <ul id="plant-events-list" class="events-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </section>
+
+          <!-- Part List -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Các bộ phận sinh học</div>
+            <div id="plant-part-list" class="skull-bone-list">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+
+          <!-- Tripo3D AI Generator Panel -->
+          <section class="sidebar-section tripo-section">
+            <div class="sidebar-title">Tripo3D AI Generator</div>
+            <div class="tripo-panel">
+              <div class="tripo-input-group">
+                <label for="tripo-api-key" class="tripo-label">Tripo3D API Key</label>
+                <input type="password" id="tripo-api-key" class="tripo-input" placeholder="Nhập API Key của bạn..." autocomplete="off">
+              </div>
+
+              <div class="tripo-input-group">
+                <label class="tripo-label">Phương thức tạo</label>
+                <div class="btn-group" style="margin-top: 4px;">
+                  <button id="tripo-tab-text" class="btn active" style="padding: 6px; font-size: 11px;">Văn bản (Text)</button>
+                  <button id="tripo-tab-image" class="btn" style="padding: 6px; font-size: 11px;">Hình ảnh (Image)</button>
+                </div>
+              </div>
+
+              <!-- Text to 3D Input -->
+              <div id="tripo-text-inputs" class="tripo-input-group">
+                <label for="tripo-prompt" class="tripo-label">Prompt miêu tả cây/quả</label>
+                <textarea id="tripo-prompt" class="tripo-input" rows="3" placeholder="Ví dụ: A photorealistic young jackfruit sprout with green leaves..."></textarea>
+              </div>
+
+              <!-- Image to 3D Input -->
+              <div id="tripo-image-inputs" class="tripo-input-group hidden">
+                <label for="tripo-file" class="tripo-label">Tải ảnh dái mít/quả mít thật</label>
+                <div class="tripo-file-upload">
+                  <input type="file" id="tripo-file" accept="image/*" class="hidden">
+                  <button id="tripo-file-trigger" class="btn" style="width: 100%;">📁 Chọn hình ảnh...</button>
+                  <span id="tripo-file-name" class="tripo-file-name">Chưa chọn ảnh nào</span>
+                </div>
+              </div>
+
+              <div class="tripo-action-group" style="margin-top: 14px;">
+                <button id="tripo-generate-btn" class="btn btn-primary" style="width: 100%;">⚡ Tạo mô hình 3D bằng AI</button>
+                <button id="tripo-reset-btn" class="btn hidden" style="width: 100%; margin-top: 8px;">🔄 Khôi phục mô hình gốc</button>
+              </div>
+
+              <!-- Progress / Status Indicator -->
+              <div id="tripo-status-container" class="tripo-status hidden">
+                <div class="tripo-status-header">
+                  <span id="tripo-status-text">Đang xếp hàng...</span>
+                  <span id="tripo-status-percentage">0%</span>
+                </div>
+                <div class="tripo-progress-bar">
+                  <div id="tripo-progress-fill" class="tripo-progress-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
+
+        <!-- Camera Presets -->
+        <section class="sidebar-section">
+          <div class="sidebar-title">Góc nhìn</div>
+          <div class="camera-presets">
+            <div class="btn-group">
+              <button id="plant-btn-front" class="btn active" title="Nhìn toàn cảnh">Toàn cảnh</button>
+              <button id="plant-btn-top" class="btn" title="Nhìn từ trên xuống">Trên xuống</button>
+              <button id="plant-btn-detail" class="btn" title="Cận cảnh cụm quả mọc thân">Quả mọc thân</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Sidebar - CHEMISTRY LAB MODE -->
+      <aside id="chemistry-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin phòng thí nghiệm hóa học">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Intro Section -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Phòng Thí Nghiệm Hóa Học</div>
+            <div class="phase-info">
+              <h2 id="chemistry-lab-title" style="font-size: 18px; font-weight: 600; color: var(--accent-blue);">Bàn thí nghiệm 3D</h2>
+              <p class="phase-subtitle">Phản ứng tương tác trực quan</p>
+              <p class="phase-desc" id="chemistry-lab-desc">Hãy kích hoạt các dụng cụ và thêm hóa chất từ dock dưới để tiến hành các phản ứng pha chế.</p>
+            </div>
+          </section>
+
+          <!-- Telemetry Status Panel -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Thông số đo lường</div>
+            <div class="chem-telemetry-section">
+              <div class="chem-telemetry-label-row">
+                <span class="chem-telemetry-title">Nhiệt độ môi trường</span>
+                <span id="chem-telemetry-temp" class="chem-telemetry-value">298.15 K</span>
+              </div>
+              <div class="chem-telemetry-bar">
+                <div id="chem-temp-bar-fill" class="chem-telemetry-bar-fill" style="width: 25.5%;"></div>
+              </div>
+            </div>
+            <div class="chem-telemetry-section">
+              <div class="chem-telemetry-label-row">
+                <span class="chem-telemetry-title">Tốc độ phản ứng</span>
+                <span id="chem-telemetry-rate" class="chem-telemetry-value">0.000 mol/s</span>
+              </div>
+              <div class="chem-telemetry-bar">
+                <div id="chem-rate-bar-fill" class="chem-telemetry-bar-fill" style="width: 0%; background-color: var(--accent-teal);"></div>
+              </div>
+            </div>
+            <div class="chem-telemetry-section">
+              <div class="chem-telemetry-label-row">
+                <span class="chem-telemetry-title">Độ pH dung dịch</span>
+                <span id="chem-telemetry-ph" class="chem-telemetry-value">7.0</span>
+              </div>
+              <div class="chem-telemetry-bar">
+                <div id="chem-ph-bar-fill" class="chem-telemetry-bar-fill" style="width: 50%; background-color: var(--accent-green);"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Current Materials on Table -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Vật chất trên bàn</div>
+            <div id="chemistry-materials-list" class="chem-list-group">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+
+          <!-- Chemical reaction alert -->
+          <section class="sidebar-section">
+            <div id="chemistry-reaction-alert" class="chem-reaction-alert hidden">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              <div>
+                <p style="font-weight:bold; margin-bottom: 2px;">Phản ứng đang diễn ra!</p>
+                <span id="chemistry-reaction-alert-text">Nhiệt lượng tỏa ra và đổi màu dung dịch.</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Graph panel -->
+          <section class="sidebar-section">
+            <div class="sidebar-title">Đồ thị động học (Kinematics)</div>
+            <div class="chem-telemetry-graph-box">
+              <span class="chem-telemetry-graph-label">Nhiệt độ (K) theo thời gian</span>
+              <svg id="chem-graph-svg" viewBox="0 0 100 45" preserveAspectRatio="none">
+                <path id="chem-graph-path" d="M0 40 L 100 40" fill="none" stroke="var(--accent-blue)" stroke-width="1.5"></path>
+                <path id="chem-graph-area" d="M0 45 L 0 40 L 100 40 L 100 45 Z" fill="url(#chem-grad)" opacity="0.15"></path>
+                <defs>
+                  <linearGradient id="chem-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="var(--accent-blue)" stop-opacity="1"></stop>
+                    <stop offset="100%" stop-color="var(--accent-blue)" stop-opacity="0"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </section>
+        </div>
+      </aside>
+
       <!-- Bottom Control Bar (MITOSIS only) -->
       <section id="mitosis-controls" class="glass-card controls-card" aria-label="Bộ điều khiển dòng thời gian">
         <!-- Media Buttons -->
@@ -284,6 +472,152 @@
         </div>
       </section>
 
+      <!-- Bottom Control Bar (PLANT mode) -->
+      <section id="plant-controls" class="glass-card controls-card hidden" aria-label="Điều khiển vòng đời cây mít">
+        <!-- Media Buttons -->
+        <div class="media-btns">
+          <button id="plant-prev-btn" class="btn-icon" title="Giai đoạn trước" aria-label="Chuyển sang giai đoạn trước">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+          
+          <button id="plant-play-btn" class="btn-icon" title="Phát tự động sinh trưởng" aria-label="Bắt đầu hoặc tạm dừng tự động sinh trưởng">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+          
+          <button id="plant-next-btn" class="btn-icon" title="Giai đoạn tiếp theo" aria-label="Chuyển sang giai đoạn tiếp theo">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 18l8.5-6L6 6zm9-12h2v12h-2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Timeline slider -->
+        <div class="timeline-container">
+          <div class="slider-wrapper">
+            <input id="plant-slider" type="range" class="timeline-slider" min="0" max="100" value="0" aria-label="Trục tiến trình sinh trưởng cây mít">
+          </div>
+          
+          <div id="plant-timeline" class="phase-ticks">
+            <span class="tick active" data-stage="0">Hạt mít</span>
+            <span class="tick" data-stage="1">Nảy mầm</span>
+            <span class="tick" data-stage="2">Cây con</span>
+            <span class="tick" data-stage="3">Trưởng thành</span>
+            <span class="tick" data-stage="4">Ra hoa</span>
+            <span class="tick" data-stage="5">Kết quả</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Control Bar (CHEMISTRY mode) -->
+      <section id="chemistry-controls" class="glass-card controls-card hidden" aria-label="Điều khiển phòng thí nghiệm hóa học">
+        <div class="chem-hud-bottom-dock" style="position:static; transform:none; flex: 1;">
+          <div class="chem-dock-card" style="border:none; background:transparent; padding:0; box-shadow:none;">
+            <!-- Inventory grid showing active materials on workbench -->
+            <div id="chemistry-dock-grid" class="chem-dock-grid">
+              <!-- Dynamically populated -->
+            </div>
+            
+            <div class="chem-dock-divider"></div>
+            
+            <!-- Quick actions -->
+            <button id="chem-btn-ignite" class="chem-dock-action" title="Đốt/Tắt đèn cồn">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+              <span>Đèn Cồn</span>
+            </button>
+            <button id="chem-btn-mix" class="chem-dock-action" title="Đổ lẫn hóa chất giữa 2 dụng cụ">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+              <span>Pha Trộn</span>
+            </button>
+            <button id="chem-btn-reset" class="chem-dock-action" title="Dọn dẹp làm sạch bàn thí nghiệm">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Dọn Bàn</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Fullscreen Almanac Material Selector (CHEMISTRY Mode Selection View) -->
+    <div id="chemistry-almanac" class="chem-almanac-overlay hidden">
+      <!-- Left Column: Material Grid -->
+      <div class="chem-almanac-left">
+        <div class="chem-almanac-header">
+          <h2>Chọn Vật Liệu Thí Nghiệm</h2>
+          <div class="chem-tabs-bar">
+            <button id="chem-tab-chemicals" class="chem-tab-btn active">Hóa Chất</button>
+            <button id="chem-tab-tools" class="chem-tab-btn">Dụng Cụ</button>
+          </div>
+        </div>
+        <div class="chem-grid-scroll">
+          <div id="chemistry-almanac-grid" class="chem-grid">
+            <!-- Dynamically populated card items -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Detail Information Panel -->
+      <div class="chem-almanac-right">
+        <div class="chem-detail-card">
+          <div class="chem-detail-preview">
+            <div class="chem-detail-circle">
+              <div id="chem-detail-symbol" class="chem-detail-symbol-large">H₂O</div>
+            </div>
+            <h3 id="chem-detail-title" class="chem-detail-name">Nước cất</h3>
+            <span id="chem-detail-latin" class="chem-detail-latin">Distilled Water</span>
+            <span id="chem-detail-type" class="chem-detail-type">Dung môi</span>
+          </div>
+
+          <div class="chem-detail-scroll">
+            <div class="chem-detail-section">
+              <span class="chem-detail-label">📦 Lượng cấp / Quy cách</span>
+              <span id="chem-detail-cost" class="chem-detail-text bold">100 ml</span>
+            </div>
+            <div class="chem-detail-section">
+              <span class="chem-detail-label">📋 Mô tả</span>
+              <p id="chem-detail-desc" class="chem-detail-text">Nước cất tinh khiết làm dung môi.</p>
+            </div>
+            <div class="chem-detail-section">
+              <span class="chem-detail-label">🧪 Đặc tính vật lý / hóa học</span>
+              <p id="chem-detail-properties" class="chem-detail-text">Độ pH: 7.0 (Trung tính).</p>
+            </div>
+            <div class="chem-detail-section">
+              <span class="chem-detail-label">⚠️ Cảnh báo an toàn (Hazards)</span>
+              <div id="chem-detail-hazards">
+                <span class="chem-hazard-badge">An toàn</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="chem-add-cart-btn" class="chem-action-btn primary">Thêm vào giỏ hàng</button>
+        </div>
+      </div>
+
+      <!-- Bottom Bar: Selected list and Initialization -->
+      <div class="chem-almanac-bottom">
+        <div class="chem-cart-summary">
+          <button class="chem-cart-btn-trigger">
+            <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            <span id="chemistry-cart-count" class="chem-cart-counter">0</span>
+          </button>
+          <div class="chem-cart-info">
+            <span class="chem-cart-label">Vật liệu đã chọn</span>
+            <span id="chemistry-cart-summary-text" class="chem-cart-value">Chưa chọn gì</span>
+          </div>
+          <div id="chemistry-cart-preview" class="chem-cart-items-preview">
+            <!-- Selected item dots will go here -->
+          </div>
+        </div>
+        
+        <button id="chemistry-init-btn" class="chem-initialize-btn" disabled>
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M12 2L2 22h20L12 2z"></path></svg>
+          Bước vào Phòng Lab
+        </button>
+      </div>
     </div>
   </div>
 
