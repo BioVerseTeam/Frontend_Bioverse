@@ -338,6 +338,10 @@
               <h2 id="chemistry-lab-title" style="font-size: 18px; font-weight: 600; color: var(--accent-blue);">Bàn thí nghiệm 3D</h2>
               <p class="phase-subtitle">Phản ứng tương tác trực quan</p>
               <p class="phase-desc" id="chemistry-lab-desc">Hãy kích hoạt các dụng cụ và thêm hóa chất từ dock dưới để tiến hành các phản ứng pha chế.</p>
+              <button id="chem-btn-back-selection" class="chem-action-btn primary" style="margin-top: 12px; padding: 10px 14px; font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Quay lại Chọn Vật Liệu
+              </button>
             </div>
           </section>
 
@@ -593,7 +597,7 @@
             </div>
           </div>
 
-          <button id="chem-add-cart-btn" class="chem-action-btn primary">Thêm vào giỏ hàng</button>
+          <button id="chem-add-cart-btn" class="chem-action-btn primary">+ Thêm vào bộ thí nghiệm</button>
         </div>
       </div>
 
@@ -601,12 +605,13 @@
       <div class="chem-almanac-bottom">
         <div class="chem-cart-summary">
           <button class="chem-cart-btn-trigger">
-            <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            <!-- Flask/Beaker icon for lab context -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M9 3v8l-4 9h14l-4-9V3"/><line x1="6" y1="14" x2="18" y2="14"/></svg>
             <span id="chemistry-cart-count" class="chem-cart-counter">0</span>
           </button>
           <div class="chem-cart-info">
-            <span class="chem-cart-label">Vật liệu đã chọn</span>
-            <span id="chemistry-cart-summary-text" class="chem-cart-value">Chưa chọn gì</span>
+            <span class="chem-cart-label">Bộ thí nghiệm</span>
+            <span id="chemistry-cart-summary-text" class="chem-cart-value">Chưa chọn vật liệu nào</span>
           </div>
           <div id="chemistry-cart-preview" class="chem-cart-items-preview">
             <!-- Selected item dots will go here -->
