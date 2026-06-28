@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { parameciumRegions, identifyParameciumRegion } from './parameciumData.js';
+import { MODEL_URLS } from './modelUrls.js';
 
 /**
  * ParameciumViewer — mô hình 3D Trùng giày tương tác.
@@ -150,7 +151,7 @@ export class ParameciumViewer {
   loadModel() {
     const loader = new GLTFLoader();
     loader.load(
-      '/trung_giay.glb',
+      MODEL_URLS.trung_giay,
       (gltf) => {
         const model = gltf.scene;
         this.modelGroup = new THREE.Group();

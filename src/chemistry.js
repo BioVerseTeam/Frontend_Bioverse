@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { MODEL_URLS } from './modelUrls.js';
 
 
 export class ChemistryViewer {
@@ -71,49 +72,43 @@ export class ChemistryViewer {
     };
 
     // Beaker — giữ material gốc (đã có texture chi tiết)
-    loader.load('/beaker.glb', (gltf) => {
+    loader.load(MODEL_URLS.beaker, (gltf) => {
       enableShadows(gltf.scene);
       this.beakerModel = gltf.scene;
       triggerRebuild();
     }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải beaker.glb:', err));
 
-    // Ống nghiệm (Test Tube) — giữ material gốc
-    loader.load('/glass_test_tube.glb', (gltf) => {
+    loader.load(MODEL_URLS.glass_test_tube, (gltf) => {
       enableShadows(gltf.scene);
       this.testTubeModel = gltf.scene;
       triggerRebuild();
     }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải glass_test_tube.glb:', err));
 
-    // Bình tam giác (Flask) — giữ material gốc
-    loader.load('/lab_flask.glb', (gltf) => {
+    loader.load(MODEL_URLS.lab_flask, (gltf) => {
       enableShadows(gltf.scene);
       this.flaskModel = gltf.scene;
       triggerRebuild();
     }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải lab_flask.glb:', err));
 
-    // Chai phenolphthalein
-    loader.load('/phenol_bottle.glb', (gltf) => {
+    loader.load(MODEL_URLS.phenol_bottle, (gltf) => {
       enableShadows(gltf.scene);
       this.phenolBottleModel = gltf.scene;
       triggerRebuild();
     }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải phenol_bottle.glb:', err));
 
-    // Phần thân chai phenolphthalein (bổ sung)
-    loader.load('/phenol_body_bottle.glb', (gltf) => {
+    loader.load(MODEL_URLS.phenol_body_bottle, (gltf) => {
       enableShadows(gltf.scene);
       this.phenolBodyModel = gltf.scene;
       triggerRebuild();
-    }, undefined, () => {}); // không báo lỗi nếu không có
+    }, undefined, () => {});
 
-    // Pipette dropper
-    loader.load('/phenol_pipette.glb', (gltf) => {
+    loader.load(MODEL_URLS.phenol_pipette, (gltf) => {
       enableShadows(gltf.scene);
       this.phenolPipetteModel = gltf.scene;
       triggerRebuild();
     }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải phenol_pipette.glb:', err));
 
-    // Chai phenolphthalein đã mesh (model mới gộp thân + nắp)
-    loader.load('/phenolphthalein bottle 3d model (1).glb', (gltf) => {
+    loader.load(MODEL_URLS.phenol_bottle_meshed, (gltf) => {
       enableShadows(gltf.scene);
       this.phenolBottleMeshedModel = gltf.scene;
       triggerRebuild();

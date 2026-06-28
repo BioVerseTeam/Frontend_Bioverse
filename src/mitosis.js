@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MODEL_URLS } from './modelUrls.js';
 
 // ============================================================
 //  MitosisSimulation — GLB-driven (mô hình dựng từ Blender)
@@ -123,7 +124,7 @@ export class MitosisSimulation {
   loadModel() {
     const loader = new GLTFLoader();
     loader.load(
-      'mitosis_animation.glb',
+      MODEL_URLS.mitosis_animation,
       (gltf) => {
         this.model = gltf.scene;
         this.scene.add(this.model);

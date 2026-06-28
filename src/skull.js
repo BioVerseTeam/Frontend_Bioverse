@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { skullRegions, identifyRegionByMeshName } from './skullData.js';
+import { MODEL_URLS } from './modelUrls.js';
 
 /**
  * SkullViewer — hiển thị mô hình hộp sọ 3D đã tách sẵn từng xương.
@@ -130,7 +131,7 @@ export class SkullViewer {
   loadModel() {
     const loader = new GLTFLoader();
     loader.load(
-      '/skull.glb',
+      MODEL_URLS.skull,
       (gltf) => {
         const model = gltf.scene;
         this.modelGroup = new THREE.Group();
