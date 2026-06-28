@@ -337,6 +337,7 @@ function switchMode(mode) {
       chemistryViewer = new ChemistryViewer('canvas-container');
       chemistryViewer.onVesselClick = handleChemistryVesselClick;
       chemistryViewer.onReactionTrigger = handleChemistryReactionTrigger;
+      chemistryViewer.onWorkbenchRebuilt = updateDockUI;
       
       // Hide 3D view while selecting elements initially
       if (chemistryState === 'selection') {
@@ -1820,6 +1821,7 @@ function goBackToSelection() {
 }
 
 function updateDockUI() {
+  console.log('[Chemistry] updateDockUI called. chemistryCart:', chemistryCart);
   chemDockGrid.innerHTML = '';
   
   // 1. Render các dụng cụ (Tools) được chọn
@@ -2004,6 +2006,8 @@ function updateMaterialsList() {
   let count = 0;
   for (const id in chemistryViewer.vessels) {
     if (id === 'burner') continue;
+    // Bỏ qua các vessel trang trí không có dữ liệu hóa học
+    if (id === 'phenol_bottle' || id === 'phenol_pipette') continue;
     const v = chemistryViewer.vessels[id];
     if (!v) continue;
     
@@ -2013,8 +2017,8 @@ function updateMaterialsList() {
     item.className = `chem-list-item ${isSelected ? 'active' : ''}`;
     
     const chemName = v.userData.chemical ? v.userData.chemical.name : 'Rỗng';
-    const temp = v.userData.temp.toFixed(1);
-    const pH = v.userData.pH.toFixed(1);
+    const temp = (v.userData.temp != null) ? Number(v.userData.temp).toFixed(1) : '298.2';
+    const pH   = (v.userData.pH   != null) ? Number(v.userData.pH).toFixed(1)   : '7.0';
     const color = v.userData.chemical ? v.userData.chemical.color : '#cbd5e1';
     
     item.innerHTML = `
@@ -2070,10 +2074,10 @@ function handleChemistryVesselClick(id, name, pH, temp, reactants, chemical) {
   }
 
   // Cập nhật thông số đo lường Telemetry
-  if (id) {
-    chemTelemetryTemp.textContent = `${temp.toFixed(1)} K`;
+  if (id && temp != null && pH != null) {
+    chemTelemetryTemp.textContent = `${Number(temp).toFixed(1)} K`;
     chemTelemetryRate.textContent = `${chemistryViewer.reactionRate.toFixed(3)} mol/s`;
-    chemTelemetryPh.textContent = pH.toFixed(1);
+    chemTelemetryPh.textContent = Number(pH).toFixed(1);
     
     const tempPct = Math.max(0, Math.min(100, ((temp - 298.15) / 75) * 100));
     chemTempBarFill.style.width = `${tempPct}%`;

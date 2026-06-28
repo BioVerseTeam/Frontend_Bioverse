@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
 
 export class ChemistryViewer {
   constructor(containerId) {
@@ -34,38 +36,90 @@ export class ChemistryViewer {
     this.selectedVesselId = null;
     this.lastSetupItems = null;
     
-    // Nạp sẵn mô hình 3D thực tế của Cốc thủy tinh (Beaker.glb)
-    this.beakerModel = null;
+    // ── Nạp sẵn các model 3D thực tế của dụng cụ thí nghiệm ──
+    this.beakerModel    = null;
+    this.testTubeModel  = null;
+    this.flaskModel     = null;
+    this.phenolBottleModel  = null;
+    this.phenolBottleMeshedModel = null;
+    this.phenolPipetteModel = null;
+
     const loader = new GLTFLoader();
-    loader.load('/beaker.glb', (gltf) => {
-      gltf.scene.traverse(child => {
+
+    // Helper: bật shadow + fix bounding boxes cho raycaster
+    const enableShadows = (scene) => {
+      scene.traverse(child => {
         if (child.isMesh) {
-          child.castShadow = true;
+          child.castShadow    = true;
           child.receiveShadow = true;
+          // Compute bounding box để raycaster hoạt động chính xác với GLB phức tạp
+          if (child.geometry) child.geometry.computeBoundingBox();
           if (child.material) {
-            // Nâng cấp chất liệu thủy tinh khúc xạ tuyệt đẹp mà vẫn giữ nhãn vạch chia độ
-            child.material = new THREE.MeshPhysicalMaterial({
-              map: child.material.map,
-              roughness: 0.08,
-              metalness: 0.1,
-              transmission: 0.65,
-              ior: 1.52,
-              thickness: 0.04,
-              transparent: true,
-              opacity: 0.8
-            });
+            if (child.material.map) child.material.map.colorSpace = THREE.SRGBColorSpace;
+            if (child.material.emissiveMap) child.material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+            child.material.needsUpdate = true;
           }
         }
       });
-      this.beakerModel = gltf.scene;
-      
-      // Nếu bàn thí nghiệm đã được dựng và có cốc thủy tinh, vẽ lại để áp dụng model mới
-      if (this.vessels['beaker'] && this.lastSetupItems) {
+    };
+
+    // Helper kích hoạt rebuild lại workbench khi bất kỳ model nào tải xong
+    const triggerRebuild = () => {
+      if (this.lastSetupItems) {
         this.setupWorkbench(this.lastSetupItems);
       }
-    }, undefined, (err) => {
-      console.error('[ChemistryViewer] Lỗi tải model beaker.glb:', err);
-    });
+    };
+
+    // Beaker — giữ material gốc (đã có texture chi tiết)
+    loader.load('/beaker.glb', (gltf) => {
+      enableShadows(gltf.scene);
+      this.beakerModel = gltf.scene;
+      triggerRebuild();
+    }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải beaker.glb:', err));
+
+    // Ống nghiệm (Test Tube) — giữ material gốc
+    loader.load('/glass_test_tube.glb', (gltf) => {
+      enableShadows(gltf.scene);
+      this.testTubeModel = gltf.scene;
+      triggerRebuild();
+    }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải glass_test_tube.glb:', err));
+
+    // Bình tam giác (Flask) — giữ material gốc
+    loader.load('/lab_flask.glb', (gltf) => {
+      enableShadows(gltf.scene);
+      this.flaskModel = gltf.scene;
+      triggerRebuild();
+    }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải lab_flask.glb:', err));
+
+    // Chai phenolphthalein
+    loader.load('/phenol_bottle.glb', (gltf) => {
+      enableShadows(gltf.scene);
+      this.phenolBottleModel = gltf.scene;
+      triggerRebuild();
+    }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải phenol_bottle.glb:', err));
+
+    // Phần thân chai phenolphthalein (bổ sung)
+    loader.load('/phenol_body_bottle.glb', (gltf) => {
+      enableShadows(gltf.scene);
+      this.phenolBodyModel = gltf.scene;
+      triggerRebuild();
+    }, undefined, () => {}); // không báo lỗi nếu không có
+
+    // Pipette dropper
+    loader.load('/phenol_pipette.glb', (gltf) => {
+      enableShadows(gltf.scene);
+      this.phenolPipetteModel = gltf.scene;
+      triggerRebuild();
+    }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải phenol_pipette.glb:', err));
+
+    // Chai phenolphthalein đã mesh (model mới gộp thân + nắp)
+    loader.load('/phenolphthalein bottle 3d model (1).glb', (gltf) => {
+      enableShadows(gltf.scene);
+      this.phenolBottleMeshedModel = gltf.scene;
+      triggerRebuild();
+    }, undefined, (err) => console.error('[ChemistryViewer] Lỗi tải phenolphthalein bottle meshed:', err));
+
+
 
     this.initScene();
     this.initLights();
@@ -89,11 +143,10 @@ export class ChemistryViewer {
 
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf1f5f9); // Tông sáng ghi xám xanh hiện đại chuyên nghiệp
-    this.scene.fog = new THREE.FogExp2(0xf1f5f9, 0.005); // Sương mù dịu nhẹ tiệp màu nền
+    this.scene.background = new THREE.Color(0x1a2332); // Nền tối xanh dương đậm kiểu phòng lab ban đêm
+    this.scene.fog = new THREE.FogExp2(0x1a2332, 0.018);
 
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
-    // Góc nhìn từ trên cao xuống bàn thí nghiệm
     this.camera.position.set(0, 3.2, 4.8);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -101,31 +154,45 @@ export class ChemistryViewer {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
+    this.renderer.toneMappingExposure = 0.72; // Giảm exposure — tránh overlit
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     this.container.appendChild(this.renderer.domElement);
 
-    // Hệ thống hạt bụi bay lơ lửng trong không khí cho ảo diệu
+    // ── Environment Map dùng RoomEnvironment (chuẩn PBR của Three.js) ──
+    // Giúp model có metalness/roughness/glass phản chiếu ánh sáng đúng cách
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    pmremGenerator.compileEquirectangularShader();
+    this.scene.environment = pmremGenerator.fromScene(
+      new RoomEnvironment(),
+      0.04
+    ).texture;
+    // Giảm mức độ đóng góp của env map — tránh model bị overlit
+    if ('environmentIntensity' in this.scene) {
+      this.scene.environmentIntensity = 0.4;
+    }
+    pmremGenerator.dispose();
+
+    // Hệ thống hạt bụi bay lơ lửng
     this._createLabParticles();
   }
 
   _createLabParticles() {
     const geo = new THREE.BufferGeometry();
-    const count = 100;
+    const count = 120;
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 8;
+      positions[i * 3]     = (Math.random() - 0.5) * 8;
       positions[i * 3 + 1] = Math.random() * 4;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 8;
     }
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const mat = new THREE.PointsMaterial({
-      color: 0x3b82f6, // Ánh xanh nước biển
-      size: 0.015,
+      color: 0x7dd3fc, // Xanh nhạt hơn dễ thấy trên nền tối
+      size: 0.018,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.45,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -134,26 +201,32 @@ export class ChemistryViewer {
   }
 
   initLights() {
-    // Sáng tổng quan nhẹ nâng đỡ vùng tối
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    // Ambient nền tối — xanh lạnh nhẹ
+    this.scene.add(new THREE.AmbientLight(0xb0c4de, 0.35));
 
-    // Nguồn sáng trần màu trắng chính diện
-    const ceilingLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    ceilingLight.position.set(2, 7, 3);
+    // Đèn trần chính — giảm intensity để không overlit model
+    const ceilingLight = new THREE.DirectionalLight(0xfff8f0, 0.9);
+    ceilingLight.position.set(1, 8, 4);
     ceilingLight.castShadow = true;
-    ceilingLight.shadow.mapSize.width = 1024;
-    ceilingLight.shadow.mapSize.height = 1024;
-    ceilingLight.shadow.bias = -0.0005;
+    ceilingLight.shadow.mapSize.width  = 2048;
+    ceilingLight.shadow.mapSize.height = 2048;
+    ceilingLight.shadow.camera.near   = 0.5;
+    ceilingLight.shadow.camera.far    = 20;
+    ceilingLight.shadow.camera.left   = -5;
+    ceilingLight.shadow.camera.right  =  5;
+    ceilingLight.shadow.camera.top    =  5;
+    ceilingLight.shadow.camera.bottom = -5;
+    ceilingLight.shadow.bias = -0.0003;
     this.scene.add(ceilingLight);
 
-    // Ánh sáng fill phụ từ trước bên trái để làm rõ các góc khuất
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.7);
-    fillLight.position.set(-3, 5, 3);
-    this.scene.add(fillLight);
+    // Fill từ phía người nhìn — rất nhẹ, chỉ đủ thấy mặt trước
+    const frontFill = new THREE.DirectionalLight(0xc8d8f0, 0.25);
+    frontFill.position.set(0, 2, 6);
+    this.scene.add(frontFill);
 
-    // Ánh sáng hắt viền (rim/backlight) từ đằng sau hắt tới tạo độ bóng sang xịn cho thủy tinh
-    const rimLight = new THREE.DirectionalLight(0xdbeafe, 0.5);
-    rimLight.position.set(0, 4, -4);
+    // Rim từ phía sau — tạo outline mỏng trên thủy tinh
+    const rimLight = new THREE.DirectionalLight(0x5eadd4, 0.4);
+    rimLight.position.set(0, 5, -5);
     this.scene.add(rimLight);
   }
 
@@ -174,52 +247,79 @@ export class ChemistryViewer {
     this.labGroup = new THREE.Group();
     this.scene.add(this.labGroup);
 
-    // 1. Mặt bàn thí nghiệm nhẵn mịn phản quang xịn hơn
+    // ── Sàn phòng lab tối ──
+    const floorGeo = new THREE.PlaneGeometry(14, 14);
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0x0d1520,
+      roughness: 0.8,
+      metalness: 0.05
+    });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -2.15;
+    floor.receiveShadow = true;
+    this.scene.add(floor);
+
+    // ── Tường phía sau tối ──
+    const wallGeo = new THREE.PlaneGeometry(14, 6);
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0x111827,
+      roughness: 0.9
+    });
+    const wall = new THREE.Mesh(wallGeo, wallMat);
+    wall.position.set(0, 0.8, -4.5);
+    this.scene.add(wall);
+
+    // Không dùng SpotLight — tránh tạo vùng sáng chói trên mặt bàn
+
+    // 1. Mặt bàn thí nghiệm — màu xanh đậm sang trọng
     const tableGeo = new THREE.BoxGeometry(4.5, 0.15, 2.5);
     const tableMat = new THREE.MeshPhysicalMaterial({
-      color: 0x334155, // Xám xanh phiến đá Slate 700 nổi bật trên nền sáng
-      roughness: 0.15,
-      metalness: 0.1,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05
+      color: 0x1e3a5f,
+      roughness: 0.35,
+      metalness: 0.05,
+      clearcoat: 0.25,
+      clearcoatRoughness: 0.3
     });
     const table = new THREE.Mesh(tableGeo, tableMat);
     table.position.y = -0.075;
     table.receiveShadow = true;
+    table.castShadow = true;
     this.labGroup.add(table);
 
-    // Chân bàn thí nghiệm inox đánh bóng sang trọng
+    // Chân bàn inox
     const legGeo = new THREE.CylinderGeometry(0.06, 0.06, 2.0, 16);
-    const legMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.8, roughness: 0.1 });
-    const positions = [
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.12 });
+    const legPositions = [
       [-2.1, -1.075, -1.1],
-      [2.1, -1.075, -1.1],
-      [-2.1, -1.075, 1.1],
-      [2.1, -1.075, 1.1]
+      [ 2.1, -1.075, -1.1],
+      [-2.1, -1.075,  1.1],
+      [ 2.1, -1.075,  1.1]
     ];
-    positions.forEach(([x, y, z]) => {
+    legPositions.forEach(([x, y, z]) => {
       const leg = new THREE.Mesh(legGeo, legMat);
       leg.position.set(x, y, z);
+      leg.castShadow = true;
       this.labGroup.add(leg);
     });
 
-    // 2. Tấm chắn bảo vệ bằng kính mờ frosted glass cực kì cao cấp ở mặt sau bàn
+    // 2. Tấm kính frosted phía sau — mờ dịu hòa với nền tối
     const backGeo = new THREE.PlaneGeometry(4.5, 1.5);
     const backMat = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      roughness: 0.2,
-      transmission: 0.9,
+      color: 0x1e3a5f,
+      roughness: 0.25,
+      transmission: 0.5,
       ior: 1.5,
-      thickness: 0.05,
+      thickness: 0.08,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.3,
       side: THREE.DoubleSide
     });
     const back = new THREE.Mesh(backGeo, backMat);
     back.position.set(0, 0.75, -1.24);
     this.labGroup.add(back);
 
-    // 3. Xây dựng Giá đỡ Ống nghiệm bằng Gỗ mộc mạc
+    // 3. Giá đỡ ống nghiệm
     this._buildTestTubeRack();
   }
 
@@ -269,10 +369,10 @@ export class ChemistryViewer {
 
     // Vị trí cố định cho từng loại dụng cụ trên bàn thí nghiệm
     const positions = {
-      beaker: new THREE.Vector3(0.3, 0.075, 0.2),      // Cốc ở giữa-phải
-      flask: new THREE.Vector3(1.1, 0.075, -0.1),       // Bình tam giác bên phải hẳn
-      burner: new THREE.Vector3(-0.3, 0.075, -0.3),    // Đèn cồn ở giữa-trái hơi thụt sâu
-      testtube: new THREE.Vector3(-0.8, 0.075, 0)     // Ống nghiệm đặt trong giá đỡ ống nghiệm
+      beaker:   new THREE.Vector3(0.3,  0.075,  0.2),   // Cốc ở giữa-phải
+      flask:    new THREE.Vector3(1.1,  0.075, -0.1),   // Bình tam giác bên phải
+      burner:   new THREE.Vector3(-0.3, 0.075, -0.3),   // Đèn cồn trái-sâu
+      testtube: new THREE.Vector3(-0.8, 0.075,  0)      // Ống nghiệm trong giá đỡ
     };
 
     // Kiểm tra xem người dùng có chọn dụng cụ tương ứng hay không
@@ -319,11 +419,50 @@ export class ChemistryViewer {
       this.vessels['testtube'] = tubeGroup;
     }
 
+    // 5. Hiển thị bộ phenolphthalein nếu người dùng chọn hóa chất phenol
+    const hasPhenol = selectedChemicals.some(c => c.id === 'phenol');
+    if (hasPhenol) {
+      const phenolSet = this._createPhenolSetMesh();
+      phenolSet.position.set(1.55, 0.075, -0.55);
+      this.labGroup.add(phenolSet);
+      this.vessels['phenol_set'] = phenolSet;
+    }
+
     // Cập nhật lại các chỉ số Telemetry khi có thay đổi bàn thí nghiệm
     this.updateTelemetry();
+    if (this.onWorkbenchRebuilt) {
+      this.onWorkbenchRebuilt();
+    }
   }
 
   // --- DỰNG MÔ HÌNH DỤNG CỤ VÀ DUNG DỊCH (PROCEDURAL MESHES) ---
+
+  // Helper căn giữa, căn đáy và scale model 3D thực tế
+  _alignAndScaleModel(model, targetHeight) {
+    // Reset transform trước
+    model.scale.setScalar(1);
+    model.position.set(0, 0, 0);
+    model.rotation.set(0, 0, 0);
+
+    // Tính kích thước gốc
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    // Scale
+    const scaleFactor = targetHeight / maxDim;
+    model.scale.setScalar(scaleFactor);
+
+    // Tính bounding box mới sau khi scale để tìm tâm hình học thật
+    const box2 = new THREE.Box3().setFromObject(model);
+    const center = new THREE.Vector3();
+    box2.getCenter(center);
+
+    // Căn giữa X, Z, đáy nằm trên Y = 0
+    model.position.x = -center.x;
+    model.position.y = -box2.min.y;
+    model.position.z = -center.z;
+  }
 
   // Thủy tinh khúc xạ mờ ảo bóng lộn
   _getGlassMaterial() {
@@ -354,34 +493,22 @@ export class ChemistryViewer {
     };
 
     if (this.beakerModel) {
-      // Sử dụng mô hình 3D Beaker thực tế được người dùng cung cấp
+      // Sử dụng mô hình 3D Beaker thực tế
       const modelClone = this.beakerModel.clone();
-      modelClone.scale.setScalar(0.46);
-      modelClone.position.y = 0.23; // Dịch chỉnh để đáy trùng khít với mặt bàn y=0
+      this._alignAndScaleModel(modelClone, 0.45);
       group.add(modelClone);
     } else {
       // Dự phòng bằng procedural mesh cốc thủy tinh
       const glassMat = this._getGlassMaterial();
-
-      // Thân cốc hình trụ
       const bodyGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.45, 24, 1, true);
       const body = new THREE.Mesh(bodyGeo, glassMat);
       body.position.y = 0.225;
       body.castShadow = true;
       group.add(body);
-
-      // Đáy cốc
       const bottomGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.01, 24);
       const bottom = new THREE.Mesh(bottomGeo, glassMat);
       bottom.position.y = 0.005;
       group.add(bottom);
-
-      // Nhãn vạch cốc dán trên thành cốc
-      const labelGeo = new THREE.PlaneGeometry(0.08, 0.22);
-      const labelMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
-      const label = new THREE.Mesh(labelGeo, labelMat);
-      label.position.set(0, 0.225, 0.178);
-      group.add(label);
     }
 
     // Chất lỏng bên trong cốc
@@ -415,30 +542,30 @@ export class ChemistryViewer {
       hasPhenol: false
     };
 
-    const glassMat = this._getGlassMaterial();
-
-    // Thân bình tam giác hình nón cụt
-    const bodyGeo = new THREE.CylinderGeometry(0.07, 0.22, 0.46, 24, 1, true);
-    const body = new THREE.Mesh(bodyGeo, glassMat);
-    body.position.y = 0.23;
-    body.castShadow = true;
-    group.add(body);
-
-    // Cổ bình hình trụ ngắn hẹp
-    const neckGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.1, 24, 1, true);
-    const neck = new THREE.Mesh(neckGeo, glassMat);
-    neck.position.y = 0.51;
-    group.add(neck);
-
-    // Đáy bình
-    const bottomGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.01, 24);
-    const bottom = new THREE.Mesh(bottomGeo, glassMat);
-    bottom.position.y = 0.005;
-    group.add(bottom);
+    if (this.flaskModel) {
+      // ── Model 3D thực tế của bình tam giác ──
+      const modelClone = this.flaskModel.clone();
+      this._alignAndScaleModel(modelClone, 0.58);
+      group.add(modelClone);
+    } else {
+      // Dự phòng procedural
+      const glassMat = this._getGlassMaterial();
+      const bodyGeo = new THREE.CylinderGeometry(0.07, 0.22, 0.46, 24, 1, true);
+      const body = new THREE.Mesh(bodyGeo, glassMat);
+      body.position.y = 0.23; body.castShadow = true;
+      group.add(body);
+      const neckGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.1, 24, 1, true);
+      const neck = new THREE.Mesh(neckGeo, glassMat);
+      neck.position.y = 0.51;
+      group.add(neck);
+      const bottomGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.01, 24);
+      const bottom = new THREE.Mesh(bottomGeo, glassMat);
+      bottom.position.y = 0.005;
+      group.add(bottom);
+    }
 
     // Chất lỏng bên trong bình tam giác
     if (chemical) {
-      // Chất lỏng hình nón cụt tương thích
       const liquidGeo = new THREE.CylinderGeometry(0.12, 0.21, 0.24, 24);
       const liquidMat = new THREE.MeshStandardMaterial({
         color: new THREE.Color(chemical.color),
@@ -468,21 +595,23 @@ export class ChemistryViewer {
       hasPhenol: false
     };
 
-    const glassMat = this._getGlassMaterial();
-
-    // Thân ống nghiệm hình trụ rỗng
-    const bodyGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 16, 1, true);
-    const body = new THREE.Mesh(bodyGeo, glassMat);
-    body.position.y = 0.2;
-    body.castShadow = true;
-    group.add(body);
-
-    // Đáy ống nghiệm hình bán cầu chĩa xuống dưới
-    const bottomGeo = new THREE.SphereGeometry(0.05, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
-    const bottom = new THREE.Mesh(bottomGeo, glassMat);
-    bottom.position.y = 0.0;
-    bottom.rotation.x = Math.PI; // Chổng ngược bán cầu
-    group.add(bottom);
+    if (this.testTubeModel) {
+      // ── Model 3D thực tế của ống nghiệm ──
+      const modelClone = this.testTubeModel.clone();
+      this._alignAndScaleModel(modelClone, 0.45);
+      group.add(modelClone);
+    } else {
+      // Dự phòng procedural
+      const glassMat = this._getGlassMaterial();
+      const bodyGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.4, 16, 1, true);
+      const body = new THREE.Mesh(bodyGeo, glassMat);
+      body.position.y = 0.2; body.castShadow = true;
+      group.add(body);
+      const bottomGeo = new THREE.SphereGeometry(0.05, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+      const bottom = new THREE.Mesh(bottomGeo, glassMat);
+      bottom.position.y = 0.0; bottom.rotation.x = Math.PI;
+      group.add(bottom);
+    }
 
     // Chất lỏng trong ống nghiệm
     if (chemical) {
@@ -498,6 +627,160 @@ export class ChemistryViewer {
       liquid.position.y = 0.11;
       group.add(liquid);
     }
+
+    return group;
+  }
+
+  // Tạo bộ phenolphthalein: thân chai + nắp ống nhỏ giọt
+  // Dùng phenol_bottle.glb làm thước đo chuẩn để canh tỉ lệ và vị trí
+  _createPhenolSetMesh() {
+    const group = new THREE.Group();
+    group.name = 'phenol_set';
+    group.userData = { type: 'phenol_set', title: 'Bộ Phenolphthalein' };
+
+    // Lấy kích thước tham chiếu từ phenol_bottle.glb
+    let refHeight = 0.7;
+    let refBodyH = 0.5;
+    if (this.phenolBottleModel) {
+      const refBox = new THREE.Box3().setFromObject(this.phenolBottleModel);
+      refHeight = refBox.max.y - refBox.min.y;
+      refBodyH = refHeight * 0.78;
+    }
+
+    // ---- Thân chai: ưu tiên model meshed mới, fallback về body riêng ----
+    const bottleGroup = new THREE.Group();
+    bottleGroup.name = 'bottle';
+
+    const useMeshedModel = () => {
+      const modelClone = this.phenolBottleMeshedModel.clone();
+      modelClone.updateWorldMatrix(true, true);
+      modelClone.traverse(child => {
+        if (child.isMesh) {
+          child.geometry = child.geometry.clone();
+          child.geometry.applyMatrix4(child.matrixWorld);
+          child.geometry.computeVertexNormals();
+          child.geometry.computeBoundingBox();
+          child.geometry.computeBoundingSphere();
+          child.position.set(0, 0, 0);
+          child.rotation.set(0, 0, 0);
+          child.scale.set(1, 1, 1);
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            if (child.material.map) child.material.map.colorSpace = THREE.SRGBColorSpace;
+            if (child.material.emissiveMap) child.material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+      modelClone.position.set(0, 0, 0);
+      modelClone.rotation.set(0, 0, 0);
+      modelClone.scale.set(1, 1, 1);
+      this._alignAndScaleModel(modelClone, refBodyH);
+      bottleGroup.add(modelClone);
+    };
+
+    if (this.phenolBottleMeshedModel) {
+      useMeshedModel();
+    } else if (this.phenolBodyModel) {
+      const modelClone = this.phenolBodyModel.clone();
+      modelClone.updateWorldMatrix(true, true);
+      modelClone.traverse(child => {
+        if (child.isMesh) {
+          child.geometry = child.geometry.clone();
+          child.geometry.applyMatrix4(child.matrixWorld);
+          child.geometry.computeVertexNormals();
+          child.geometry.computeBoundingBox();
+          child.geometry.computeBoundingSphere();
+          child.position.set(0, 0, 0);
+          child.rotation.set(0, 0, 0);
+          child.scale.set(1, 1, 1);
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            if (child.material.map) child.material.map.colorSpace = THREE.SRGBColorSpace;
+            if (child.material.emissiveMap) child.material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+      modelClone.position.set(0, 0, 0);
+      modelClone.rotation.set(0, 0, 0);
+      modelClone.scale.set(1, 1, 1);
+      this._alignAndScaleModel(modelClone, refBodyH);
+      bottleGroup.add(modelClone);
+    } else {
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0xd97706, roughness: 0.1, metalness: 0.0,
+        transmission: 0.55, ior: 1.5, thickness: 0.03,
+        transparent: true, opacity: 0.75
+      });
+      const bodyGeo = new THREE.CylinderGeometry(0.055, 0.06, 0.3, 16);
+      const body = new THREE.Mesh(bodyGeo, glassMat);
+      body.position.y = 0.15; body.castShadow = true;
+      bottleGroup.add(body);
+      const neckGeo = new THREE.CylinderGeometry(0.025, 0.055, 0.06, 16);
+      const neck = new THREE.Mesh(neckGeo, glassMat);
+      neck.position.y = 0.31;
+      bottleGroup.add(neck);
+    }
+    group.add(bottleGroup);
+
+    // ---- Nắp ống nhỏ giọt — ẩn, chỉ hiện khi animation nhỏ giọt ----
+    const pipetteGroup = new THREE.Group();
+    pipetteGroup.name = 'pipette';
+    pipetteGroup.userData = { type: 'phenol_pipette', title: 'Ống nhỏ giọt' };
+    pipetteGroup.visible = false; // Ẩn khỏi chai, chỉ hiện khi bay ra nhỏ giọt
+
+    const blackMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7, metalness: 0.1 });
+    const grayTubeMat = new THREE.MeshPhysicalMaterial({
+      color: 0x888888, roughness: 0.3, metalness: 0.0,
+      transmission: 0.6, ior: 1.4, thickness: 0.01,
+      transparent: true, opacity: 0.7
+    });
+
+    // Nắp vặn đen (có rãnh)
+    const capGeo = new THREE.CylinderGeometry(0.045, 0.048, 0.06, 16);
+    const cap = new THREE.Mesh(capGeo, blackMat);
+    cap.position.y = 0.03;
+    cap.castShadow = true;
+    pipetteGroup.add(cap);
+
+    // Tạo rãnh nắp vặn bằng các vòng tròn mỏng
+    for (let i = 0; i < 8; i++) {
+      const ridgeGeo = new THREE.TorusGeometry(0.046, 0.002, 4, 16);
+      const ridge = new THREE.Mesh(ridgeGeo, blackMat);
+      ridge.position.y = 0.01 + i * 0.006;
+      ridge.rotation.x = Math.PI / 2;
+      pipetteGroup.add(ridge);
+    }
+
+    // Ống xám (phần hút thuốc)
+    const tubeGeo = new THREE.CylinderGeometry(0.015, 0.018, 0.12, 12);
+    const tube = new THREE.Mesh(tubeGeo, grayTubeMat);
+    tube.position.y = 0.12;
+    tube.castShadow = true;
+    pipetteGroup.add(tube);
+
+    // Bầu cao su đen (hình ellipsoid)
+    const bulbGeo = new THREE.SphereGeometry(0.04, 12, 10);
+    const bulb = new THREE.Mesh(bulbGeo, blackMat);
+    bulb.position.y = 0.22;
+    bulb.scale.set(1, 1.3, 1); // Kéo dài theo Y
+    bulb.castShadow = true;
+    pipetteGroup.add(bulb);
+
+    // Đầu nhọn ống nhỏ giọt
+    const tipGeo = new THREE.CylinderGeometry(0.005, 0.015, 0.04, 10);
+    const tip = new THREE.Mesh(tipGeo, grayTubeMat);
+    tip.position.y = -0.02;
+    tip.castShadow = true;
+    pipetteGroup.add(tip);
+
+    // Đặt nắp ngay tại miệng chai
+    const bottleBox = new THREE.Box3().setFromObject(bottleGroup);
+    pipetteGroup.position.set(0, bottleBox.max.y - 0.03, 0);
+    group.add(pipetteGroup);
 
     return group;
   }
@@ -960,7 +1243,6 @@ export class ChemistryViewer {
     const pickable = [];
     for (const key in this.vessels) {
       if (this.vessels[key]) {
-        // Gom tất cả các con cháu là Mesh để raycast
         this.vessels[key].traverse(child => {
           if (child.isMesh) {
             child.userData.vesselId = key;
@@ -970,11 +1252,16 @@ export class ChemistryViewer {
       }
     }
 
+    console.log('[ChemistryViewer] Clicks coordinates:', this.mouse.x, this.mouse.y);
+    console.log('[ChemistryViewer] Pickable objects count:', pickable.length);
     const hits = this.raycaster.intersectObjects(pickable, true);
-    if (hits.length === 0) return null;
+    console.log('[ChemistryViewer] Hits count:', hits.length);
+    if (hits.length > 0) {
+      console.log('[ChemistryViewer] Hit target:', hits[0].object.name, 'vesselId:', hits[0].object.userData.vesselId);
+      return hits[0].object.userData.vesselId;
+    }
 
-    const targetVesselId = hits[0].object.userData.vesselId;
-    return targetVesselId;
+    return null;
   }
 
   _handleMouseMove(event) {
@@ -992,14 +1279,16 @@ export class ChemistryViewer {
     }
 
     const clickedVesselId = this._pick(event);
-    if (clickedVesselId && clickedVesselId !== 'burner') {
-      // Chọn dụng cụ
-      this.selectVessel(clickedVesselId);
-    } else if (clickedVesselId === 'burner') {
-      // Đốt/Tắt lửa khi bấm vào đèn cồn
+    const decorOnly = ['phenol_bottle', 'phenol_pipette'];
+    if (clickedVesselId && clickedVesselId === 'burner') {
       this.toggleBurner();
-    } else {
-      // Click ra ngoài
+    } else if (clickedVesselId && clickedVesselId === 'phenol_set') {
+      this.selectVessel('phenol_set');
+    } else if (clickedVesselId && this.selectedVesselId === 'phenol_set') {
+      this._dropPhenol(clickedVesselId);
+    } else if (clickedVesselId && !decorOnly.includes(clickedVesselId)) {
+      this.selectVessel(clickedVesselId);
+    } else if (!clickedVesselId) {
       this.clearSelection();
     }
   }
@@ -1052,13 +1341,13 @@ export class ChemistryViewer {
     let data = defaultData;
     if (this.selectedVesselId) {
       const v = this.vessels[this.selectedVesselId];
-      if (v) {
+      if (v && v.userData.temp != null) {
         data = {
-          name: v.userData.title,
-          pH: v.userData.pH,
-          temp: v.userData.temp,
+          name:      v.userData.title,
+          pH:        v.userData.pH   ?? 7.0,
+          temp:      v.userData.temp ?? 298.15,
           reactants: v.userData.reactants || [],
-          chemical: v.userData.chemical
+          chemical:  v.userData.chemical
         };
       }
     }
@@ -1202,6 +1491,250 @@ export class ChemistryViewer {
     if (this.renderer && this.scene && this.camera) {
       this.renderer.render(this.scene, this.camera);
     }
+  }
+
+  // Nhỏ giọt phenolphthalein vào dụng cụ được chọn
+  _dropPhenol(targetId) {
+    const phenolSet = this.vessels['phenol_set'];
+    const target = this.vessels[targetId];
+    if (!phenolSet || !target) return;
+
+    const pipette = phenolSet.getObjectByName('pipette');
+    if (!pipette) return;
+
+    if (this._isPipetteAnimating) return;
+
+    if (!target.userData.chemical) {
+      if (this.onReactionTrigger) this.onReactionTrigger('Hãy chọn hóa chất vào dụng cụ trước khi nhỏ phenol.');
+      return;
+    }
+
+    this._animatePipetteDrop(targetId);
+  }
+
+  // Animation: nắp ống nhỏ giọt nhấc ra khỏi chai → bay đến ống nghiệm → nhỏ giọt → bay về
+  _animatePipetteDrop(targetId) {
+    const phenolSet = this.vessels['phenol_set'];
+    const target = this.vessels[targetId];
+    if (!phenolSet || !target) return;
+
+    const pipette = phenolSet.getObjectByName('pipette');
+    if (!pipette) return;
+
+    this._isPipetteAnimating = true;
+
+    // Tạo clone từ model phenol_pipette.glb thật
+    let animPipette;
+    const bottleGroup = phenolSet.getObjectByName('bottle');
+    const bottleBox = new THREE.Box3().setFromObject(bottleGroup);
+    const bottleH = bottleBox.max.y - bottleBox.min.y;
+
+    if (this.phenolPipetteModel) {
+      animPipette = this.phenolPipetteModel.clone();
+      animPipette.updateWorldMatrix(true, true);
+      animPipette.traverse(child => {
+        if (child.isMesh) {
+          child.geometry = child.geometry.clone();
+          child.geometry.applyMatrix4(child.matrixWorld);
+          child.geometry.computeVertexNormals();
+          child.geometry.computeBoundingBox();
+          child.geometry.computeBoundingSphere();
+          child.position.set(0, 0, 0);
+          child.rotation.set(0, 0, 0);
+          child.scale.set(1, 1, 1);
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            if (child.material.map) child.material.map.colorSpace = THREE.SRGBColorSpace;
+            if (child.material.emissiveMap) child.material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+      animPipette.position.set(0, 0, 0);
+      animPipette.rotation.set(0, 0, 0);
+      animPipette.scale.set(1, 1, 1);
+
+      // Xoay đứng nếu model nằm ngang
+      const rawBox = new THREE.Box3().setFromObject(animPipette);
+      const rawSize = rawBox.getSize(new THREE.Vector3());
+      if (rawSize.x > rawSize.y * 1.3) {
+        animPipette.rotation.z = -Math.PI / 2;
+      } else if (rawSize.z > rawSize.y * 1.3) {
+        animPipette.rotation.x = -Math.PI / 2;
+      }
+
+      // Scale pipette tỉ lệ với chai (~25% chiều cao chai)
+      const afterRotBox = new THREE.Box3().setFromObject(animPipette);
+      const afterRotSize = afterRotBox.getSize(new THREE.Vector3());
+      const targetPipetteH = bottleH * 0.28;
+      const pipetteScale = targetPipetteH / Math.max(afterRotSize.x, afterRotSize.y, afterRotSize.z);
+      animPipette.scale.setScalar(pipetteScale);
+    } else {
+      pipette.visible = true;
+      animPipette = pipette;
+    }
+
+    // Vị trí bắt đầu: ngay trên miệng chai (nắp đang đậy)
+    const bottleTop = bottleBox.max.y;
+    const startPos = new THREE.Vector3(0, bottleTop + 0.02, 0);
+
+    this.labGroup.add(animPipette);
+    animPipette.position.copy(startPos);
+    animPipette.rotation.set(0, 0, 0);
+
+    // Vị trí đích: trên miệng dụng cụ nhận
+    const targetWorldPos = new THREE.Vector3();
+    target.getWorldPosition(targetWorldPos);
+    const targetBox = new THREE.Box3().setFromObject(target);
+    const destPos = new THREE.Vector3(
+      targetWorldPos.x,
+      targetBox.max.y + 0.35,
+      targetWorldPos.z
+    );
+
+    const origRot = new THREE.Euler(0, 0, 0);
+    const tiltRot = new THREE.Euler(0, 0, Math.PI / 3.5); // Nghiêng ~51 độ để nhỏ giọt
+
+    let frame = 0;
+    const totalFrames = 90;
+    const drops = [];
+
+    // Easing: ease-in-out cubic
+    const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const step = () => {
+      frame++;
+
+      if (frame <= 12) {
+        // Phase 1: Nhấc nắp thẳng lên khỏi chai
+        const t = ease(frame / 12);
+        animPipette.position.y = startPos.y + t * 0.35;
+      }
+      else if (frame <= 30) {
+        // Phase 2: Bay vòng cung đến trên miệng ống nghiệm
+        const t = ease((frame - 12) / 18);
+        const liftPeak = startPos.y + 0.35;
+        const mid = new THREE.Vector3(
+          (startPos.x + destPos.x) * 0.5,
+          liftPeak + 0.25,
+          (startPos.z + destPos.z) * 0.5
+        );
+        if (t <= 0.5) {
+          const s = ease(t / 0.5);
+          animPipette.position.lerpVectors(new THREE.Vector3(startPos.x, liftPeak, startPos.z), mid, s);
+        } else {
+          const s = ease((t - 0.5) / 0.5);
+          animPipette.position.lerpVectors(mid, destPos, s);
+        }
+        // Nghiêng dần khi接近 đích
+        const tiltT = Math.max(0, (t - 0.6) / 0.4);
+        animPipette.rotation.z = tiltRot.z * tiltT;
+      }
+      else if (frame <= 60) {
+        // Phase 3: Giữ tại chỗ, nhỏ giọt
+        animPipette.position.copy(destPos);
+        animPipette.rotation.copy(tiltRot);
+
+        if (frame % 8 === 0 && drops.length < 5) {
+          const dropGeo = new THREE.SphereGeometry(0.01, 8, 8);
+          const dropMat = new THREE.MeshPhysicalMaterial({
+            color: 0xf0d0e0,
+            roughness: 0.1,
+            transmission: 0.8,
+            ior: 1.33,
+            transparent: true,
+            opacity: 0.9
+          });
+          const drop = new THREE.Mesh(dropGeo, dropMat);
+          // Giọt xuất hiện ở đầu pipette (phía dưới khi nghiêng)
+          const tipOffset = new THREE.Vector3(0.06, -0.12, 0);
+          tipOffset.applyEuler(tiltRot);
+          drop.position.copy(destPos).add(tipOffset);
+          this.labGroup.add(drop);
+          drops.push({ mesh: drop, baseY: drop.position.y });
+        }
+
+        // Giọt rơi xuống
+        for (const d of drops) {
+          d.mesh.position.y -= 0.015;
+          const targetTop = targetBox.max.y + 0.05;
+          if (d.mesh.position.y < targetTop) {
+            d.mesh.position.y = targetTop;
+            d.mesh.material.opacity = Math.max(0, d.mesh.material.opacity - 0.1);
+          }
+        }
+      }
+      else if (frame <= 78) {
+        // Phase 4: Bay về — dựng đứng lại và bay ngược
+        if (drops.length > 0 && frame === 61) {
+          for (const d of drops) {
+            this.labGroup.remove(d.mesh);
+          }
+          drops.length = 0;
+        }
+
+        const t = ease((frame - 60) / 18);
+        const liftPeak = startPos.y + 0.35;
+        const mid = new THREE.Vector3(
+          (destPos.x + startPos.x) * 0.5,
+          liftPeak + 0.25,
+          (destPos.z + startPos.z) * 0.5
+        );
+        if (t <= 0.5) {
+          const s = ease(t / 0.5);
+          animPipette.position.lerpVectors(destPos, mid, s);
+        } else {
+          const s = ease((t - 0.5) / 0.5);
+          animPipette.position.lerpVectors(mid, new THREE.Vector3(startPos.x, liftPeak, startPos.z), s);
+        }
+        // Dựng đứng lại
+        animPipette.rotation.z = tiltRot.z * (1.0 - t);
+      }
+      else if (frame <= 90) {
+        // Phase 5: Hạ nắp xuống đậy lại chai
+        const t = ease((frame - 78) / 12);
+        const liftPeak = startPos.y + 0.35;
+        animPipette.position.x = startPos.x;
+        animPipette.position.z = startPos.z;
+        animPipette.position.y = liftPeak - t * 0.35;
+        animPipette.rotation.z = 0;
+
+        // Đổi màu dung dịch khi nắp đã về gần chai
+        if (frame === 85) {
+          const liq = target.getObjectByName('liquid');
+          if (liq && liq.material.color) {
+            liq.material.color.setHex(0xec4899);
+          }
+          target.userData.hasPhenol = true;
+          target.userData.reactants = [...(target.userData.reactants || []), 'phenol'];
+          target.userData.pH = 12.0;
+        }
+      }
+
+      if (frame < totalFrames) {
+        requestAnimationFrame(step);
+      } else {
+        // Dọn dẹp
+        for (const d of drops) {
+          this.labGroup.remove(d.mesh);
+        }
+        this.labGroup.remove(animPipette);
+        pipette.visible = false;
+
+        if (this.selectedVesselId === targetId) {
+          this.updateTelemetry();
+        }
+
+        if (this.onReactionTrigger) {
+          this.onReactionTrigger('Phenolphthalein nhỏ vào dung dịch: chuyển sang màu hồng!');
+        }
+
+        this._isPipetteAnimating = false;
+      }
+    };
+
+    step();
   }
 
   _handleResize() {
