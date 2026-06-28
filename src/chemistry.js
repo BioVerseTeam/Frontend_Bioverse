@@ -89,8 +89,8 @@ export class ChemistryViewer {
 
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0914); // Tông tối tím than sang trọng
-    this.scene.fog = new THREE.FogExp2(0x0a0914, 0.02);
+    this.scene.background = new THREE.Color(0xf1f5f9); // Tông sáng ghi xám xanh hiện đại chuyên nghiệp
+    this.scene.fog = new THREE.FogExp2(0xf1f5f9, 0.005); // Sương mù dịu nhẹ tiệp màu nền
 
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
     // Góc nhìn từ trên cao xuống bàn thí nghiệm
@@ -134,21 +134,26 @@ export class ChemistryViewer {
   }
 
   initLights() {
-    // Sáng tổng quan nhẹ
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+    // Sáng tổng quan nhẹ nâng đỡ vùng tối
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.55));
 
-    // Nguồn sáng trần màu trắng xanh lạnh
-    const ceilingLight = new THREE.DirectionalLight(0xe0f2fe, 1.0);
-    ceilingLight.position.set(2, 6, 2);
+    // Nguồn sáng trần màu trắng chính diện
+    const ceilingLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    ceilingLight.position.set(2, 7, 3);
     ceilingLight.castShadow = true;
     ceilingLight.shadow.mapSize.width = 1024;
     ceilingLight.shadow.mapSize.height = 1024;
-    ceilingLight.shadow.bias = -0.001;
+    ceilingLight.shadow.bias = -0.0005;
     this.scene.add(ceilingLight);
 
-    // Ánh sáng hắt dịu nhẹ từ dưới lên
-    const rimLight = new THREE.DirectionalLight(0x3b82f6, 0.25);
-    rimLight.position.set(-3, -2, -3);
+    // Ánh sáng fill phụ từ trước bên trái để làm rõ các góc khuất
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    fillLight.position.set(-3, 5, 3);
+    this.scene.add(fillLight);
+
+    // Ánh sáng hắt viền (rim/backlight) từ đằng sau hắt tới tạo độ bóng sang xịn cho thủy tinh
+    const rimLight = new THREE.DirectionalLight(0xdbeafe, 0.5);
+    rimLight.position.set(0, 4, -4);
     this.scene.add(rimLight);
   }
 
@@ -169,23 +174,23 @@ export class ChemistryViewer {
     this.labGroup = new THREE.Group();
     this.scene.add(this.labGroup);
 
-    // 1. Mặt bàn thí nghiệm nhẵn mịn phản quang
+    // 1. Mặt bàn thí nghiệm nhẵn mịn phản quang xịn hơn
     const tableGeo = new THREE.BoxGeometry(4.5, 0.15, 2.5);
     const tableMat = new THREE.MeshPhysicalMaterial({
-      color: 0x1e293b, // Xám phiến đá đen
-      roughness: 0.2,
+      color: 0x334155, // Xám xanh phiến đá Slate 700 nổi bật trên nền sáng
+      roughness: 0.15,
       metalness: 0.1,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.1
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05
     });
     const table = new THREE.Mesh(tableGeo, tableMat);
     table.position.y = -0.075;
     table.receiveShadow = true;
     this.labGroup.add(table);
 
-    // Chân bàn thí nghiệm kim loại xước
+    // Chân bàn thí nghiệm inox đánh bóng sang trọng
     const legGeo = new THREE.CylinderGeometry(0.06, 0.06, 2.0, 16);
-    const legMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+    const legMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.8, roughness: 0.1 });
     const positions = [
       [-2.1, -1.075, -1.1],
       [2.1, -1.075, -1.1],
@@ -198,12 +203,16 @@ export class ChemistryViewer {
       this.labGroup.add(leg);
     });
 
-    // 2. Tấm lưới bảo vệ mờ ở mặt sau bàn
+    // 2. Tấm chắn bảo vệ bằng kính mờ frosted glass cực kì cao cấp ở mặt sau bàn
     const backGeo = new THREE.PlaneGeometry(4.5, 1.5);
-    const backMat = new THREE.MeshBasicMaterial({
-      color: 0x0f172a,
+    const backMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      roughness: 0.2,
+      transmission: 0.9,
+      ior: 1.5,
+      thickness: 0.05,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.45,
       side: THREE.DoubleSide
     });
     const back = new THREE.Mesh(backGeo, backMat);
@@ -218,7 +227,7 @@ export class ChemistryViewer {
     this.rackGroup = new THREE.Group();
     this.rackGroup.position.set(-0.8, 0.075, 0); // Vị trí góc bên trái bàn
 
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.85 }); // Gỗ đỏ cam
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x854d0e, roughness: 0.4 }); // Gỗ đỏ cam đánh bóng nhẵn mịn hơn
 
     // Đế giá đỡ
     const base = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.04, 0.25), woodMat);
@@ -321,12 +330,12 @@ export class ChemistryViewer {
     return new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       roughness: 0.05,
-      metalness: 0.0,
-      transmission: 0.95, // độ xuyên sáng
+      metalness: 0.1,
+      transmission: 0.9, // độ xuyên sáng
       ior: 1.5, // chỉ số khúc xạ thủy tinh
       thickness: 0.02, // độ dày lớp thủy tinh
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.4,
       side: THREE.DoubleSide
     });
   }

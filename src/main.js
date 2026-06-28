@@ -71,6 +71,7 @@ let modeMitosisBtn, modeSkullBtn, modeParameciumBtn, modePlantBtn, modeChemistry
 let mitosisSidebar, skullSidebar, parameciumSidebar, plantSidebar, chemistrySidebar;
 let mitosisControls, skullControls, parameciumControls, plantControls, chemistryControls;
 let skullInfoPopup, skullHoverTag;
+let headerCard, uiOverlay;
 
 // Plant DOM elements
 let plantPhaseTitle, plantPhaseSubtitle, plantPhaseDesc, plantEventsList, plantPartList;
@@ -129,6 +130,8 @@ function init() {
   chemistryControls = document.getElementById('chemistry-controls');
   skullInfoPopup = document.getElementById('skull-info-popup');
   skullHoverTag = document.getElementById('skull-hover-tag');
+  headerCard = document.querySelector('.header-card');
+  uiOverlay = document.querySelector('.ui-overlay');
 
   // Plant DOM cache
   plantPhaseTitle = document.getElementById('plant-phase-title');
@@ -183,6 +186,7 @@ function init() {
   setupParameciumUI();
   setupPlantUI();
   setupChemistryUI();
+  setupCollapsibleSidebars();
   
   // Set initial phase UI
   updatePhaseUI(0);
@@ -210,6 +214,15 @@ function setupModeSwitch() {
 function switchMode(mode) {
   if (mode === currentMode) return;
   currentMode = mode;
+
+  // Toggle header card visibility and grid rows based on chemistry workspace sub-state
+  if (mode === 'chemistry' && chemistryState === 'workspace') {
+    if (headerCard) headerCard.classList.add('hidden');
+    if (uiOverlay) uiOverlay.classList.add('no-header');
+  } else {
+    if (headerCard) headerCard.classList.remove('hidden');
+    if (uiOverlay) uiOverlay.classList.remove('no-header');
+  }
 
   // Update tab buttons
   modeMitosisBtn.classList.toggle('active', mode === 'mitosis');
@@ -303,6 +316,15 @@ function switchMode(mode) {
 
     if (chemistryState === 'selection') {
       chemistryAlmanac.classList.remove('hidden');
+      // Safety: ensure cart always has defaults even if setup failed earlier
+      if (chemistryCart.length === 0) {
+        const dw = chemistryCatalog.chemicals.find(c => c.id === 'h2o');
+        const db = chemistryCatalog.tools.find(t => t.id === 'beaker');
+        if (dw) chemistryCart.push(dw);
+        if (db) chemistryCart.push(db);
+        updateCartUI();
+      }
+      renderChemistryAlmanac();
     } else {
       chemistrySidebar.classList.remove('hidden');
       chemistryControls.classList.remove('hidden');
@@ -1498,6 +1520,7 @@ function renderQuizResults() {
 // ============================================================
 
 function setupChemistryUI() {
+  try {
   // Tab switching in Almanac
   chemTabChemicals.addEventListener('click', () => {
     activeAlmanacTab = 'chemicals';
@@ -1513,14 +1536,22 @@ function setupChemistryUI() {
     renderChemistryAlmanac();
   });
 
-  // Add to cart click
-  chemAddCartBtn.addEventListener('click', () => {
-    if (!selectedAlmanacItem) return;
-    const inCart = chemistryCart.some(i => i.id === selectedAlmanacItem.id);
-    if (inCart) {
-      removeFromCart(selectedAlmanacItem.id);
-    } else {
-      addToCart(selectedAlmanacItem);
+  // Add-to-cart button: reads current item ID from data attribute (no closure dependency)
+  chemAddCartBtn.addEventListener('click', function () {
+    try {
+      const itemId = chemAddCartBtn.getAttribute('data-item-id');
+      if (!itemId) return;
+      const allItems = [...chemistryCatalog.chemicals, ...chemistryCatalog.tools];
+      const item = allItems.find(i => i.id === itemId);
+      if (!item) return;
+      const inCart = chemistryCart.some(i => i.id === itemId);
+      if (inCart) {
+        removeFromCart(itemId);
+      } else {
+        addToCart(item);
+      }
+    } catch (err) {
+      console.error('[Chemistry] Button click error:', err);
     }
   });
 
@@ -1529,8 +1560,16 @@ function setupChemistryUI() {
     initializeWorkspace();
   });
 
+  // Back to selection screen button click
+  const chemBtnBackSelection = document.getElementById('chem-btn-back-selection');
+  if (chemBtnBackSelection) {
+    chemBtnBackSelection.addEventListener('click', () => {
+      goBackToSelection();
+    });
+  }
+
   // Dock buttons click handlers
-  chemBtnIgnite.addEventListener('click', () => {
+  if (chemBtnIgnite) chemBtnIgnite.addEventListener('click', () => {
     if (chemistryViewer) {
       chemistryViewer.toggleBurner();
       chemBtnIgnite.classList.toggle('active', chemistryViewer.isBurnerLit);
@@ -1538,7 +1577,7 @@ function setupChemistryUI() {
     }
   });
 
-  chemBtnMix.addEventListener('click', () => {
+  if (chemBtnMix) chemBtnMix.addEventListener('click', () => {
     if (!chemistryViewer) return;
     if (isMixingActive) {
       resetMixingState();
@@ -1546,11 +1585,12 @@ function setupChemistryUI() {
       isMixingActive = true;
       mixSourceId = null;
       chemBtnMix.classList.add('active');
-      document.getElementById('chemistry-lab-desc').textContent = "Pha Trộn Đang Bật: Nhấp chọn dụng cụ chứa nguồn trên bàn 3D...";
+      const labDesc = document.getElementById('chemistry-lab-desc');
+      if (labDesc) labDesc.textContent = 'Pha Trộn Đang Bật: Nhấp chọn dụng cụ chứa nguồn trên bàn 3D...';
     }
   });
 
-  chemBtnReset.addEventListener('click', () => {
+  if (chemBtnReset) chemBtnReset.addEventListener('click', () => {
     if (chemistryViewer) {
       chemistryViewer.resetLaboratory();
       resetMixingState();
@@ -1559,12 +1599,15 @@ function setupChemistryUI() {
     }
   });
 
-  // Mặc định nạp sẵn Nước cất và Cốc mỏ vào giỏ hàng
+  // Mặc định nạp sẵn Nước cất và Cốc mỏ vào bộ thí nghiệm
   const defaultWater = chemistryCatalog.chemicals.find(c => c.id === 'h2o');
   const defaultBeaker = chemistryCatalog.tools.find(t => t.id === 'beaker');
   if (defaultWater) chemistryCart.push(defaultWater);
   if (defaultBeaker) chemistryCart.push(defaultBeaker);
   updateCartUI();
+  } catch (setupErr) {
+    console.error('[Chemistry] setupChemistryUI error:', setupErr);
+  }
 }
 
 function renderChemistryAlmanac() {
@@ -1649,13 +1692,17 @@ function selectAlmanacItem(item) {
 
   const isInCart = chemistryCart.some(i => i.id === item.id);
   if (isInCart) {
-    chemAddCartBtn.textContent = "Xóa khỏi giỏ hàng";
+    chemAddCartBtn.textContent = "✓ Đã thêm vào bộ TN";
     chemAddCartBtn.className = "chem-action-btn remove";
   } else {
-    chemAddCartBtn.textContent = "Thêm vào giỏ hàng";
+    chemAddCartBtn.textContent = "+ Thêm vào bộ thí nghiệm";
     chemAddCartBtn.className = "chem-action-btn primary";
   }
-}
+
+  // Store item ID on the button so the click handler can look up the item (no closure needed)
+  chemAddCartBtn.setAttribute('data-item-id', item.id);
+  chemAddCartBtn.onclick = null; // Clear any leftover onclick
+} // end selectAlmanacItem
 
 function addToCart(item) {
   if (item.category === 'Tool') {
@@ -1685,7 +1732,7 @@ function updateCartUI() {
   const hasChemical = chemistryCart.some(i => i.category === 'Chemical');
   
   if (count === 0) {
-    chemCartSummaryText.textContent = "Chưa chọn gì";
+    chemCartSummaryText.textContent = "Chưa chọn vật liệu nào";
   } else {
     chemCartSummaryText.textContent = `${count} vật liệu đã chọn`;
   }
@@ -1726,6 +1773,10 @@ function initializeWorkspace() {
   
   // Ẩn Almanac
   chemistryAlmanac.classList.add('hidden');
+
+  // Hide header and collapse header row height
+  if (headerCard) headerCard.classList.add('hidden');
+  if (uiOverlay) uiOverlay.classList.add('no-header');
   
   // Hiện HUD và Sidebar
   chemistrySidebar.classList.remove('hidden');
@@ -1746,20 +1797,48 @@ function initializeWorkspace() {
   initChemGraph();
 }
 
+function goBackToSelection() {
+  chemistryState = 'selection';
+  
+  // Show header and restore top grid row
+  if (headerCard) headerCard.classList.remove('hidden');
+  if (uiOverlay) uiOverlay.classList.remove('no-header');
+  
+  // Hide workspace UI
+  chemistrySidebar.classList.add('hidden');
+  chemistryControls.classList.add('hidden');
+  
+  // Show Almanac selector overlay
+  chemistryAlmanac.classList.remove('hidden');
+  
+  // Hide Three.js canvas
+  if (chemistryViewer && chemistryViewer.renderer) {
+    chemistryViewer.renderer.domElement.style.display = 'none';
+  }
+  
+  renderChemistryAlmanac();
+}
+
 function updateDockUI() {
   chemDockGrid.innerHTML = '';
   
+  // 1. Render các dụng cụ (Tools) được chọn
   const tools = chemistryCart.filter(i => i.category === 'Tool');
   tools.forEach(tool => {
     const item = document.createElement('div');
     const isSelected = chemistryViewer && chemistryViewer.selectedVesselId === tool.id;
-    item.className = `chem-dock-item ${isSelected ? 'active' : ''}`;
+    item.className = `chem-dock-item tool-item ${isSelected ? 'active' : ''}`;
     item.dataset.toolId = tool.id;
+    item.title = `${tool.name} (Dụng cụ)`;
     
-    // Icon đại diện hoặc chữ
+    // Kiểm tra xem dụng cụ có đang chứa hóa chất gì trong cảnh 3D không
+    const vessel = chemistryViewer && chemistryViewer.vessels[tool.id];
+    const chemInside = vessel && vessel.userData.chemical;
+    
     item.innerHTML = `
       <span class="chem-dock-item-sym">${tool.symbol}</span>
-      <span class="chem-dock-item-name">${tool.name}</span>
+      <span class="chem-dock-item-name" style="margin-top: 1px;">${tool.name}</span>
+      ${chemInside ? `<span style="font-size: 8px; font-weight: bold; padding: 1px 4px; border-radius: 4px; background: rgba(255,255,255,0.08); color: ${chemInside.color || '#a5f3fc'}; margin-top: 1px;">${chemInside.symbol}</span>` : ''}
     `;
     
     item.addEventListener('click', () => {
@@ -1774,13 +1853,60 @@ function updateDockUI() {
           });
           item.classList.add('active');
         }
+        updateMaterialsList(); // Đồng bộ trạng thái active của danh sách bên sidebar
       }
     });
     
     chemDockGrid.appendChild(item);
   });
   
-  // Thêm nút "+"
+  // 2. Thêm thanh chia nếu có cả dụng cụ và hóa chất
+  const chemicals = chemistryCart.filter(i => i.category === 'Chemical');
+  if (tools.length > 0 && chemicals.length > 0) {
+    const div = document.createElement('div');
+    div.className = 'chem-dock-divider';
+    chemDockGrid.appendChild(div);
+  }
+  
+  // 3. Render các hóa chất (Chemicals) được chọn để người dùng sử dụng
+  chemicals.forEach(chem => {
+    const item = document.createElement('div');
+    item.className = 'chem-dock-item chemical-item';
+    item.dataset.chemId = chem.id;
+    item.title = `${chem.name} (Nhấp để thêm vào dụng cụ đang chọn)`;
+    
+    item.innerHTML = `
+      <span class="chem-dock-item-sym" style="color: ${chem.color || '#fff'}">${chem.symbol}</span>
+      <span class="chem-dock-item-name">${chem.name}</span>
+    `;
+    
+    item.addEventListener('click', () => {
+      // Nếu có dụng cụ đang được chọn
+      if (chemistryViewer && chemistryViewer.selectedVesselId) {
+        const vesselId = chemistryViewer.selectedVesselId;
+        if (vesselId === 'burner') {
+          const labDesc = document.getElementById('chemistry-lab-desc');
+          if (labDesc) labDesc.textContent = "Không thể thêm hóa chất vào đèn cồn!";
+          return;
+        }
+        addChemicalToVessel(vesselId, chem);
+      } else {
+        const labDesc = document.getElementById('chemistry-lab-desc');
+        if (labDesc) labDesc.textContent = `Hãy chọn một dụng cụ (Cốc/Ống nghiệm/Bình tam giác) trước khi thêm ${chem.name}!`;
+      }
+    });
+    
+    chemDockGrid.appendChild(item);
+  });
+  
+  // 4. Thêm thanh chia trước nút "+"
+  if (chemicals.length > 0) {
+    const div = document.createElement('div');
+    div.className = 'chem-dock-divider';
+    chemDockGrid.appendChild(div);
+  }
+  
+  // 5. Thêm nút "+" để quay lại màn hình chọn vật chất
   const addBtn = document.createElement('div');
   addBtn.className = 'chem-dock-item add-btn';
   addBtn.title = 'Thêm dụng cụ hoặc hóa chất';
@@ -1798,6 +1924,76 @@ function updateDockUI() {
   });
   
   chemDockGrid.appendChild(addBtn);
+}
+
+// Hàm bổ sung hóa chất động vào dụng cụ đang được chọn trên bàn thí nghiệm
+function addChemicalToVessel(vesselId, chemical) {
+  if (!chemistryViewer) return;
+  const vessel = chemistryViewer.vessels[vesselId];
+  if (!vessel) return;
+
+  // Cập nhật thông tin hóa chất
+  vessel.userData.chemical = { ...chemical };
+  
+  // Thiết lập nhiệt độ và pH cơ bản của hóa chất đó
+  vessel.userData.temp = 298.15;
+  vessel.userData.hasPhenol = (chemical.id === 'phenol');
+  
+  const pHMap = {
+    hcl: 1.0,
+    naoh: 14.0,
+    cuso4: 4.0,
+    na2co3: 11.5,
+    h2o: 7.0,
+    phenol: 7.0,
+    zn: 7.0
+  };
+  vessel.userData.pH = pHMap[chemical.id] || 7.0;
+
+  // Cập nhật lại màu sắc dung dịch trong mô hình 3D
+  let liq = vessel.getObjectByName('liquid');
+  if (!liq) {
+    let radTop = vesselId === 'beaker' ? 0.175 : vesselId === 'flask' ? 0.15 : 0.046;
+    let radBot = vesselId === 'beaker' ? 0.175 : vesselId === 'flask' ? 0.20 : 0.046;
+    let height = vesselId === 'testtube' ? 0.22 : 0.24;
+    const liquidGeo = new THREE.CylinderGeometry(radTop, radBot, height, 24);
+    const liquidMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(chemical.color),
+      roughness: 0.1,
+      transparent: true,
+      opacity: chemical.id === 'phenol' ? 0.2 : 0.8
+    });
+    liq = new THREE.Mesh(liquidGeo, liquidMat);
+    liq.name = 'liquid';
+    liq.position.y = vesselId === 'beaker' ? 0.13 : vesselId === 'flask' ? 0.125 : 0.11;
+    vessel.add(liq);
+  } else {
+    liq.material.color.setHex(parseInt(chemical.color.replace('#', '0x')));
+    liq.material.opacity = chemical.id === 'phenol' ? 0.2 : 0.8;
+    liq.visible = true;
+  }
+
+  // Tắt phản ứng và reset các bọt khí/kết tủa cũ
+  chemistryViewer.activeReaction = null;
+  chemistryViewer.reactionRate = 0.0;
+  
+  const particles = [];
+  vessel.traverse(child => {
+    if (child.name === 'bubbles' || child.name === 'precipitate_particles') {
+      particles.push(child);
+    }
+  });
+  particles.forEach(p => vessel.remove(p));
+
+  // Cập nhật lại toàn bộ thông tin hiển thị trên HUD
+  updateMaterialsList();
+  updateDockUI();
+  chemistryViewer.updateTelemetry();
+  
+  const labDesc = document.getElementById('chemistry-lab-desc');
+  if (labDesc) {
+    labDesc.textContent = `Đã bổ sung ${chemical.name} vào ${vessel.userData.title}.`;
+  }
 }
 
 function updateMaterialsList() {
@@ -2010,3 +2206,48 @@ function drawChemGraph() {
 
 // Boot application
 window.addEventListener('DOMContentLoaded', init);
+
+function setupCollapsibleSidebars() {
+  const sidebars = document.querySelectorAll('.sidebar-card');
+  sidebars.forEach(sidebar => {
+    if (sidebar.querySelector('.sidebar-toggle-btn')) return;
+
+    // 1. Tạo scroll wrapper và chuyển toàn bộ con hiện tại vào đó (trừ khi đã có)
+    let scrollWrapper = sidebar.querySelector('.sidebar-scroll-wrapper');
+    if (!scrollWrapper) {
+      scrollWrapper = document.createElement('div');
+      scrollWrapper.className = 'sidebar-scroll-wrapper';
+      
+      // Di chuyển các phần tử con hiện tại vào scroll wrapper
+      while (sidebar.firstChild) {
+        scrollWrapper.appendChild(sidebar.firstChild);
+      }
+      sidebar.appendChild(scrollWrapper);
+    }
+
+    // 2. Tạo nút toggle
+    const toggleBtn = document.createElement('div');
+    toggleBtn.className = 'sidebar-toggle-btn';
+    toggleBtn.innerHTML = `
+      <svg class="toggle-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    `;
+    toggleBtn.title = "Thu gọn / Mở rộng bảng";
+    
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      
+      const polyline = toggleBtn.querySelector('polyline');
+      if (isCollapsed) {
+        polyline.setAttribute('points', '15 18 9 12 15 6'); // Mũi tên trái (Mở rộng)
+      } else {
+        polyline.setAttribute('points', '9 18 15 12 9 6'); // Mũi tên phải (Thu gọn)
+      }
+    });
+    
+    // Thêm nút toggle trực tiếp vào sidebar (bên ngoài scroll wrapper để không bị cuộn hay clip)
+    sidebar.appendChild(toggleBtn);
+  });
+}
