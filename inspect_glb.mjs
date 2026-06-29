@@ -9,7 +9,7 @@ global.document = dom.window.document;
 global.window = dom.window;
 
 // Read GLB as ArrayBuffer
-const buffer = readFileSync('./vhm_skull_0-custom.glb');
+const buffer = readFileSync('./trung_giay.glb');
 const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
 
 const loader = new GLTFLoader();
