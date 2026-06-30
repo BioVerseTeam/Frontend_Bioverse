@@ -2101,3 +2101,175 @@ textarea.tripo-input {
   transform: scale(1.15);
 }
 
+/* ============================================================
+   VESSEL PICKER MODAL
+   ============================================================ */
+.vessel-picker-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.25s ease;
+}
+
+.vessel-picker-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+}
+
+.vessel-picker-card {
+  background: linear-gradient(145deg, #1a1530, #12101f);
+  border: 1px solid rgba(100, 120, 255, 0.2);
+  border-radius: 16px;
+  padding: 28px 32px;
+  min-width: 380px;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(80, 100, 255, 0.08);
+}
+
+.vessel-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.vessel-picker-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.vessel-picker-close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.vessel-picker-close-btn:hover {
+  color: #fff;
+}
+
+.vessel-picker-subtitle {
+  font-size: 14px;
+  color: var(--accent-blue);
+  margin: 0 0 20px 0;
+  font-weight: 500;
+}
+
+.vessel-picker-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.vessel-picker-option {
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.vessel-picker-option:hover {
+  background: rgba(100, 120, 255, 0.1);
+  border-color: rgba(100, 120, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.vessel-picker-option.selected {
+  background: rgba(100, 120, 255, 0.15);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(100, 120, 255, 0.2);
+}
+
+.vessel-picker-option.in-cart {
+  border-color: var(--accent-green);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.vessel-picker-option-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.vessel-picker-option-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ddd;
+}
+
+.vessel-picker-option-sub {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.vessel-picker-hint {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+  text-align: center;
+}
+
+.vessel-picker-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.vessel-picker-confirm-btn {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--accent-blue);
+  color: #fff;
+}
+
+.vessel-picker-confirm-btn:hover {
+  background: #5b7fff;
+  transform: translateY(-1px);
+}
+
+.vessel-picker-confirm-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.vessel-picker-cancel-btn {
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  color: #aaa;
+}
+
+.vessel-picker-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
