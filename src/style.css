@@ -757,6 +757,7 @@ input:checked + .slider-switch:before {
   bottom: 140px;
   left: 24px;
   width: 420px;
+  max-width: calc(100vw - 32px);
   max-height: 60vh;
   overflow-y: auto;
   z-index: 20;
