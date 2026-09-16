@@ -427,32 +427,52 @@ function selectSkullRegion(region, screenPos) {
   updateBoneListHighlight(region.id);
 }
 
-// Đặt popup ở PHÍA TRỐNG đối diện với điểm nhấn để không che mất hộp sọ.
-// Bấm nửa trái màn hình -> popup nằm bên phải; bấm nửa phải -> popup bên trái.
+// Đặt popup ở PHÍA TRỐNG đối diện với điểm nhấn để không che mất model 3D.
 function positionPopupAt(screenPos) {
-  const margin = 24;
-  const rect = skullInfoPopup.getBoundingClientRect();
-  const popW = rect.width || 420;
-  const popH = rect.height || 360;
+  const margin = 16;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+
+  // Tạm show popup để đo kích thước thật
+  skullInfoPopup.classList.remove('hidden');
+  skullInfoPopup.style.left = '-9999px';
+  skullInfoPopup.style.top = '0';
+  skullInfoPopup.style.right = 'auto';
+  skullInfoPopup.style.bottom = 'auto';
+  
+  const rect = skullInfoPopup.getBoundingClientRect();
+  const popW = Math.min(rect.width || 420, vw - margin * 2);
+  const popH = Math.min(rect.height || 360, vh - margin * 2);
 
   // Không có vị trí (chọn từ sidebar) -> mặc định góc dưới-trái
   if (!screenPos) {
     skullInfoPopup.style.left = `${margin}px`;
-    skullInfoPopup.style.right = 'auto';
     skullInfoPopup.style.top = 'auto';
-    skullInfoPopup.style.bottom = '140px';
+    skullInfoPopup.style.bottom = `${margin + 120}px`;
     return;
   }
 
-  // Đặt sang nửa đối diện với chỗ bấm theo chiều ngang
+  // Theo chiều ngang: đặt bên đối diện với điểm bấm
+  let left;
   const clickedLeftHalf = screenPos.x < vw / 2;
-  const left = clickedLeftHalf ? vw - popW - margin : margin;
+  if (clickedLeftHalf) {
+    // Bấm trái -> popup bên phải
+    left = vw - popW - margin;
+  } else {
+    // Bấm phải -> popup bên trái
+    left = margin;
+  }
+  // Clamp: không cho tràn ra ngoài
+  left = Math.max(margin, Math.min(left, vw - popW - margin));
 
-  // Căn dọc gần ngang tầm điểm bấm nhưng luôn kẹp trong khung nhìn
+  // Theo chiều dọc: gần ngang tầm điểm bấm, nhưng luôn trong khung nhìn
   let top = screenPos.y - popH / 2;
   top = Math.max(margin, Math.min(top, vh - popH - margin));
+
+  // Nếu popup quá cao, ưu tiên đặt từ trên xuống
+  if (popH > vh * 0.7) {
+    top = margin;
+  }
 
   skullInfoPopup.style.left = `${left}px`;
   skullInfoPopup.style.top = `${top}px`;
