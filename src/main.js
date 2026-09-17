@@ -273,9 +273,18 @@ function switchMode(mode) {
   if (parameciumControls) parameciumControls.classList.add('hidden');
   if (chemistrySidebar) chemistrySidebar.classList.add('hidden');
   if (chemistryControls) chemistryControls.classList.add('hidden');
-  if (chemistryAlmanac) chemistryAlmanac.classList.add('hidden');
   if (organsSidebar) organsSidebar.classList.add('hidden');
   if (organsControls) organsControls.classList.add('hidden');
+
+  // Reset nút âm thanh tim về TẮT khi rời tab
+  const organsSoundBtn = document.getElementById('organs-sound-btn');
+  if (organsSoundBtn) {
+    organsSoundBtn.classList.remove('active');
+    const soundIcon = document.getElementById('organs-sound-icon');
+    const soundLabel = document.getElementById('organs-sound-label');
+    if (soundIcon) soundIcon.textContent = '🔇';
+    if (soundLabel) soundLabel.textContent = 'Âm thanh: TẮT';
+  }
 
   const labels = labelsContainer;
   const hud = document.getElementById('hud-overlay');
@@ -726,6 +735,41 @@ function setupOrgansUI() {
       heartbeatBtn.innerHTML = organsViewer.heartbeatEnabled
         ? '<span class="heartbeat-icon">❤️</span> Mô phỏng nhịp đập: BẬT'
         : '<span class="heartbeat-icon">🤍</span> Mô phỏng nhịp đập: TẮT';
+
+      // Nếu tắt nhịp đập thì âm thanh cũng phải tắt ngay lập tức
+      if (!organsViewer.heartbeatEnabled) {
+        organsViewer.setSoundEnabled(false);
+        const soundBtn = document.getElementById('organs-sound-btn');
+        if (soundBtn) {
+          soundBtn.classList.remove('active');
+          const soundIcon = document.getElementById('organs-sound-icon');
+          const soundLabel = document.getElementById('organs-sound-label');
+          if (soundIcon) soundIcon.textContent = '🔇';
+          if (soundLabel) soundLabel.textContent = 'Âm thanh: TẮT';
+        }
+      }
+    });
+  }
+
+  // Toggle Heartbeat Audio (Web Audio API Synthesizer)
+  const soundBtn = document.getElementById('organs-sound-btn');
+  const soundIcon = document.getElementById('organs-sound-icon');
+  const soundLabel = document.getElementById('organs-sound-label');
+  if (soundBtn) {
+    soundBtn.addEventListener('click', () => {
+      if (!organsViewer) return;
+      // Nếu heartbeat animation đang tắt, bật lại để nhịp đập và âm thanh đồng bộ
+      if (!organsViewer.heartbeatEnabled && !organsViewer.soundEnabled) {
+        organsViewer.heartbeatEnabled = true;
+        if (heartbeatBtn) {
+          heartbeatBtn.classList.add('active');
+          heartbeatBtn.innerHTML = '<span class="heartbeat-icon">❤️</span> Mô phỏng nhịp đập: BẬT';
+        }
+      }
+      const isSoundOn = organsViewer.toggleSound();
+      soundBtn.classList.toggle('active', isSoundOn);
+      if (soundIcon) soundIcon.textContent = isSoundOn ? '🔊' : '🔇';
+      if (soundLabel) soundLabel.textContent = isSoundOn ? 'Âm thanh: BẬT' : 'Âm thanh: TẮT';
     });
   }
 
@@ -835,6 +879,17 @@ function selectOrganStructure(structure, screenPos) {
       typeBadge.classList.remove('hidden');
     } else {
       typeBadge.classList.add('hidden');
+    }
+  }
+
+  // Hiển thị ghi chú sư phạm đặc thù cho cấu trúc bên trong (Van tim)
+  const eduNote = document.getElementById('organs-info-edu-note');
+  if (eduNote) {
+    if (structure.anatomy?.educationalNote) {
+      eduNote.textContent = '💡 ' + structure.anatomy.educationalNote;
+      eduNote.classList.remove('hidden');
+    } else {
+      eduNote.classList.add('hidden');
     }
   }
 

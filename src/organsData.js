@@ -133,6 +133,7 @@ export const HEART_STRUCTURES = [
     anatomy: {
       type: 'internal',
       note: 'Cấu trúc bên trong tim',
+      educationalNote: 'Mô hình hiện tại thể hiện chủ yếu cấu trúc ngoài của tim. Van tim là cấu trúc bên trong.',
     },
     structure:
       'Hệ thống van tim nằm bên trong các buồng tim: Gồm van nhĩ - thất (van 3 lá ở tim phải, van 2 lá ở tim trái) ngăn giữa nhĩ và thất; Van động mạch (van tổ chim) nằm ở gốc động mạch chủ và gốc động mạch phổi. Điểm ghim trên bề mặt 3D đóng vai trò dẫn nhập định vị vị trí van.',
@@ -211,4 +212,25 @@ export const HEART_CYCLE_INFO = {
 export function getHeartStructure(id) {
   return HEART_STRUCTURES.find((s) => s.id === id) || null;
 }
+
+/**
+ * Cấu hình tính năng & dữ liệu cho từng cơ quan (Organ Capabilities)
+ * Sẵn sàng mở rộng cho phổi, dạ dày, não... trong tương lai
+ */
+export const ORGAN_CONFIGS = {
+  heart: {
+    id: 'heart',
+    name: 'Trái tim người',
+    modelKey: 'human_heart',
+    features: {
+      heartbeat: true,
+      heartbeatAudio: true,
+      particles: true,
+      xray: false, // Tạm hoãn do mô hình hiện tại là hollow shell
+    },
+    structures: HEART_STRUCTURES,
+    cameraPresets: HEART_CAMERA_PRESETS,
+    cycleInfo: HEART_CYCLE_INFO,
+  },
+};
 

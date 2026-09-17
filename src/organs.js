@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { HEART_STRUCTURES, HEART_CAMERA_PRESETS, getHeartStructure } from './organsData.js';
+import { ORGAN_CONFIGS, getHeartStructure } from './organsData.js';
 import { MODEL_URLS } from './modelUrls.js';
 
 /**
@@ -15,6 +15,7 @@ import { MODEL_URLS } from './modelUrls.js';
  * Layer 3: Safe Surface Hover (Bắt va chạm bề mặt trong hoverRadius, loại trừ van tim)
  * Layer 4: Sidebar <-> 3D Bi-directional Synchronization
  * Occlusion: Camera-to-hotspot raycasting chống hiện tượng marker xuyên tim
+ * Capabilities: Bio-Particles + Web Audio Heartbeat (Single Cardiac Clock)
  */
 export class OrgansViewer {
   constructor(containerId) {
@@ -34,9 +35,10 @@ export class OrgansViewer {
     this.modelGroup = null;
     this.heartMesh = null;
 
-    // Hotspot & Interaction data
-    this.currentStructures = HEART_STRUCTURES;
-    this.currentPresets = HEART_CAMERA_PRESETS;
+    // Organ configuration & capabilities
+    this.organConfig = ORGAN_CONFIGS.heart;
+    this.currentStructures = this.organConfig.structures;
+    this.currentPresets = this.organConfig.cameraPresets;
     this.hotspotGroups = []; // Array of hotspot objects
     this.hotspotRaycastMeshes = []; // Direct hitbox meshes
     this.selectedStructureId = null;
@@ -45,6 +47,15 @@ export class OrgansViewer {
     this.isActive = false;
     this.labelsVisible = true;
     this.heartbeatEnabled = true;
+
+    // Web Audio Synthesizer state (Single Cardiac Clock)
+    this.soundEnabled = false;
+    this.audioCtx = null;
+    this.masterGain = null;
+    this.activeAudioNodes = [];
+    this.lastS1Cycle = -1;
+    this.lastS2Cycle = -1;
+    this.lastFrameTime = performance.now() * 0.001;
 
     // Callbacks
     this.onRegionClick = null; // callback(structure | null, screenPos)
@@ -341,22 +352,43 @@ export class OrgansViewer {
   }
 
   _createBackgroundParticles() {
-    const count = 280;
+    if (!this.organConfig?.features?.particles) return;
+
+    const count = 180;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
 
-    for (let i = 0; i < count * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 6;
-      positions[i + 1] = (Math.random() - 0.5) * 6;
-      positions[i + 2] = (Math.random() - 0.5) * 6;
+    const rubyColor = new THREE.Color(0xef4444);
+    const cyanColor = new THREE.Color(0x06b6d4);
+
+    for (let i = 0; i < count; i++) {
+      // Phân bố hình cầu quanh mô hình (bán kính từ 1.2 đến 4.2 để không che quả tim)
+      const radius = 1.2 + Math.random() * 3.0;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos((Math.random() * 2) - 1);
+
+      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3 + 2] = radius * Math.cos(phi);
+
+      // 55% hạt đỏ ruby dịu, 45% xanh cyan điện nhẹ
+      const col = Math.random() < 0.55 ? rubyColor : cyanColor;
+      colors[i * 3] = col.r;
+      colors[i * 3 + 1] = col.g;
+      colors[i * 3 + 2] = col.b;
     }
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
     const material = new THREE.PointsMaterial({
-      color: 0xef4444,
-      size: 0.008,
+      size: 0.012,
+      vertexColors: true,
       transparent: true,
       opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
 
     this.bgParticles = new THREE.Points(geometry, material);
@@ -694,41 +726,65 @@ export class OrgansViewer {
     return this.labelsVisible;
   }
 
-  // ---------- Animation Loop ----------
+  // ---------- Animation Loop & Single Cardiac Clock ----------
 
   _animate() {
     this._animFrameId = requestAnimationFrame(this._animate.bind(this));
     if (!this.isActive) return;
 
-    const time = performance.now() * 0.001;
+    const now = performance.now() * 0.001;
+    const deltaSeconds = Math.min(now - this.lastFrameTime, 0.1);
+    this.lastFrameTime = now;
 
     try {
-      // 1. Nhịp đập tim mô phỏng (Cardiac Cycle 75 BPM: 0.8s)
-      if (this.heartbeatEnabled && this.modelGroup) {
-        const tCycle = (time % 0.8) / 0.8;
+      // 1. Chuẩn hóa Single Cardiac Clock (75 BPM = 0.8s chu kỳ)
+      const CARDIAC_CYCLE = 0.8;
+      const cycleIndex = Math.floor(now / CARDIAC_CYCLE);
+      const phase = (now % CARDIAC_CYCLE) / CARDIAC_CYCLE;
+
+      // Diễn hoạt co bóp nhịp tim (Dùng chung cardiac phase)
+      if (this.heartbeatEnabled && this.organConfig?.features?.heartbeat && this.modelGroup) {
         let beatScale = 1.0;
-        if (tCycle < 0.12) {
-          beatScale = 1.0 + Math.sin((tCycle / 0.12) * Math.PI) * 0.025;
-        } else if (tCycle >= 0.18 && tCycle < 0.35) {
-          beatScale = 1.0 + Math.sin(((tCycle - 0.18) / 0.17) * Math.PI) * 0.04;
+        if (phase < 0.12) {
+          beatScale = 1.0 + Math.sin((phase / 0.12) * Math.PI) * 0.025;
+        } else if (phase >= 0.18 && phase < 0.35) {
+          beatScale = 1.0 + Math.sin(((phase - 0.18) / 0.17) * Math.PI) * 0.04;
         }
         this.modelGroup.scale.set(beatScale, beatScale * 1.02, beatScale);
+      }
+
+      // Âm thanh nhịp tim Web Audio S1 / S2 đồng bộ cùng 1 nguồn thời gian nhịp đập
+      if (this.soundEnabled && this.heartbeatEnabled && this.organConfig?.features?.heartbeatAudio) {
+        // S1 (Lubb): Đầu pha co thất (phase < 0.15), đóng van nhĩ - thất
+        if (phase < 0.15) {
+          if (cycleIndex !== this.lastS1Cycle) {
+            this.lastS1Cycle = cycleIndex;
+            this._playS1Lubb();
+          }
+        }
+        // S2 (Dubb): Đầu pha dãn chung (phase 0.35 -> 0.52), đóng van tổ chim
+        else if (phase >= 0.35 && phase < 0.52) {
+          if (cycleIndex !== this.lastS2Cycle) {
+            this.lastS2Cycle = cycleIndex;
+            this._playS2Dubb();
+          }
+        }
       }
 
       // 2. Diễn hoạt vòng Hotspots nhấp nháy hướng về camera
       this.hotspotGroups.forEach((h) => {
         h.ring.quaternion.copy(this.camera.quaternion);
-        const pulse = 0.7 + Math.sin(time * 3.5 + h.data.number) * 0.3;
+        const pulse = 0.7 + Math.sin(now * 3.5 + h.data.number) * 0.3;
         h.ring.material.opacity = (h.isOccluded ? 0.2 : 0.75) * pulse;
       });
 
       // 3. Cập nhật nhãn HUD Badges & Occlusion
       this._updateHUDLabels();
 
-      // 4. Background particles drift
+      // 4. Background particles drift (Frame-rate independent qua deltaSeconds)
       if (this.bgParticles) {
-        this.bgParticles.rotation.y += 0.0003;
-        this.bgParticles.rotation.x += 0.00015;
+        this.bgParticles.rotation.y += 0.016 * deltaSeconds;
+        this.bgParticles.rotation.x += 0.008 * deltaSeconds;
       }
 
       this.controls.update();
@@ -736,6 +792,135 @@ export class OrgansViewer {
     } catch (err) {
       console.error('[OrgansViewer] Render error:', err);
     }
+  }
+
+  // ---------- Web Audio Synthesizer (Single Cardiac Clock) ----------
+
+  _initAudio() {
+    if (!this.audioCtx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return false;
+      this.audioCtx = new AudioCtx();
+      this.masterGain = this.audioCtx.createGain();
+      this.masterGain.gain.setValueAtTime(0.35, this.audioCtx.currentTime); // Âm lượng êm ái, dễ chịu
+      this.masterGain.connect(this.audioCtx.destination);
+    }
+    if (this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
+    }
+    return true;
+  }
+
+  _trackAudioNode(node) {
+    this.activeAudioNodes.push(node);
+    node.onended = () => {
+      const idx = this.activeAudioNodes.indexOf(node);
+      if (idx !== -1) this.activeAudioNodes.splice(idx, 1);
+    };
+  }
+
+  _playS1Lubb() {
+    if (!this.audioCtx || this.audioCtx.state !== 'running') return;
+    try {
+      const t = this.audioCtx.currentTime;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      const filter = this.audioCtx.createBiquadFilter();
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(130, t);
+      filter.Q.setValueAtTime(2.0, t);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(75, t);
+      osc.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+
+      // Đường cong mượt tránh click/pop
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.5, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(t);
+      osc.stop(t + 0.15);
+      this._trackAudioNode(osc);
+    } catch (_) {}
+  }
+
+  _playS2Dubb() {
+    if (!this.audioCtx || this.audioCtx.state !== 'running') return;
+    try {
+      const t = this.audioCtx.currentTime;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      const filter = this.audioCtx.createBiquadFilter();
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(170, t);
+      filter.Q.setValueAtTime(1.5, t);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(110, t);
+      osc.frequency.exponentialRampToValueAtTime(75, t + 0.08);
+
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.35, t + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(t);
+      osc.stop(t + 0.1);
+      this._trackAudioNode(osc);
+    } catch (_) {}
+  }
+
+  _stopAllAudio() {
+    if (this.masterGain && this.audioCtx) {
+      try {
+        const t = this.audioCtx.currentTime;
+        this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
+        this.masterGain.gain.linearRampToValueAtTime(0.0001, t + 0.02);
+      } catch (_) {}
+    }
+    this.activeAudioNodes.forEach((node) => {
+      try {
+        node.stop();
+        node.disconnect();
+      } catch (_) {}
+    });
+    this.activeAudioNodes = [];
+  }
+
+  setSoundEnabled(enabled) {
+    if (enabled) {
+      if (!this.organConfig?.features?.heartbeatAudio) return false;
+      this._initAudio();
+      if (this.masterGain && this.audioCtx) {
+        this.masterGain.gain.setValueAtTime(0.35, this.audioCtx.currentTime);
+      }
+      // Không phát bù các event đã trôi qua trong chu kỳ hiện tại
+      const now = performance.now() * 0.001;
+      const cycleIndex = Math.floor(now / 0.8);
+      const phase = (now % 0.8) / 0.8;
+      if (phase > 0.05) this.lastS1Cycle = cycleIndex;
+      if (phase > 0.38) this.lastS2Cycle = cycleIndex;
+
+      this.soundEnabled = true;
+    } else {
+      this.soundEnabled = false;
+      this._stopAllAudio();
+    }
+    return this.soundEnabled;
+  }
+
+  toggleSound() {
+    return this.setSoundEnabled(!this.soundEnabled);
   }
 
   _handleResize() {
@@ -761,6 +946,11 @@ export class OrgansViewer {
 
   deactivate() {
     this.isActive = false;
+    // Dừng âm thanh ngay lập tức, không cho phép rò rỉ sang tab khác
+    this.setSoundEnabled(false);
+    this.lastS1Cycle = -1;
+    this.lastS2Cycle = -1;
+
     if (this.renderer?.domElement) {
       this.renderer.domElement.style.display = 'none';
       this.container.style.cursor = 'default';
@@ -790,6 +980,14 @@ export class OrgansViewer {
   destroy() {
     this.deactivate();
     cancelAnimationFrame(this._animFrameId);
+    this._stopAllAudio();
+    if (this.audioCtx) {
+      try {
+        this.audioCtx.close();
+      } catch (_) {}
+      this.audioCtx = null;
+    }
+
     this.container.removeEventListener('mousemove', this._onMouseMove);
     this.container.removeEventListener('mousedown', this._onMouseDown);
     this.container.removeEventListener('mouseup', this._onMouseUp);

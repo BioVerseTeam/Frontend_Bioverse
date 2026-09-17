@@ -2400,3 +2400,16 @@ textarea.tripo-input {
   transform: translateX(6px);
 }
 
+/* Educational disclaimer note for internal structure */
+.organs-info-edu-note {
+  margin-top: 6px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #fde047;
+  line-height: 1.45;
+}
+
