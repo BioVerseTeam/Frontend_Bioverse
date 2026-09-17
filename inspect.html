@@ -1,73 +1,630 @@
 <!DOCTYPE html>
-<html>
-<head><title>GLB Inspector</title></head>
-<body>
-<pre id="output" style="font-size:14px; padding:20px; background:#111; color:#0f0;">Loading GLB...</pre>
-<script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioVerse - GLB 3D Inspector</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --accent-blue: #3b82f6;
+      --error: #ef4444;
+      --code-bg: #030712;
+    }
 
-const loader = new GLTFLoader();
-loader.load('/vhm_skull_0-custom.glb', (gltf) => {
-  let output = '=== GLB Scene Hierarchy ===\n\n';
-  
-  function traverse(obj, depth = 0) {
-    const indent = '  '.repeat(depth);
-    const type = obj.type;
-    const meshInfo = obj.isMesh ? ` [Mesh: vertices=${obj.geometry?.attributes?.position?.count || '?'}]` : '';
-    const matInfo = obj.material ? ` (material: ${obj.material.name || 'unnamed'})` : '';
-    output += `${indent}- ${obj.name || '(unnamed)'} (${type})${meshInfo}${matInfo}\n`;
-    
-    if (obj.children) {
-      obj.children.forEach(child => traverse(child, depth + 1));
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-  }
-  
-  traverse(gltf.scene);
-  
-  output += '\n=== All Mesh Names ===\n';
-  gltf.scene.traverse((obj) => {
-    if (obj.isMesh) {
-      output += `  Mesh: "${obj.name}" | Material: "${obj.material?.name || 'unnamed'}" | Vertices: ${obj.geometry?.attributes?.position?.count || '?'}\n`;
-      
-      // Compute bounding box
-      obj.geometry.computeBoundingBox();
-      const bb = obj.geometry.boundingBox;
-      output += `  BoundingBox: min(${bb.min.x.toFixed(3)}, ${bb.min.y.toFixed(3)}, ${bb.min.z.toFixed(3)}) max(${bb.max.x.toFixed(3)}, ${bb.max.y.toFixed(3)}, ${bb.max.z.toFixed(3)})\n`;
-      
-      // Center
-      const center = new THREE.Vector3();
-      bb.getCenter(center);
-      output += `  Center: (${center.x.toFixed(3)}, ${center.y.toFixed(3)}, ${center.z.toFixed(3)})\n`;
-      
-      // Size
-      const size = new THREE.Vector3();
-      bb.getSize(size);
-      output += `  Size: (${size.x.toFixed(3)}, ${size.y.toFixed(3)}, ${size.z.toFixed(3)})\n`;
-      
-      // World matrix
-      obj.updateWorldMatrix(true, false);
-      const worldPos = new THREE.Vector3();
-      obj.getWorldPosition(worldPos);
-      output += `  WorldPosition: (${worldPos.x.toFixed(3)}, ${worldPos.y.toFixed(3)}, ${worldPos.z.toFixed(3)})\n`;
-      
-      const worldScale = new THREE.Vector3();
-      obj.getWorldScale(worldScale);
-      output += `  WorldScale: (${worldScale.x.toFixed(3)}, ${worldScale.y.toFixed(3)}, ${worldScale.z.toFixed(3)})\n`;
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-  });
-  
-  // Also check the scene's overall transform
-  output += '\n=== Scene Transform ===\n';
-  output += `  Position: (${gltf.scene.position.x.toFixed(3)}, ${gltf.scene.position.y.toFixed(3)}, ${gltf.scene.position.z.toFixed(3)})\n`;
-  output += `  Rotation: (${gltf.scene.rotation.x.toFixed(3)}, ${gltf.scene.rotation.y.toFixed(3)}, ${gltf.scene.rotation.z.toFixed(3)})\n`;
-  output += `  Scale: (${gltf.scene.scale.x.toFixed(3)}, ${gltf.scene.scale.y.toFixed(3)}, ${gltf.scene.scale.z.toFixed(3)})\n`;
-  
-  document.getElementById('output').textContent = output;
-  console.log(output);
-}, undefined, (error) => {
-  document.getElementById('output').textContent = 'Error: ' + error.message;
-});
-</script>
+
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .brand span {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+    }
+
+    .toolbar {
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .btn {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      border-color: #374151;
+      background: #1f2937;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    select, input[type="text"] {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="text"] {
+      min-width: 260px;
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    .main-container {
+      flex: 1;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .drop-zone {
+      border: 2px dashed #374151;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(17, 24, 39, 0.4);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 8px;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .output-container {
+      position: relative;
+      flex: 1;
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .output-title {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    pre#output {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #34d399;
+      overflow-x: auto;
+      white-space: pre;
+      max-height: calc(100vh - 360px);
+      min-height: 350px;
+    }
+
+    pre#output.error {
+      color: var(--error);
+    }
+
+    .search-box {
+      margin-bottom: 8px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>BioVerse 3D Model Inspector</h1>
+      <span>GLTF / GLB Diagnostics</span>
+    </div>
+    <div class="nav-links">
+      <a href="/index.html">← Quay lại trang mô phỏng BioVerse</a>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <!-- Chọn File máy tính -->
+    <div class="tool-group">
+      <label class="label">Tệp cục bộ:</label>
+      <input type="file" id="file-input" accept=".glb,.gltf">
+      <button class="btn btn-primary" id="btn-upload">
+        📂 Chọn File .glb từ máy tính
+      </button>
+    </div>
+
+    <div style="color: #374151;">|</div>
+
+    <!-- Chọn Model R2 có sẵn -->
+    <div class="tool-group">
+      <label class="label">Mẫu từ R2 CDN:</label>
+      <select id="preset-select">
+        <option value="">-- Chọn mô hình có sẵn --</option>
+        <option value="skull">Hộp sọ (skull.glb)</option>
+        <option value="trung_giay">Trùng giày (trung_giay.glb)</option>
+        <option value="beaker">Cốc thí nghiệm (beaker.glb)</option>
+        <option value="lab_flask">Bình tam giác (lab_flask.glb)</option>
+        <option value="glass_test_tube">Ống nghiệm (glass_test_tube.glb)</option>
+        <option value="phenol_bottle">Chai Phenol (phenol_bottle.glb)</option>
+        <option value="mitosis_stages">Kỳ phân bào (mitosis_stages.glb)</option>
+      </select>
+    </div>
+
+    <div style="color: #374151;">|</div>
+
+    <!-- Nhập link URL -->
+    <div class="tool-group" style="flex: 1; min-width: 300px;">
+      <input type="text" id="url-input" placeholder="Hoặc dán URL .glb trực tiếp tại đây..." style="flex: 1;">
+      <button class="btn" id="btn-load-url">Kiểm tra URL</button>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <!-- Drag & Drop Zone -->
+    <div class="drop-zone" id="drop-zone">
+      <p>📥 Kéo thả file <strong>.glb</strong> hoặc <strong>.gltf</strong> trực tiếp vào đây để phân tích ngay</p>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    <div class="stats-bar" id="stats-bar" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-label">Số lượng Meshes</div>
+        <div class="stat-value" id="stat-meshes">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tổng số Đỉnh (Vertices)</div>
+        <div class="stat-value" id="stat-vertices">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Kích thước Hộp bao (Size)</div>
+        <div class="stat-value" id="stat-size">0 x 0 x 0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Trọng tâm (Center Offset)</div>
+        <div class="stat-value" id="stat-center">0, 0, 0</div>
+      </div>
+    </div>
+
+    <!-- Output log -->
+    <div class="output-container">
+      <div class="output-header">
+        <span class="output-title" id="output-status">Trạng thái: Đang sẵn sàng</span>
+        <button class="btn" id="btn-copy" style="padding: 4px 10px; font-size: 0.8rem;">📋 Sao chép kết quả</button>
+      </div>
+      <div class="search-box" id="search-container" style="display: none;">
+        <input type="text" id="search-input" placeholder="🔍 Lọc tìm kiếm tên Mesh / Material...">
+      </div>
+      <pre id="output">Hãy chọn một file .glb từ máy tính hoặc chọn mô hình mẫu từ thanh công cụ bên trên để bắt đầu phân tích cấu trúc 3D.</pre>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { MODEL_URLS, modelUrl } from '/src/modelUrls.js';
+
+    const outputEl = document.getElementById('output');
+    const outputStatus = document.getElementById('output-status');
+    const statsBar = document.getElementById('stats-bar');
+    const statMeshes = document.getElementById('stat-meshes');
+    const statVertices = document.getElementById('stat-vertices');
+    const statSize = document.getElementById('stat-size');
+    const statCenter = document.getElementById('stat-center');
+    const searchContainer = document.getElementById('search-container');
+    const searchInput = document.getElementById('search-input');
+
+    const fileInput = document.getElementById('file-input');
+    const btnUpload = document.getElementById('btn-upload');
+    const dropZone = document.getElementById('drop-zone');
+    const presetSelect = document.getElementById('preset-select');
+    const urlInput = document.getElementById('url-input');
+    const btnLoadUrl = document.getElementById('btn-load-url');
+    const btnCopy = document.getElementById('btn-copy');
+
+    let fullReport = '';
+    const loader = new GLTFLoader();
+
+    function setStatus(text, isError = false) {
+      outputStatus.textContent = `Trạng thái: ${text}`;
+      outputStatus.style.color = isError ? 'var(--error)' : 'var(--muted)';
+      if (isError) {
+        outputEl.className = 'error';
+      } else {
+        outputEl.className = '';
+      }
+    }
+
+    function analyzeGLTF(gltf, sourceName) {
+      let output = `======================================================================\n`;
+      output += `  BÁO CÁO PHÂN TÍCH MÔ HÌNH 3D: ${sourceName}\n`;
+      output += `======================================================================\n\n`;
+
+      let totalMeshes = 0;
+      let totalVertices = 0;
+      const meshRecords = [];
+
+      // 1. Phân cấp Scene
+      output += `[1] CÂY PHÂN CẤP ĐỐI TƯỢNG (SCENE HIERARCHY):\n`;
+      function traverseHierarchy(obj, depth = 0) {
+        const indent = '  '.repeat(depth);
+        const type = obj.type;
+        const meshInfo = obj.isMesh ? ` [Mesh: vertices=${obj.geometry?.attributes?.position?.count || 0}]` : '';
+        const matInfo = obj.material ? ` (material: ${obj.material.name || 'unnamed'})` : '';
+        output += `${indent}- ${obj.name || '(unnamed)'} (${type})${meshInfo}${matInfo}\n`;
+
+        if (obj.children) {
+          obj.children.forEach(child => traverseHierarchy(child, depth + 1));
+        }
+      }
+      traverseHierarchy(gltf.scene);
+
+      // 2. Chi tiết từng Mesh
+      output += `\n[2] DANH SÁCH TOÀN BỘ MESH & HÌNH HỌC (RAYCAST TARGETS):\n`;
+      gltf.scene.traverse((obj) => {
+        if (obj.isMesh) {
+          totalMeshes++;
+          const vertCount = obj.geometry?.attributes?.position?.count || 0;
+          totalVertices += vertCount;
+
+          obj.geometry.computeBoundingBox();
+          const bb = obj.geometry.boundingBox;
+          const center = new THREE.Vector3();
+          bb.getCenter(center);
+          const size = new THREE.Vector3();
+          bb.getSize(size);
+
+          obj.updateWorldMatrix(true, false);
+          const worldPos = new THREE.Vector3();
+          obj.getWorldPosition(worldPos);
+
+          const record = {
+            name: obj.name || '(unnamed_mesh)',
+            material: obj.material?.name || '(unnamed_material)',
+            vertices: vertCount,
+            size: `${size.x.toFixed(3)} x ${size.y.toFixed(3)} x ${size.z.toFixed(3)}`,
+            center: `(${center.x.toFixed(3)}, ${center.y.toFixed(3)}, ${center.z.toFixed(3)})`,
+            worldPos: `(${worldPos.x.toFixed(3)}, ${worldPos.y.toFixed(3)}, ${worldPos.z.toFixed(3)})`
+          };
+          meshRecords.push(record);
+
+          output += `  • Mesh Name: "${record.name}"\n`;
+          output += `    - Material: "${record.material}" | Số Vertices: ${record.vertices}\n`;
+          output += `    - Kích thước (Size): ${record.size}\n`;
+          output += `    - Tâm cục bộ (Center): ${record.center}\n`;
+          output += `    - Vị trí thế giới (World Position): ${record.worldPos}\n\n`;
+        }
+      });
+
+      // 3. Tính toán Bounding Box tổng thể
+      const overallBox = new THREE.Box3().setFromObject(gltf.scene);
+      const overallSize = new THREE.Vector3();
+      overallBox.getSize(overallSize);
+      const overallCenter = new THREE.Vector3();
+      overallBox.getCenter(overallCenter);
+
+      output += `[3] TỔNG THỂ KHUNG HÌNH (SCENE BOUNDING BOX & PIVOT):\n`;
+      output += `  • BoundingBox Min: (${overallBox.min.x.toFixed(3)}, ${overallBox.min.y.toFixed(3)}, ${overallBox.min.z.toFixed(3)})\n`;
+      output += `  • BoundingBox Max: (${overallBox.max.x.toFixed(3)}, ${overallBox.max.y.toFixed(3)}, ${overallBox.max.z.toFixed(3)})\n`;
+      output += `  • Kích thước tổng (Size): ${overallSize.x.toFixed(3)} x ${overallSize.y.toFixed(3)} x ${overallSize.z.toFixed(3)}\n`;
+      output += `  • Trọng tâm hình học (Center): (${overallCenter.x.toFixed(3)}, ${overallCenter.y.toFixed(3)}, ${overallCenter.z.toFixed(3)})\n`;
+
+      // Cập nhật stats bar
+      statsBar.style.display = 'grid';
+      statMeshes.textContent = totalMeshes.toLocaleString();
+      statVertices.textContent = totalVertices.toLocaleString();
+      statSize.textContent = `${overallSize.x.toFixed(2)} x ${overallSize.y.toFixed(2)} x ${overallSize.z.toFixed(2)}`;
+      statCenter.textContent = `${overallCenter.x.toFixed(2)}, ${overallCenter.y.toFixed(2)}, ${overallCenter.z.toFixed(2)}`;
+
+      fullReport = output;
+      outputEl.textContent = output;
+      searchContainer.style.display = 'block';
+      setStatus(`Phân tích thành công mô hình "${sourceName}"!`);
+    }
+
+    // Đọc từ URL
+    function loadFromUrl(url, label) {
+      setStatus(`Đang tải mô hình từ "${label || url}"...`);
+      outputEl.textContent = `Đang tải và giải mã tệp 3D từ: ${url}\nVui lòng chờ...`;
+      statsBar.style.display = 'none';
+      searchContainer.style.display = 'none';
+
+      loader.load(
+        url,
+        (gltf) => {
+          analyzeGLTF(gltf, label || url);
+        },
+        (xhr) => {
+          if (xhr.lengthComputable) {
+            const percent = Math.round((xhr.loaded / xhr.total) * 100);
+            setStatus(`Đang tải: ${percent}%`);
+          }
+        },
+        (error) => {
+          console.error(error);
+          setStatus(`Lỗi khi nạp file`, true);
+          outputEl.textContent = `❌ LỖI TẢI MÔ HÌNH 3D:\n` +
+            `- Chi tiết lỗi: ${error.message}\n` +
+            `- Địa chỉ: ${url}\n\n` +
+            `GỢI Ý KHẮC PHỤC:\n` +
+            `1. Nếu tải từ R2 / CDN: Kiểm tra CORS headers trên Cloudflare bucket.\n` +
+            `2. Nếu là đường dẫn cục bộ: Đảm bảo file .glb đã được đặt trong thư mục "public/".`;
+        }
+      );
+    }
+
+    // Đọc từ File máy tính qua ArrayBuffer
+    function loadFromFile(file) {
+      setStatus(`Đang đọc tệp "${file.name}" từ máy tính...`);
+      outputEl.textContent = `Đang đọc file: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)...`;
+      statsBar.style.display = 'none';
+      searchContainer.style.display = 'none';
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const contents = e.target.result;
+        loader.parse(
+          contents,
+          '',
+          (gltf) => {
+            analyzeGLTF(gltf, file.name);
+          },
+          (error) => {
+            console.error(error);
+            setStatus('Lỗi giải mã file GLTF/GLB', true);
+            outputEl.textContent = `❌ Lỗi khi đọc tệp: ${error.message}`;
+          }
+        );
+      };
+      reader.onerror = function() {
+        setStatus('Lỗi đọc tệp từ ổ đĩa', true);
+        outputEl.textContent = '❌ Không thể đọc tệp từ ổ đĩa máy tính.';
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Event listeners
+    btnUpload.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) loadFromFile(file);
+    });
+
+    // Drag & Drop
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && (file.name.endsWith('.glb') || file.name.endsWith('.gltf'))) {
+        loadFromFile(file);
+      } else {
+        alert('Vui lòng chọn file định dạng .glb hoặc .gltf');
+      }
+    });
+
+    // Preset dropdown
+    presetSelect.addEventListener('change', (e) => {
+      const key = e.target.value;
+      if (key && MODEL_URLS[key]) {
+        loadFromUrl(MODEL_URLS[key], `${key}.glb (R2 CDN)`);
+      }
+    });
+
+    // Custom URL input
+    btnLoadUrl.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if (url) {
+        loadFromUrl(url, url);
+      }
+    });
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnLoadUrl.click();
+    });
+
+    // Copy to clipboard
+    btnCopy.addEventListener('click', () => {
+      if (!outputEl.textContent) return;
+      navigator.clipboard.writeText(outputEl.textContent).then(() => {
+        const orig = btnCopy.textContent;
+        btnCopy.textContent = '✅ Đã sao chép!';
+        setTimeout(() => btnCopy.textContent = orig, 2000);
+      });
+    });
+
+    // Tìm kiếm / lọc tên mesh
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (!query) {
+        outputEl.textContent = fullReport;
+        return;
+      }
+      const lines = fullReport.split('\n');
+      let filtered = `=== KẾT QUẢ TÌM KIẾM CHO: "${query}" ===\n\n`;
+      lines.forEach((line) => {
+        if (line.toLowerCase().includes(query)) {
+          filtered += line + '\n';
+        }
+      });
+      outputEl.textContent = filtered;
+    });
+
+    // Tự động kiểm tra tham số URL (?model=...) hoặc nạp mặc định mô hình skull từ R2
+    const params = new URLSearchParams(window.location.search);
+    const modelParam = params.get('model');
+    if (modelParam) {
+      if (MODEL_URLS[modelParam]) {
+        loadFromUrl(MODEL_URLS[modelParam], `${modelParam}.glb`);
+      } else {
+        loadFromUrl(modelParam, modelParam);
+      }
+    } else {
+      // Mặc định nạp thử mô hình skull từ R2 để hiển thị ngay kết quả
+      presetSelect.value = 'skull';
+      loadFromUrl(MODEL_URLS.skull, 'skull.glb (Mặc định R2)');
+    }
+  </script>
 </body>
 </html>

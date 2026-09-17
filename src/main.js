@@ -10,6 +10,8 @@ import { phases, quizQuestions } from './data.js';
 import { ChatBox } from './components/chatBox.js';
 import { ChemistryViewer } from './chemistry.js';
 import { chemistryCatalog, chemicalReactions } from './chemistryData.js';
+import { OrgansViewer } from './organs.js';
+import { ORGANS_DATA, getOrganConfig, HEART_STRUCTURES, getHeartStructure } from './organsData.js';
 
 
 // ============================================
@@ -41,6 +43,12 @@ let selectedSkullRegion = null;
 let parameciumViewer = null;
 let selectedParameciumRegion = null;
 
+// Organs state
+let organsViewer = null;
+let selectedOrganStructure = null;
+let currentActiveOrganId = 'heart';
+let organsStatusToastTimer = null;
+
 // Plant state
 let plantViewer = null;
 let selectedPlantRegion = null;
@@ -67,10 +75,10 @@ let sidebarContent, quizBtn, labelsToggle;
 let labelsContainer;
 
 // Mode UI elements
-let modeSkullBtn, modeParameciumBtn, modeChemistryBtn;
-let skullSidebar, parameciumSidebar, chemistrySidebar;
-let skullControls, parameciumControls, chemistryControls;
-let skullInfoPopup, skullHoverTag;
+let modeSkullBtn, modeParameciumBtn, modeChemistryBtn, modeOrgansBtn;
+let skullSidebar, parameciumSidebar, chemistrySidebar, organsSidebar;
+let skullControls, parameciumControls, chemistryControls, organsControls, organsSubdock, organsStatusToast;
+let skullInfoPopup, skullHoverTag, organsInfoPopup, organsHoverTag;
 let headerCard, uiOverlay;
 
 // Plant DOM elements
@@ -118,14 +126,21 @@ function init() {
   modeSkullBtn = document.getElementById('mode-skull');
   modeParameciumBtn = document.getElementById('mode-paramecium');
   modeChemistryBtn = document.getElementById('mode-chemistry');
+  modeOrgansBtn = document.getElementById('mode-organs');
   skullSidebar = document.getElementById('skull-sidebar');
   parameciumSidebar = document.getElementById('paramecium-sidebar');
   chemistrySidebar = document.getElementById('chemistry-sidebar');
+  organsSidebar = document.getElementById('organs-sidebar');
   skullControls = document.getElementById('skull-controls');
   parameciumControls = document.getElementById('paramecium-controls');
   chemistryControls = document.getElementById('chemistry-controls');
+  organsControls = document.getElementById('organs-controls');
+  organsSubdock = document.getElementById('organs-subdock');
+  organsStatusToast = document.getElementById('organs-status-toast');
   skullInfoPopup = document.getElementById('skull-info-popup');
   skullHoverTag = document.getElementById('skull-hover-tag');
+  organsInfoPopup = document.getElementById('organs-info-popup');
+  organsHoverTag = document.getElementById('organs-hover-tag');
   headerCard = document.querySelector('.header-card');
   uiOverlay = document.querySelector('.ui-overlay');
 
@@ -189,6 +204,7 @@ function init() {
   setupSkullUI();
   setupParameciumUI();
   setupChemistryUI();
+  setupOrgansUI();
   setupCollapsibleSidebars();
   
   // Initialize default mode (skull)
@@ -209,13 +225,37 @@ function setupModeSwitch() {
   modeSkullBtn.addEventListener('click', () => switchMode('skull'));
   modeParameciumBtn.addEventListener('click', () => switchMode('paramecium'));
   modeChemistryBtn.addEventListener('click', () => switchMode('chemistry'));
+  if (modeOrgansBtn) modeOrgansBtn.addEventListener('click', () => switchMode('organs'));
 }
 
 function switchMode(mode) {
   if (mode === currentMode) return;
   currentMode = mode;
 
-  // Toggle header card visibility and grid rows based on chemistry workspace sub-state
+  // 1. Vô hiệu hóa và ẩn tất cả 3D viewers lập tức (Dừng raycaster, ngắt hover, ẩn canvas)
+  if (skullViewer) skullViewer.deactivate();
+  if (parameciumViewer) parameciumViewer.deactivate();
+  if (chemistryViewer) chemistryViewer.deactivate();
+  if (organsViewer) organsViewer.deactivate();
+  if (plantViewer && plantViewer.deactivate) plantViewer.deactivate();
+
+  // 2. Ẩn triệt để toàn bộ thẻ Hover Tag, Floating HUD Labels & Popup bài học đang mở
+  if (skullHoverTag) skullHoverTag.classList.add('hidden');
+  if (organsHoverTag) organsHoverTag.classList.add('hidden');
+  if (skullInfoPopup) skullInfoPopup.classList.add('hidden');
+  if (organsInfoPopup) organsInfoPopup.classList.add('hidden');
+  const orgLabels = document.getElementById('organs-floating-labels');
+  if (orgLabels) orgLabels.style.display = 'none';
+
+  // 3. Reset trạng thái chọn giải phẫu & danh sách sidebar
+  selectedSkullRegion = null;
+  selectedParameciumRegion = null;
+  selectedOrganStructure = null;
+  updateBoneListHighlight(null);
+  updateParameciumListHighlight(null);
+  updateOrganListHighlight(null);
+
+  // 4. Toggle header card visibility dựa theo chemistry workspace
   if (mode === 'chemistry' && chemistryState === 'workspace') {
     if (headerCard) headerCard.classList.add('hidden');
     if (uiOverlay) uiOverlay.classList.add('no-header');
@@ -224,30 +264,38 @@ function switchMode(mode) {
     if (uiOverlay) uiOverlay.classList.remove('no-header');
   }
 
-  // Update tab buttons
+  // 5. Update tab navigation buttons
   modeSkullBtn.classList.toggle('active', mode === 'skull');
   modeParameciumBtn.classList.toggle('active', mode === 'paramecium');
   modeChemistryBtn.classList.toggle('active', mode === 'chemistry');
+  if (modeOrgansBtn) modeOrgansBtn.classList.toggle('active', mode === 'organs');
 
-  // Ẩn toàn bộ UI của mọi mode, sau đó chỉ bật mode đang chọn
-  skullSidebar.classList.add('hidden');
-  skullControls.classList.add('hidden');
-  parameciumSidebar.classList.add('hidden');
-  parameciumControls.classList.add('hidden');
-  chemistrySidebar.classList.add('hidden');
-  chemistryControls.classList.add('hidden');
-  chemistryAlmanac.classList.add('hidden');
-  skullInfoPopup.classList.add('hidden');
-  if (skullHoverTag) skullHoverTag.classList.add('hidden');
+  // 6. Ẩn toàn bộ Sidebars & Controls của mọi mode
+  if (skullSidebar) skullSidebar.classList.add('hidden');
+  if (skullControls) skullControls.classList.add('hidden');
+  if (parameciumSidebar) parameciumSidebar.classList.add('hidden');
+  if (parameciumControls) parameciumControls.classList.add('hidden');
+  if (chemistrySidebar) chemistrySidebar.classList.add('hidden');
+  if (chemistryControls) chemistryControls.classList.add('hidden');
+  if (organsSidebar) organsSidebar.classList.add('hidden');
+  if (organsControls) organsControls.classList.add('hidden');
+  if (organsSubdock) organsSubdock.classList.add('hidden');
+  if (organsStatusToast) organsStatusToast.classList.add('hidden');
 
-  // Ẩn mọi renderer trước
-  if (skullViewer && skullViewer.renderer) skullViewer.renderer.domElement.style.display = 'none';
-  if (parameciumViewer && parameciumViewer.renderer) parameciumViewer.renderer.domElement.style.display = 'none';
-  if (chemistryViewer && chemistryViewer.renderer) chemistryViewer.renderer.domElement.style.display = 'none';
+  // Reset nút âm thanh tim về TẮT khi rời tab
+  const organsSoundBtn = document.getElementById('organs-sound-btn');
+  if (organsSoundBtn) {
+    organsSoundBtn.classList.remove('active');
+    const soundIcon = document.getElementById('organs-sound-icon');
+    const soundLabel = document.getElementById('organs-sound-label');
+    if (soundIcon) soundIcon.textContent = '🔇';
+    if (soundLabel) soundLabel.textContent = 'Âm thanh: TẮT';
+  }
 
   const labels = labelsContainer;
   const hud = document.getElementById('hud-overlay');
 
+  // 7. Kích hoạt DUY NHẤT viewer và UI của tab được chọn
   if (mode === 'skull') {
     skullSidebar.classList.remove('hidden');
     skullControls.classList.remove('hidden');
@@ -258,9 +306,8 @@ function switchMode(mode) {
       skullViewer = new SkullViewer('canvas-container');
       skullViewer.onRegionClick = handleSkullRegionClick;
       skullViewer.onHover = handleSkullHover;
-    } else {
-      skullViewer.renderer.domElement.style.display = 'block';
     }
+    skullViewer.activate();
 
   } else if (mode === 'paramecium') {
     parameciumSidebar.classList.remove('hidden');
@@ -273,9 +320,9 @@ function switchMode(mode) {
       parameciumViewer.onRegionClick = handleParameciumRegionClick;
       parameciumViewer.onHover = handleSkullHover;
       parameciumViewer.onRevealChange = handleParameciumRevealChange;
-    } else {
-      parameciumViewer.renderer.domElement.style.display = 'block';
     }
+    parameciumViewer.activate();
+
   } else if (mode === 'chemistry') {
     labels.classList.add('hidden');
     hud.style.display = 'none';
@@ -286,9 +333,6 @@ function switchMode(mode) {
     } else {
       chemistrySidebar.classList.remove('hidden');
       chemistryControls.classList.remove('hidden');
-      if (chemistryViewer && chemistryViewer.renderer) {
-        chemistryViewer.renderer.domElement.style.display = 'block';
-      }
     }
 
     if (!chemistryViewer) {
@@ -296,16 +340,46 @@ function switchMode(mode) {
       chemistryViewer.onVesselClick = handleChemistryVesselClick;
       chemistryViewer.onReactionTrigger = handleChemistryReactionTrigger;
       chemistryViewer.onWorkbenchRebuilt = updateDockUI;
-      
-      // Hide 3D view while selecting elements initially
-      if (chemistryState === 'selection') {
-        chemistryViewer.renderer.domElement.style.display = 'none';
-      }
-    } else {
-      if (chemistryState === 'workspace') {
-        chemistryViewer.renderer.domElement.style.display = 'block';
-      }
     }
+    if (chemistryState === 'workspace') {
+      chemistryViewer.activate();
+    } else {
+      chemistryViewer.deactivate();
+    }
+
+  } else if (mode === 'organs') {
+    if (organsSidebar) organsSidebar.classList.remove('hidden');
+    if (organsControls) organsControls.classList.remove('hidden');
+    if (organsSubdock) organsSubdock.classList.remove('hidden');
+    labels.classList.add('hidden');
+    hud.style.display = 'none';
+
+    renderOrgansSubdock();
+
+    if (!organsViewer) {
+      organsViewer = new OrgansViewer('canvas-container');
+      organsViewer.onRegionClick = handleOrganStructureClick;
+      organsViewer.onHover = handleOrganHover;
+      organsViewer.onOrganChange = (config) => {
+        if (organsInfoPopup) organsInfoPopup.classList.add('hidden');
+        selectedOrganStructure = null;
+        updateOrganListHighlight(null);
+        updateOrganSidebar(config);
+        updateDockActiveState(config.id);
+
+        const soundBtn = document.getElementById('organs-sound-btn');
+        if (soundBtn) {
+          soundBtn.classList.remove('active');
+          const soundIcon = document.getElementById('organs-sound-icon');
+          const soundLabel = document.getElementById('organs-sound-label');
+          if (soundIcon) soundIcon.textContent = '🔇';
+          if (soundLabel) soundLabel.textContent = 'Âm thanh: TẮT';
+        }
+      };
+    } else {
+      updateOrganSidebar(organsViewer.organConfig || getOrganConfig('heart'));
+    }
+    organsViewer.activate();
   }
 }
 
@@ -608,6 +682,466 @@ function selectParameciumRegion(region, screenPos) {
 function updateParameciumListHighlight(regionId) {
   document.querySelectorAll('#paramecium-part-list .skull-bone-item').forEach(item => {
     if (item.dataset.regionId === regionId) {
+      item.classList.add('active');
+      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+// ============================================
+// ORGANS (CƠ THỂ NGƯỜI - MULTI-ORGAN ENGINE) UI
+// ============================================
+function showOrganStatusToast(message) {
+  if (!organsStatusToast) return;
+  if (organsStatusToastTimer) {
+    clearTimeout(organsStatusToastTimer);
+    organsStatusToastTimer = null;
+  }
+  organsStatusToast.textContent = message;
+  organsStatusToast.classList.remove('hidden');
+  organsStatusToastTimer = setTimeout(() => {
+    organsStatusToast.classList.add('hidden');
+    organsStatusToastTimer = null;
+  }, 2500);
+}
+
+function renderOrgansSubdock() {
+  if (!organsSubdock) return;
+  organsSubdock.innerHTML = '';
+
+  Object.values(ORGANS_DATA).forEach(organ => {
+    const btn = document.createElement('button');
+    btn.className = `organ-dock-btn ${organ.id === currentActiveOrganId ? 'active' : ''}`;
+    btn.dataset.organId = organ.id;
+    btn.dataset.available = organ.available ? 'true' : 'false';
+    btn.setAttribute('aria-label', `${organ.name} - ${organ.statusNote || ''}`);
+
+    if (!organ.available) {
+      btn.setAttribute('aria-disabled', 'true');
+    }
+
+    let badgeHtml = '';
+    if (!organ.available) {
+      const badgeText = organ.implementationStatus === 'in_development' ? 'Sắp có' : 'Dự kiến';
+      badgeHtml = `<span class="organ-dock-badge">${badgeText}</span>`;
+    }
+
+    btn.innerHTML = `
+      <span class="organ-dock-icon">${organ.icon}</span>
+      <span class="organ-dock-name">${organ.name}</span>
+      ${badgeHtml}
+    `;
+
+    btn.addEventListener('click', () => {
+      // 1. Khi click vào chính active organ -> Tuyệt đối không reload model!
+      if (currentActiveOrganId === organ.id) {
+        return;
+      }
+
+      // 2. Nếu cơ quan chưa sẵn sàng (available: false) -> Chặn loadOrgan(), hiển thị subtle toast
+      if (!organ.available) {
+        const note = organ.statusNote || 'Đang chuẩn bị mô hình 3D (Sắp có)';
+        showOrganStatusToast(`${organ.icon} ${organ.name}: ${note}`);
+        return;
+      }
+
+      // 3. Cơ quan có sẵn (Tim) -> Load an toàn
+      currentActiveOrganId = organ.id;
+      updateDockActiveState(organ.id);
+      if (organsViewer) {
+        organsViewer.loadOrgan(organ.id);
+      }
+    });
+
+    organsSubdock.appendChild(btn);
+  });
+}
+
+function updateDockActiveState(activeId) {
+  currentActiveOrganId = activeId;
+  if (!organsSubdock) return;
+  organsSubdock.querySelectorAll('.organ-dock-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.organId === activeId);
+  });
+}
+
+function updateOrganSidebar(organConfig) {
+  if (!organConfig) return;
+
+  // 1. Topic, Title, Latin, Description
+  const topicEl = document.getElementById('organs-sidebar-topic');
+  if (topicEl) {
+    const topic = organConfig.curriculum?.topic || organConfig.system || 'GIẢI PHẪU CƠ THỂ NGƯỜI';
+    const grade = organConfig.curriculum?.grade || 8;
+    topicEl.textContent = `${topic.toUpperCase()} - KHTN ${grade}`;
+  }
+
+  const titleEl = document.getElementById('organs-sidebar-title');
+  if (titleEl) titleEl.textContent = organConfig.name;
+
+  const latinEl = document.getElementById('organs-sidebar-latin');
+  if (latinEl) latinEl.textContent = organConfig.latin || '';
+
+  const descEl = document.getElementById('organs-sidebar-desc');
+  if (descEl) {
+    if (organConfig.available) {
+      descEl.textContent = 'Nhấn vào các điểm ghim số (Hotspots) trên mô hình 3D hoặc chọn danh sách bên dưới để khám phá cấu tạo và chức năng.';
+    } else {
+      descEl.textContent = `${organConfig.statusNote || 'Mô hình 3D đang được chuẩn bị'}. Sẽ cập nhật đầy đủ cấu trúc giải phẫu chuẩn chương trình GDPT 2018.`;
+    }
+  }
+
+  // 2. Danh mục cấu trúc (Structures section)
+  const structSection = document.getElementById('organs-sidebar-structures-section');
+  const partList = document.getElementById('organs-part-list');
+  if (partList) {
+    partList.innerHTML = '';
+    const structures = organConfig.structures || [];
+    if (structures.length > 0) {
+      if (structSection) structSection.style.display = 'block';
+      structures.forEach(structure => {
+        const item = document.createElement('div');
+        item.className = 'skull-bone-item';
+        item.dataset.structureId = structure.id;
+        item.innerHTML = `
+          <div class="skull-bone-dot" style="background-color: ${structure.color}; color: ${structure.color}"></div>
+          <span class="skull-bone-name">${structure.badge}. ${structure.name}</span>
+          <span class="skull-bone-latin">${structure.latin}</span>
+        `;
+
+        item.addEventListener('click', () => {
+          if (!organsViewer) return;
+          selectOrganStructure(structure, null);
+          organsViewer.selectStructure(structure.id);
+        });
+
+        item.addEventListener('mouseenter', () => {
+          item.classList.add('is-hovered');
+          if (organsViewer) organsViewer.setHoveredFromSidebar(structure.id);
+        });
+
+        item.addEventListener('mouseleave', () => {
+          item.classList.remove('is-hovered');
+          if (organsViewer) organsViewer.setHoveredFromSidebar(null);
+        });
+
+        partList.appendChild(item);
+      });
+    } else {
+      if (structSection) structSection.style.display = 'none';
+    }
+  }
+
+  // 3. Thẻ chu kỳ / chức năng sư phạm (Cycle info)
+  const cycleSection = document.getElementById('organs-sidebar-cycle-section');
+  const cycleTitle = document.getElementById('organs-sidebar-cycle-title');
+  const cycleBody = document.getElementById('organs-sidebar-cycle-body');
+  if (organConfig.cycleInfo && cycleBody) {
+    if (cycleSection) cycleSection.style.display = 'block';
+    if (cycleTitle) cycleTitle.textContent = `Chu kỳ hoạt động (${organConfig.cycleInfo.duration})`;
+    let phasesHtml = '';
+    if (organConfig.cycleInfo.phases) {
+      organConfig.cycleInfo.phases.forEach((p, idx) => {
+        const dotColor = idx === 0 ? '#f43f5e' : idx === 1 ? '#ef4444' : '#9ca3af';
+        phasesHtml += `<div style="margin-bottom: 6px;"><span style="color: ${dotColor}; font-weight: 600;">● ${p.name} (${p.time}):</span> ${p.action}</div>`;
+      });
+    }
+    let insightHtml = '';
+    if (organConfig.cycleInfo.insight) {
+      insightHtml = `<div style="color: #10b981; font-size: 0.75rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 6px; margin-top: 6px;">💡 <em>${organConfig.cycleInfo.insight}</em></div>`;
+    }
+    cycleBody.innerHTML = phasesHtml + insightHtml;
+  } else if (cycleSection) {
+    cycleSection.style.display = 'none';
+  }
+
+  // 4. Đồng bộ hiển thị các nút điều khiển dưới bottom control bar theo features của cơ quan
+  const heartbeatBtn = document.getElementById('organs-heartbeat-btn');
+  if (heartbeatBtn) {
+    heartbeatBtn.style.display = organConfig.features?.heartbeat ? 'inline-flex' : 'none';
+  }
+  const soundBtn = document.getElementById('organs-sound-btn');
+  if (soundBtn) {
+    soundBtn.style.display = organConfig.features?.heartbeatAudio ? 'inline-flex' : 'none';
+  }
+  const labelsBtn = document.getElementById('organs-labels-btn');
+  if (labelsBtn) {
+    labelsBtn.style.display = (organConfig.structures && organConfig.structures.length > 0) ? 'inline-flex' : 'none';
+  }
+}
+
+function setupOrgansUI() {
+  // Khởi tạo sub-navigation dock và cấu hình sidebar cho cơ quan mặc định (heart)
+  renderOrgansSubdock();
+  updateOrganSidebar(getOrganConfig('heart'));
+
+  // Camera presets in sidebar
+  ['front', 'back', 'left', 'right', 'top'].forEach(preset => {
+    const sideBtn = document.getElementById(`organs-btn-${preset}`);
+    if (sideBtn) {
+      sideBtn.addEventListener('click', () => {
+        setActiveOrganCameraBtn(preset);
+        if (organsViewer) organsViewer.setCameraPreset(preset);
+      });
+    }
+  });
+
+  // Camera presets in bottom controls
+  ['front', 'back', 'left', 'right', 'top'].forEach(preset => {
+    const ctrlBtn = document.getElementById(`organs-ctrl-${preset}`);
+    if (ctrlBtn) {
+      ctrlBtn.addEventListener('click', () => {
+        setActiveOrganCameraBtn(preset);
+        if (organsViewer) organsViewer.setCameraPreset(preset);
+      });
+    }
+  });
+
+  // Heartbeat simulation toggle
+  const heartbeatBtn = document.getElementById('organs-heartbeat-btn');
+  if (heartbeatBtn) {
+    heartbeatBtn.addEventListener('click', () => {
+      if (!organsViewer) return;
+      organsViewer.heartbeatEnabled = !organsViewer.heartbeatEnabled;
+      heartbeatBtn.classList.toggle('active', organsViewer.heartbeatEnabled);
+      heartbeatBtn.innerHTML = organsViewer.heartbeatEnabled
+        ? '<span class="heartbeat-icon">❤️</span> Mô phỏng nhịp đập: BẬT'
+        : '<span class="heartbeat-icon">🤍</span> Mô phỏng nhịp đập: TẮT';
+
+      // Nếu tắt nhịp đập thì âm thanh cũng phải tắt ngay lập tức
+      if (!organsViewer.heartbeatEnabled) {
+        organsViewer.setSoundEnabled(false);
+        const soundBtn = document.getElementById('organs-sound-btn');
+        if (soundBtn) {
+          soundBtn.classList.remove('active');
+          const soundIcon = document.getElementById('organs-sound-icon');
+          const soundLabel = document.getElementById('organs-sound-label');
+          if (soundIcon) soundIcon.textContent = '🔇';
+          if (soundLabel) soundLabel.textContent = 'Âm thanh: TẮT';
+        }
+      }
+    });
+  }
+
+  // Toggle Heartbeat Audio (Web Audio API Synthesizer)
+  const soundBtn = document.getElementById('organs-sound-btn');
+  const soundIcon = document.getElementById('organs-sound-icon');
+  const soundLabel = document.getElementById('organs-sound-label');
+  if (soundBtn) {
+    soundBtn.addEventListener('click', () => {
+      if (!organsViewer) return;
+      // Nếu heartbeat animation đang tắt, bật lại để nhịp đập và âm thanh đồng bộ
+      if (!organsViewer.heartbeatEnabled && !organsViewer.soundEnabled) {
+        organsViewer.heartbeatEnabled = true;
+        if (heartbeatBtn) {
+          heartbeatBtn.classList.add('active');
+          heartbeatBtn.innerHTML = '<span class="heartbeat-icon">❤️</span> Mô phỏng nhịp đập: BẬT';
+        }
+      }
+      const isSoundOn = organsViewer.toggleSound();
+      soundBtn.classList.toggle('active', isSoundOn);
+      if (soundIcon) soundIcon.textContent = isSoundOn ? '🔊' : '🔇';
+      if (soundLabel) soundLabel.textContent = isSoundOn ? 'Âm thanh: BẬT' : 'Âm thanh: TẮT';
+    });
+  }
+
+  // Toggle 3D Labels button (Hiện / Ẩn nhãn)
+  const labelsBtn = document.getElementById('organs-labels-btn');
+  const labelsLabel = document.getElementById('organs-labels-label');
+  if (labelsBtn) {
+    labelsBtn.addEventListener('click', () => {
+      if (!organsViewer) return;
+      const isVisible = organsViewer.toggleLabels();
+      labelsBtn.classList.toggle('active', isVisible);
+      if (labelsLabel) {
+        labelsLabel.textContent = isVisible ? 'Nhãn 3D: Đang BẬT' : 'Nhãn 3D: Đang TẮT';
+      }
+    });
+  }
+
+  // Reset view button ("↩ Khám phá")
+  const resetBtn = document.getElementById('organs-reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (!organsViewer) return;
+      organsViewer.resetView();
+      if (organsInfoPopup) organsInfoPopup.classList.add('hidden');
+      selectedOrganStructure = null;
+      updateOrganListHighlight(null);
+    });
+  }
+
+  // Info popup close button
+  const closeBtn = document.getElementById('organs-info-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      if (organsInfoPopup) organsInfoPopup.classList.add('hidden');
+      selectedOrganStructure = null;
+      updateOrganListHighlight(null);
+      if (organsViewer) organsViewer.clearHighlight();
+    });
+  }
+}
+
+function setActiveOrganCameraBtn(activePreset) {
+  document.querySelectorAll('#organs-sidebar .camera-presets .btn').forEach(btn => {
+    btn.classList.toggle('active', btn.id === `organs-btn-${activePreset}`);
+  });
+  document.querySelectorAll('#organs-controls .control-group .btn').forEach(btn => {
+    if (btn.id.startsWith('organs-ctrl-')) {
+      btn.classList.toggle('active', btn.id === `organs-ctrl-${activePreset}`);
+    }
+  });
+}
+
+function handleOrganStructureClick(structure, screenPos) {
+  if (structure) {
+    selectOrganStructure(structure, screenPos);
+  } else {
+    if (organsInfoPopup) organsInfoPopup.classList.add('hidden');
+    selectedOrganStructure = null;
+    updateOrganListHighlight(null);
+    if (organsViewer) organsViewer.clearHighlight();
+  }
+}
+
+function handleOrganHover(structure, screenPos) {
+  if (!organsHoverTag) return;
+  if (structure && screenPos) {
+    organsHoverTag.textContent = `${structure.badge}. ${structure.name}`;
+    organsHoverTag.style.setProperty('--tag-color', structure.color);
+    organsHoverTag.style.left = `${screenPos.x}px`;
+    organsHoverTag.style.top = `${screenPos.y}px`;
+    organsHoverTag.classList.remove('hidden');
+
+    // Đồng bộ highlight card bên sidebar khi rê chuột trên 3D
+    document.querySelectorAll('#organs-part-list .skull-bone-item').forEach(item => {
+      item.classList.toggle('is-hovered', item.dataset.structureId === structure.id);
+    });
+  } else {
+    organsHoverTag.classList.add('hidden');
+    document.querySelectorAll('#organs-part-list .skull-bone-item').forEach(item => {
+      item.classList.remove('is-hovered');
+    });
+  }
+}
+
+function selectOrganStructure(structure, screenPos) {
+  selectedOrganStructure = structure;
+  if (!organsInfoPopup) return;
+
+  organsInfoPopup.style.setProperty('--region-color', structure.color);
+
+  const dot = document.getElementById('organs-info-color-dot');
+  if (dot) {
+    dot.style.backgroundColor = structure.color;
+    dot.style.color = structure.color;
+  }
+  const nameEl = document.getElementById('organs-info-name');
+  if (nameEl) nameEl.textContent = `${structure.badge}. ${structure.name}`;
+
+  const latinEl = document.getElementById('organs-info-latin');
+  if (latinEl) latinEl.textContent = structure.latin;
+
+  // Hiển thị badge đặc thù cho cấu trúc bên trong (Van tim)
+  const typeBadge = document.getElementById('organs-info-type');
+  if (typeBadge) {
+    if (structure.anatomy?.type === 'internal') {
+      typeBadge.textContent = '🔒 ' + (structure.anatomy.note || 'Cấu trúc bên trong tim');
+      typeBadge.classList.remove('hidden');
+    } else {
+      typeBadge.classList.add('hidden');
+    }
+  }
+
+  // Hiển thị ghi chú sư phạm đặc thù cho cấu trúc bên trong (Van tim)
+  const eduNote = document.getElementById('organs-info-edu-note');
+  if (eduNote) {
+    if (structure.anatomy?.educationalNote) {
+      eduNote.textContent = '💡 ' + structure.anatomy.educationalNote;
+      eduNote.classList.remove('hidden');
+    } else {
+      eduNote.classList.add('hidden');
+    }
+  }
+
+  const structEl = document.getElementById('organs-info-structure');
+  if (structEl) structEl.textContent = structure.structure;
+
+  const funcEl = document.getElementById('organs-info-function');
+  if (funcEl) funcEl.textContent = structure.function;
+
+  const healthEl = document.getElementById('organs-info-health');
+  if (healthEl) healthEl.textContent = structure.healthNote;
+
+  positionOrganPopupAt(screenPos);
+
+  organsInfoPopup.classList.remove('hidden');
+  organsInfoPopup.style.animation = 'none';
+  organsInfoPopup.offsetHeight; // force reflow
+  organsInfoPopup.style.animation = '';
+
+  updateOrganListHighlight(structure.id);
+}
+
+function positionOrganPopupAt(screenPos) {
+  if (!organsInfoPopup) return;
+  const margin = 24;
+  const sidebarWidth = 430; // Sidebar on the right
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // Always reset scroll to top so header is never scrolled out of view
+  organsInfoPopup.scrollTop = 0;
+
+  organsInfoPopup.classList.remove('hidden');
+  organsInfoPopup.style.left = '-9999px';
+  organsInfoPopup.style.top = '0';
+  organsInfoPopup.style.right = 'auto';
+  organsInfoPopup.style.bottom = 'auto';
+
+  const rect = organsInfoPopup.getBoundingClientRect();
+  const popW = Math.min(rect.width || 420, vw - margin * 2);
+  const popH = Math.min(rect.height || 380, vh - margin * 2);
+
+  // Default / fallback / selected from sidebar: bottom-left of 3D canvas
+  if (!screenPos) {
+    organsInfoPopup.style.left = `${margin}px`;
+    organsInfoPopup.style.top = 'auto';
+    organsInfoPopup.style.bottom = `${margin + 90}px`;
+    organsInfoPopup.scrollTop = 0;
+    return;
+  }
+
+  // Available width for 3D viewport (excluding right sidebar)
+  const availableWidth = Math.max(popW + margin * 2, vw - sidebarWidth);
+
+  let left;
+  const clickedLeftHalf = screenPos.x < availableWidth / 2;
+  if (clickedLeftHalf) {
+    // Clicked on left half of 3D canvas -> place popup towards the right edge of 3D viewport
+    left = availableWidth - popW - margin;
+  } else {
+    // Clicked on right half -> place popup on the left edge
+    left = margin;
+  }
+  left = Math.max(margin, Math.min(left, availableWidth - popW - margin));
+
+  let top = screenPos.y - popH / 2;
+  top = Math.max(margin + 70, Math.min(top, vh - popH - margin - 80));
+
+  organsInfoPopup.style.left = `${left}px`;
+  organsInfoPopup.style.top = `${top}px`;
+  organsInfoPopup.style.right = 'auto';
+  organsInfoPopup.style.bottom = 'auto';
+  organsInfoPopup.scrollTop = 0;
+}
+
+function updateOrganListHighlight(structureId) {
+  document.querySelectorAll('#organs-part-list .skull-bone-item').forEach(item => {
+    if (item.dataset.structureId === structureId) {
       item.classList.add('active');
       item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
@@ -1925,9 +2459,7 @@ function initializeWorkspace() {
   
   // Bật Three.js canvas renderer
   if (chemistryViewer) {
-    if (chemistryViewer.renderer) {
-      chemistryViewer.renderer.domElement.style.display = 'block';
-    }
+    chemistryViewer.activate();
     chemistryViewer.setupWorkbench(chemistryCart);
     chemistryViewer.clearSelection();
   }
@@ -1952,9 +2484,9 @@ function goBackToSelection() {
   // Show Almanac selector overlay
   chemistryAlmanac.classList.remove('hidden');
   
-  // Hide Three.js canvas
-  if (chemistryViewer && chemistryViewer.renderer) {
-    chemistryViewer.renderer.domElement.style.display = 'none';
+  // Hide Three.js canvas & deactivate chemistry interactions
+  if (chemistryViewer) {
+    chemistryViewer.deactivate();
   }
   
   renderChemistryAlmanac();

@@ -46,6 +46,42 @@
       </div>
     </div>
 
+    <!-- Organs hover tag (structure name following cursor) -->
+    <div id="organs-hover-tag" class="skull-hover-tag hidden"></div>
+
+    <!-- 3D Floating HUD Labels layer for OrgansViewer -->
+    <div id="organs-floating-labels" class="organs-floating-labels"></div>
+
+    <!-- Organs Info Popup (shown when clicking a heart hotspot) -->
+    <div id="organs-info-popup" class="skull-info-popup hidden" aria-label="Thông tin cơ quan">
+      <button id="organs-info-close" class="skull-info-close" title="Đóng" aria-label="Đóng popup">&times;</button>
+      <div class="skull-info-header">
+        <div id="organs-info-color-dot" class="skull-info-dot"></div>
+        <div>
+          <h3 id="organs-info-name" class="skull-info-name"></h3>
+          <span id="organs-info-latin" class="skull-info-latin"></span>
+          <div id="organs-info-type-wrap" style="margin-top: 4px;">
+            <span id="organs-info-type" class="internal-structure-badge hidden">🔒 Cấu trúc bên trong tim</span>
+          </div>
+        </div>
+      </div>
+      <div class="skull-info-body">
+        <div id="organs-info-edu-note" class="organs-info-edu-note hidden"></div>
+        <div class="skull-info-section">
+          <div class="skull-info-label">📋 Đặc điểm cấu tạo</div>
+          <p id="organs-info-structure"></p>
+        </div>
+        <div class="skull-info-section">
+          <div class="skull-info-label">⚙️ Chức năng sinh học (KHTN 8)</div>
+          <p id="organs-info-function"></p>
+        </div>
+        <div class="skull-info-section">
+          <div class="skull-info-label">🩺 Lưu ý sức khỏe & Bệnh lý</div>
+          <p id="organs-info-health"></p>
+        </div>
+      </div>
+    </div>
+
     <!-- UI Interaction Overlay -->
     <div class="ui-overlay">
       
@@ -68,6 +104,10 @@
           <button id="mode-chemistry" class="mode-btn" title="Phòng Thí Nghiệm Hóa học 3D tương tác">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3h15M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3M9 11h6M8 15h8"></path></svg>
             Lab Hóa học
+          </button>
+          <button id="mode-organs" class="mode-btn" title="Giải phẫu Cơ thể người - Tim & Hệ tuần hoàn (KHTN 8)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            Cơ thể người (KHTN 8)
           </button>
           <button id="mode-exams" class="mode-btn" title="Làm bài thi trắc nghiệm ôn tập" onclick="window.location.href='/exams.html'">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
@@ -219,6 +259,58 @@
               <button id="para-btn-front" class="btn active" title="Mặt trước">Trước</button>
               <button id="para-btn-side" class="btn" title="Mặt bên">Bên</button>
               <button id="para-btn-top" class="btn" title="Nhìn từ trên">Trên</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Sidebar - ORGANS MODE (HEART & CIRCULATORY SYSTEM - KHTN 8) -->
+      <aside id="organs-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin giải phẫu cơ quan">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding-right: 4px;">
+          <!-- Intro Section -->
+          <section class="sidebar-section">
+            <div id="organs-sidebar-topic" class="sidebar-title">HỆ TUẦN HOÀN - KHTN 8</div>
+            <div class="phase-info">
+              <h2 id="organs-sidebar-title" style="font-size: 18px; font-weight: 600;">Trái tim người</h2>
+              <p id="organs-sidebar-latin" class="phase-subtitle">Cor humanum</p>
+              <p id="organs-sidebar-desc" class="phase-desc">Nhấn vào các điểm ghim số (Hotspots) trên quả tim 3D hoặc chọn danh sách bên dưới để khám phá cấu tạo và chức năng.</p>
+            </div>
+          </section>
+
+          <!-- Structure List (Quick-select) -->
+          <section id="organs-sidebar-structures-section" class="sidebar-section">
+            <div id="organs-sidebar-structures-title" class="sidebar-title">Cấu trúc trọng tâm (Click để xem)</div>
+            <div id="organs-part-list" class="skull-bone-list">
+              <!-- Dynamically populated -->
+            </div>
+          </section>
+
+          <!-- Cardiac Cycle Card (or organ-specific education) -->
+          <section id="organs-sidebar-cycle-section" class="sidebar-section">
+            <div id="organs-sidebar-cycle-title" class="sidebar-title">Chu kỳ hoạt động của tim (0.8s)</div>
+            <div id="organs-sidebar-cycle-body" style="background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; line-height: 1.6;">
+              <div style="margin-bottom: 6px;"><span style="color: #f43f5e; font-weight: 600;">● Pha co tâm nhĩ (0.1s):</span> Nhĩ co dồn máu xuống thất.</div>
+              <div style="margin-bottom: 6px;"><span style="color: #ef4444; font-weight: 600;">● Pha co tâm thất (0.3s):</span> Thất co bơm máu vào các động mạch.</div>
+              <div style="margin-bottom: 8px;"><span style="color: #9ca3af; font-weight: 600;">○ Pha dãn chung (0.4s):</span> Toàn bộ tim dãn nghỉ hút máu về nhĩ.</div>
+              <div style="color: #10b981; font-size: 0.75rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 6px;">
+                💡 <em>Nhờ thời gian nghỉ xen kẽ (0.4s/chu kỳ), cơ tim có thể làm việc bền bỉ suốt đời không mệt mỏi.</em>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--panel-border); margin: 8px 0;" />
+
+        <!-- Camera Presets for Organs -->
+        <section class="sidebar-section">
+          <div class="sidebar-title">Góc nhìn quan sát</div>
+          <div class="camera-presets">
+            <div class="btn-group">
+              <button id="organs-btn-front" class="btn active" title="Mặt trước">Trước</button>
+              <button id="organs-btn-back" class="btn" title="Mặt sau">Sau</button>
+              <button id="organs-btn-left" class="btn" title="Bên trái">Trái</button>
+              <button id="organs-btn-right" class="btn" title="Bên phải">Phải</button>
+              <button id="organs-btn-top" class="btn" title="Đỉnh tim">Đỉnh</button>
             </div>
           </div>
         </section>
@@ -465,6 +557,35 @@
         </button>
         <div class="skull-hint para-hint">
           <span id="para-hint-text">Đang xem nguyên con. Bấm “Xem bên trong” để vỏ tế bào mờ đi và lộ các bào quan — sau đó nhấn từng bộ phận để xem thông tin.</span>
+        </div>
+      </section>
+
+      <!-- Sub-navigation Dock for Organs (KHTN 8) -->
+      <nav id="organs-subdock" class="glass-card organs-subdock hidden" aria-label="Chọn cơ quan giải phẫu"></nav>
+      <div id="organs-status-toast" class="organs-status-toast hidden" role="status" aria-live="polite"></div>
+
+      <!-- Bottom Control Bar (ORGANS mode - HEART KHTN 8) -->
+      <section id="organs-controls" class="glass-card controls-card hidden" aria-label="Điều khiển mô phỏng tim">
+        <button id="organs-heartbeat-btn" class="btn btn-primary reveal-btn" title="Bật / tắt mô phỏng nhịp đập tim">
+          <span id="organs-heartbeat-icon">💓</span>
+          <span id="organs-heartbeat-label">Nhịp đập: Đang BẬT</span>
+        </button>
+        <button id="organs-sound-btn" class="btn btn-secondary reveal-btn" title="Bật / tắt âm thanh nhịp tim">
+          <span id="organs-sound-icon">🔇</span>
+          <span id="organs-sound-label">Âm thanh: TẮT</span>
+        </button>
+        <button id="organs-labels-btn" class="btn btn-secondary reveal-btn active" title="Bật / tắt hiển thị nhãn 3D">
+          <span id="organs-labels-icon">🏷️</span>
+          <span id="organs-labels-label">Nhãn 3D: Đang BẬT</span>
+        </button>
+        <button id="organs-reset-btn" class="btn btn-secondary" title="Trở lại góc nhìn tổng quan">
+          <span>↩ Khám phá</span>
+        </button>
+        <div class="skull-hint">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--accent-pink)" style="flex-shrink:0;">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span>Khám phá 6 cấu trúc qua nhãn 3D, rê chuột trên bề mặt hoặc chọn từ danh mục bên phải.</span>
         </div>
       </section>
 

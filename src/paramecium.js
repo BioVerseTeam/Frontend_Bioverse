@@ -36,6 +36,7 @@ export class ParameciumViewer {
     this.highlightedRegion = null;
     this.hoveredRegion = null;
     this.isLoaded = false;
+    this.isActive = false;
 
     // Trạng thái bổ đôi: _reveal là giá trị hiện tại (mượt), _revealTarget là đích
     this._reveal = 0;
@@ -57,7 +58,10 @@ export class ParameciumViewer {
     this._downPos = null;
 
     this._onMouseMove = this._handleMouseMove.bind(this);
-    this._onMouseDown = (e) => { this._downPos = { x: e.clientX, y: e.clientY }; };
+    this._onMouseDown = (e) => {
+      if (!this.isActive) return;
+      this._downPos = { x: e.clientX, y: e.clientY };
+    };
     this._onMouseUp = this._handleMouseUp.bind(this);
     this._onResize = this._handleResize.bind(this);
 
@@ -566,6 +570,8 @@ export class ParameciumViewer {
   }
 
   _handleMouseMove(event) {
+    if (!this.isActive) return;
+
     if (!this.isInside) {
       if (this.hoveredRegion !== null) {
         this.hoveredRegion = null;
@@ -588,6 +594,8 @@ export class ParameciumViewer {
   }
 
   _handleMouseUp(event) {
+    if (!this.isActive) return;
+
     // Phân biệt click với kéo xoay
     if (this._downPos) {
       const dx = event.clientX - this._downPos.x;
@@ -680,13 +688,17 @@ export class ParameciumViewer {
 
   // ---------- Loop / resize ----------
 
-  _animate(now) {
+  _animate() {
     this._animFrameId = requestAnimationFrame(this._animate.bind(this));
-    try {
-      const t = (now || 0) * 0.001;
+    if (!this.isActive) return;
 
-      // Lông bơi gợn sóng theo thời gian
-      if (this._ciliaUniforms) this._ciliaUniforms.uTime.value = t;
+    const t = performance.now() * 0.001;
+
+    try {
+      // Cập nhật dao động lông bơi
+      if (this._ciliaUniforms) {
+        this._ciliaUniforms.uTime.value = t;
+      }
 
       // Tiến giá trị reveal về đích một cách mượt mà
       if (Math.abs(this._reveal - this._revealTarget) > 0.0005) {
@@ -753,10 +765,32 @@ export class ParameciumViewer {
     step();
   }
 
-  show() { this.renderer.domElement.style.display = 'block'; }
-  hide() { this.renderer.domElement.style.display = 'none'; }
+  activate() {
+    this.isActive = true;
+    if (this.renderer?.domElement) {
+      this.renderer.domElement.style.display = 'block';
+    }
+    this._handleResize();
+  }
+
+  deactivate() {
+    this.isActive = false;
+    if (this.renderer?.domElement) {
+      this.renderer.domElement.style.display = 'none';
+      this.renderer.domElement.style.cursor = 'default';
+    }
+    this.hoveredRegion = null;
+    this.clearHighlight();
+    if (this.onHover) {
+      this.onHover(null, null);
+    }
+  }
+
+  show() { this.activate(); }
+  hide() { this.deactivate(); }
 
   destroy() {
+    this.deactivate();
     cancelAnimationFrame(this._animFrameId);
     this.container.removeEventListener('mousemove', this._onMouseMove);
     this.container.removeEventListener('mousedown', this._onMouseDown);
