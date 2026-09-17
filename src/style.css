@@ -2274,3 +2274,129 @@ textarea.tripo-input {
   color: #fff;
 }
 
+/* ====================================================================
+   ORGANS 3D HUD FLOATING LABELS & BADGES (GDPT 2018)
+   ==================================================================== */
+.organs-floating-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+  overflow: hidden;
+}
+
+.organ-hud-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+  white-space: nowrap;
+  user-select: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  will-change: transform, opacity, left, top;
+}
+
+.organ-hud-badge .badge-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.72rem;
+  color: #ffffff;
+  background: var(--badge-color, #ef4444);
+  box-shadow: 0 0 10px var(--badge-color, #ef4444);
+  flex-shrink: 0;
+}
+
+.organ-hud-badge .badge-text {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  letter-spacing: -0.01em;
+  transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, padding 0.2s ease;
+}
+
+/* Tự động mở rộng tên khi hover hoặc selected */
+.organ-hud-badge:hover,
+.organ-hud-badge.is-hovered,
+.organ-hud-badge.is-selected {
+  border-color: var(--badge-color, #ef4444);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6), 0 0 12px var(--badge-color, #ef4444);
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 10;
+}
+
+.organ-hud-badge:hover .badge-text,
+.organ-hud-badge.is-hovered .badge-text,
+.organ-hud-badge.is-selected .badge-text {
+  max-width: 170px;
+  opacity: 1;
+  padding-right: 4px;
+}
+
+.organ-hud-badge.is-selected {
+  transform: translate(-50%, -50%) scale(1.12);
+  border-width: 1.5px;
+}
+
+.organ-hud-badge.is-occluded {
+  opacity: 0.15 !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -50%) scale(0.85);
+}
+
+/* Badge biểu thị cấu trúc bên trong */
+.internal-structure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+/* Sidebar hover & active synchronization */
+#organs-part-list .skull-bone-item {
+  transition: all 0.2s ease;
+}
+
+#organs-part-list .skull-bone-item.is-hovered:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateX(4px);
+}
+
+#organs-part-list .skull-bone-item.active {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: var(--accent-pink);
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.3);
+  transform: translateX(6px);
+}
+

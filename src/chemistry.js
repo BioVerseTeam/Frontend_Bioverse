@@ -146,6 +146,8 @@ export class ChemistryViewer {
     this.initCameraControls();
     this.buildLaboratory();
 
+    this.isActive = false;
+
     this._onMouseMove = this._handleMouseMove.bind(this);
     this._onMouseDown = this._handleMouseDown.bind(this);
     this._onMouseUp = this._handleMouseUp.bind(this);
@@ -158,12 +160,14 @@ export class ChemistryViewer {
 
     // Touch support — map touch to mouse events
     this._onTouchStart = (e) => {
+      if (!this.isActive) return;
       if (e.touches.length === 1) {
         const t = e.touches[0];
         this._handleMouseDown({ clientX: t.clientX, clientY: t.clientY });
       }
     };
     this._onTouchMove = (e) => {
+      if (!this.isActive) return;
       if (e.touches.length === 1) {
         e.preventDefault();
         const t = e.touches[0];
@@ -171,6 +175,7 @@ export class ChemistryViewer {
       }
     };
     this._onTouchEnd = (e) => {
+      if (!this.isActive) return;
       const t = e.changedTouches[0];
       this._handleMouseUp({ clientX: t.clientX, clientY: t.clientY });
     };
@@ -1627,6 +1632,7 @@ export class ChemistryViewer {
   }
 
   _handleMouseDown(event) {
+    if (!this.isActive) return;
     this._downPos = { x: event.clientX, y: event.clientY };
     this._dragState.startMouse = { x: event.clientX, y: event.clientY };
     // Kiểm tra click vào vessel để chuẩn bị kéo
@@ -1689,6 +1695,7 @@ export class ChemistryViewer {
   }
 
   _handleMouseMove(event) {
+    if (!this.isActive) return;
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1740,6 +1747,7 @@ export class ChemistryViewer {
   }
 
   _handleMouseUp(event) {
+    if (!this.isActive) return;
     const wasDragging = this._dragState.active;
     const wasPotential = this._dragState.potential;
     const draggedVesselId = this._dragState.vesselId;
@@ -1893,6 +1901,7 @@ export class ChemistryViewer {
 
   _animate() {
     requestAnimationFrame(this._animate.bind(this));
+    if (!this.isActive) return;
 
     const delta = this._clock.getDelta();
     const time = this._clock.getElapsedTime();
@@ -2290,5 +2299,30 @@ export class ChemistryViewer {
     this.camera.updateProjectionMatrix();
 
     this.renderer.setSize(this.width, this.height);
+  }
+
+  activate() {
+    this.isActive = true;
+    if (this.renderer?.domElement) {
+      this.renderer.domElement.style.display = 'block';
+    }
+    this._handleResize();
+  }
+
+  deactivate() {
+    this.isActive = false;
+    if (this.renderer?.domElement) {
+      this.renderer.domElement.style.display = 'none';
+      this.renderer.domElement.style.cursor = 'default';
+    }
+    this._dragState = {
+      active: false,
+      potential: false,
+      vesselId: null,
+      vessel: null,
+      offset: new THREE.Vector3(),
+      startPos: new THREE.Vector3(),
+      startMouse: { x: 0, y: 0 }
+    };
   }
 }

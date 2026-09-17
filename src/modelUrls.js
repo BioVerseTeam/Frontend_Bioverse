@@ -12,6 +12,7 @@ export const MODEL_URLS = {
   trung_giay:               `${BASE}/trung_giay.glb`,
   mitosis_animation:        `${BASE}/mitosis_animation.glb`,
   mitosis_stages:           `${BASE}/mitosis_stages.glb`,
+  human_heart:              `${BASE}/human_heart_3d.glb`,
 };
 
 export function modelUrl(key) {
