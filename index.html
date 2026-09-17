@@ -265,30 +265,30 @@
       </aside>
 
       <!-- Sidebar - ORGANS MODE (HEART & CIRCULATORY SYSTEM - KHTN 8) -->
-      <aside id="organs-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin giải phẫu tim">
+      <aside id="organs-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin giải phẫu cơ quan">
         <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding-right: 4px;">
           <!-- Intro Section -->
           <section class="sidebar-section">
-            <div class="sidebar-title">HỆ TUẦN HOÀN - KHTN 8</div>
+            <div id="organs-sidebar-topic" class="sidebar-title">HỆ TUẦN HOÀN - KHTN 8</div>
             <div class="phase-info">
-              <h2 style="font-size: 18px; font-weight: 600;">Trái tim người</h2>
-              <p class="phase-subtitle">Cor humanum</p>
-              <p class="phase-desc">Nhấn vào các điểm ghim số (Hotspots) trên quả tim 3D hoặc chọn danh sách bên dưới để khám phá cấu tạo và chức năng.</p>
+              <h2 id="organs-sidebar-title" style="font-size: 18px; font-weight: 600;">Trái tim người</h2>
+              <p id="organs-sidebar-latin" class="phase-subtitle">Cor humanum</p>
+              <p id="organs-sidebar-desc" class="phase-desc">Nhấn vào các điểm ghim số (Hotspots) trên quả tim 3D hoặc chọn danh sách bên dưới để khám phá cấu tạo và chức năng.</p>
             </div>
           </section>
 
           <!-- Structure List (Quick-select) -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Cấu trúc trọng tâm (Click để xem)</div>
+          <section id="organs-sidebar-structures-section" class="sidebar-section">
+            <div id="organs-sidebar-structures-title" class="sidebar-title">Cấu trúc trọng tâm (Click để xem)</div>
             <div id="organs-part-list" class="skull-bone-list">
               <!-- Dynamically populated -->
             </div>
           </section>
 
-          <!-- Cardiac Cycle Card -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Chu kỳ hoạt động của tim (0.8s)</div>
-            <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; line-height: 1.6;">
+          <!-- Cardiac Cycle Card (or organ-specific education) -->
+          <section id="organs-sidebar-cycle-section" class="sidebar-section">
+            <div id="organs-sidebar-cycle-title" class="sidebar-title">Chu kỳ hoạt động của tim (0.8s)</div>
+            <div id="organs-sidebar-cycle-body" style="background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; line-height: 1.6;">
               <div style="margin-bottom: 6px;"><span style="color: #f43f5e; font-weight: 600;">● Pha co tâm nhĩ (0.1s):</span> Nhĩ co dồn máu xuống thất.</div>
               <div style="margin-bottom: 6px;"><span style="color: #ef4444; font-weight: 600;">● Pha co tâm thất (0.3s):</span> Thất co bơm máu vào các động mạch.</div>
               <div style="margin-bottom: 8px;"><span style="color: #9ca3af; font-weight: 600;">○ Pha dãn chung (0.4s):</span> Toàn bộ tim dãn nghỉ hút máu về nhĩ.</div>
@@ -559,6 +559,10 @@
           <span id="para-hint-text">Đang xem nguyên con. Bấm “Xem bên trong” để vỏ tế bào mờ đi và lộ các bào quan — sau đó nhấn từng bộ phận để xem thông tin.</span>
         </div>
       </section>
+
+      <!-- Sub-navigation Dock for Organs (KHTN 8) -->
+      <nav id="organs-subdock" class="glass-card organs-subdock hidden" aria-label="Chọn cơ quan giải phẫu"></nav>
+      <div id="organs-status-toast" class="organs-status-toast hidden" role="status" aria-live="polite"></div>
 
       <!-- Bottom Control Bar (ORGANS mode - HEART KHTN 8) -->
       <section id="organs-controls" class="glass-card controls-card hidden" aria-label="Điều khiển mô phỏng tim">

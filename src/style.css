@@ -2413,3 +2413,135 @@ textarea.tripo-input {
   line-height: 1.45;
 }
 
+/* ====================================================================
+ * MULTI-ORGAN SUB-NAVIGATION DOCK & STATUS TOAST (KHTN 8)
+ * ==================================================================== */
+
+.organs-subdock {
+  position: absolute;
+  bottom: 136px;
+  left: calc((100% - 424px) / 2 + 24px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(11, 15, 29, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+  pointer-events: auto;
+  max-width: calc(100vw - 480px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.organs-subdock::-webkit-scrollbar {
+  display: none;
+}
+
+.organ-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.organ-dock-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.organ-dock-btn.active {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.4), rgba(225, 29, 72, 0.55));
+  border-color: rgba(244, 63, 94, 0.85);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.4);
+  font-weight: 600;
+}
+
+.organ-dock-btn[aria-disabled="true"] {
+  opacity: 0.7;
+  cursor: pointer; /* Cho phép click để hiện status toast thông báo */
+}
+
+.organ-dock-btn[aria-disabled="true"]:hover {
+  opacity: 0.95;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.organ-dock-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.organ-dock-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.organs-status-toast {
+  position: absolute;
+  bottom: 188px;
+  left: calc((100% - 424px) / 2 + 24px);
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #e0f2fe;
+  font-size: 0.82rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 30;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.organs-status-toast.hidden {
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .organs-subdock {
+    left: 50%;
+    bottom: calc(100px + 24px);
+    max-width: calc(100vw - 48px);
+  }
+  .organs-status-toast {
+    left: 50%;
+    bottom: calc(100px + 72px);
+    max-width: calc(100vw - 48px);
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+

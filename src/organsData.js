@@ -214,23 +214,224 @@ export function getHeartStructure(id) {
 }
 
 /**
- * Cấu hình tính năng & dữ liệu cho từng cơ quan (Organ Capabilities)
- * Sẵn sàng mở rộng cho phổi, dạ dày, não... trong tương lai
+ * ====================================================================
+ * DỮ LIỆU TỔNG THỂ CÁC HỆ CƠ QUAN TRONG CƠ THỂ NGƯỜI (GDPT 2018)
+ * ====================================================================
+ * Cấu trúc dữ liệu Multi-Organ chuẩn hóa:
+ * - curriculum: Thông tin chuyên đề/chủ đề sinh học KHTN.
+ * - implementationStatus: Trạng thái phát triển ('stable', 'in_development', 'planned').
+ * - available: Cờ boolean cho phép load mô hình 3D.
+ * - features: Bảng năng lực (capabilities) riêng của từng cơ quan.
+ * - interaction.mode: Chiến lược tương tác 3D ('hybrid', 'hotspots', 'mesh').
+ * - normalization: Tùy biến chuẩn hóa trọng tâm và scale riêng cho từng cơ quan.
+ * - camera: Cấu hình camera và presets riêng.
  */
-export const ORGAN_CONFIGS = {
+export const ORGANS_DATA = {
   heart: {
     id: 'heart',
-    name: 'Trái tim người',
+    name: 'Trái tim',
+    latin: 'Cor humanum',
+    icon: '🫀',
+    system: 'Hệ tuần hoàn',
+    curriculum: {
+      grade: 8,
+      topic: 'Hệ tuần hoàn',
+    },
+    implementationStatus: 'stable',
+    available: true,
+    statusNote: 'Đã hoàn thiện v1',
     modelKey: 'human_heart',
     features: {
       heartbeat: true,
       heartbeatAudio: true,
       particles: true,
+      safeSurfaceHover: true,
       xray: false, // Tạm hoãn do mô hình hiện tại là hollow shell
     },
+    interaction: {
+      mode: 'hybrid', // Single-mesh kết hợp 3D hotspots + safe surface hover
+    },
+    normalization: {
+      autoCenter: true,
+      targetSize: null, // null = giữ nguyên tỉ lệ gốc của mô hình tim 3D
+      scaleModifier: 1.0,
+    },
+    camera: {
+      defaultPosition: { x: 0, y: 0.03, z: 0.46 },
+      defaultTarget: { x: 0, y: 0, z: 0 },
+      minDistance: 0.15,
+      maxDistance: 1.2,
+      presets: HEART_CAMERA_PRESETS,
+    },
     structures: HEART_STRUCTURES,
-    cameraPresets: HEART_CAMERA_PRESETS,
     cycleInfo: HEART_CYCLE_INFO,
   },
+
+  lungs: {
+    id: 'lungs',
+    name: 'Phổi',
+    latin: 'Pulmones',
+    icon: '🫁',
+    system: 'Hệ hô hấp',
+    curriculum: {
+      grade: 8,
+      topic: 'Hệ hô hấp',
+    },
+    implementationStatus: 'in_development',
+    available: false,
+    statusNote: 'Đang phát triển (Sắp có)',
+    modelKey: null,
+    features: {
+      heartbeat: false,
+      heartbeatAudio: false,
+      particles: false,
+      safeSurfaceHover: false,
+      xray: false,
+    },
+    interaction: {
+      mode: 'mesh', // Sẵn sàng cho mô hình tách mesh trong tương lai
+    },
+    normalization: {
+      autoCenter: true,
+      targetSize: 0.28,
+      scaleModifier: 1.0,
+    },
+    camera: {
+      defaultPosition: { x: 0, y: 0.05, z: 0.5 },
+      defaultTarget: { x: 0, y: 0, z: 0 },
+      minDistance: 0.2,
+      maxDistance: 1.5,
+      presets: {},
+    },
+    structures: [],
+    cycleInfo: null,
+  },
+
+  stomach: {
+    id: 'stomach',
+    name: 'Dạ dày',
+    latin: 'Gaster',
+    icon: '🥣',
+    system: 'Hệ tiêu hóa',
+    curriculum: {
+      grade: 8,
+      topic: 'Hệ tiêu hóa',
+    },
+    implementationStatus: 'planned',
+    available: false,
+    statusNote: 'Đang phát triển (Sắp có)',
+    modelKey: null,
+    features: {
+      heartbeat: false,
+      heartbeatAudio: false,
+      particles: false,
+      safeSurfaceHover: false,
+      xray: false,
+    },
+    interaction: {
+      mode: 'hybrid',
+    },
+    normalization: {
+      autoCenter: true,
+      targetSize: 0.25,
+      scaleModifier: 1.0,
+    },
+    camera: {
+      defaultPosition: { x: 0, y: 0.02, z: 0.45 },
+      defaultTarget: { x: 0, y: 0, z: 0 },
+      minDistance: 0.18,
+      maxDistance: 1.3,
+      presets: {},
+    },
+    structures: [],
+    cycleInfo: null,
+  },
+
+  kidneys: {
+    id: 'kidneys',
+    name: 'Thận',
+    latin: 'Renes',
+    icon: '🫘',
+    system: 'Hệ bài tiết',
+    curriculum: {
+      grade: 8,
+      topic: 'Hệ bài tiết',
+    },
+    implementationStatus: 'planned',
+    available: false,
+    statusNote: 'Đang phát triển (Sắp có)',
+    modelKey: null,
+    features: {
+      heartbeat: false,
+      heartbeatAudio: false,
+      particles: false,
+      safeSurfaceHover: false,
+      xray: false,
+    },
+    interaction: {
+      mode: 'hotspots',
+    },
+    normalization: {
+      autoCenter: true,
+      targetSize: 0.25,
+      scaleModifier: 1.0,
+    },
+    camera: {
+      defaultPosition: { x: 0, y: 0.02, z: 0.45 },
+      defaultTarget: { x: 0, y: 0, z: 0 },
+      minDistance: 0.18,
+      maxDistance: 1.3,
+      presets: {},
+    },
+    structures: [],
+    cycleInfo: null,
+  },
+
+  brain: {
+    id: 'brain',
+    name: 'Não bộ',
+    latin: 'Encephalon',
+    icon: '🧠',
+    system: 'Hệ thần kinh',
+    curriculum: {
+      grade: 8,
+      topic: 'Hệ thần kinh',
+    },
+    implementationStatus: 'planned',
+    available: false,
+    statusNote: 'Đang phát triển (Sắp có)',
+    modelKey: null,
+    features: {
+      heartbeat: false,
+      heartbeatAudio: false,
+      particles: false,
+      safeSurfaceHover: false,
+      xray: false,
+    },
+    interaction: {
+      mode: 'mesh',
+    },
+    normalization: {
+      autoCenter: true,
+      targetSize: 0.26,
+      scaleModifier: 1.0,
+    },
+    camera: {
+      defaultPosition: { x: 0, y: 0.04, z: 0.48 },
+      defaultTarget: { x: 0, y: 0, z: 0 },
+      minDistance: 0.18,
+      maxDistance: 1.4,
+      presets: {},
+    },
+    structures: [],
+    cycleInfo: null,
+  },
 };
+
+/** Tương thích ngược */
+export const ORGAN_CONFIGS = ORGANS_DATA;
+
+export function getOrganConfig(id) {
+  return ORGANS_DATA[id] || null;
+}
 

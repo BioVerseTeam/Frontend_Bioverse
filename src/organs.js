@@ -2,20 +2,21 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { ORGAN_CONFIGS, getHeartStructure } from './organsData.js';
+import { ORGANS_DATA, getOrganConfig, getHeartStructure } from './organsData.js';
 import { MODEL_URLS } from './modelUrls.js';
 
 /**
  * ====================================================================
  * ORGANS VIEWER - ENGINE TƯƠNG TÁC GIẢI PHẪU 3D (GDPT 2018)
  * ====================================================================
- * Kiến trúc tương tác 4 lớp cho mô hình Single-mesh:
+ * Kiến trúc tương tác 4 lớp cho mô hình Single-mesh & Multi-Organ:
  * Layer 1: Hotspot System (Đầy đủ 6 cấu trúc với marker 3D nổi rõ)
  * Layer 2: 3D HUD Badges (Nhãn số [1]-[6] tự mở rộng khi hover/select)
  * Layer 3: Safe Surface Hover (Bắt va chạm bề mặt trong hoverRadius, loại trừ van tim)
  * Layer 4: Sidebar <-> 3D Bi-directional Synchronization
- * Occlusion: Camera-to-hotspot raycasting chống hiện tượng marker xuyên tim
- * Capabilities: Bio-Particles + Web Audio Heartbeat (Single Cardiac Clock)
+ * Occlusion: Camera-to-hotspot raycasting chống hiện tượng marker xuyên cơ quan
+ * Capabilities: Bio-Particles + Web Audio Heartbeat (Single Cardiac Clock Phase Crossing)
+ * Engine: Extensible Multi-Organ Loader & Safe State Rollback
  */
 export class OrgansViewer {
   constructor(containerId) {
@@ -35,10 +36,13 @@ export class OrgansViewer {
     this.modelGroup = null;
     this.heartMesh = null;
 
-    // Organ configuration & capabilities
-    this.organConfig = ORGAN_CONFIGS.heart;
-    this.currentStructures = this.organConfig.structures;
-    this.currentPresets = this.organConfig.cameraPresets;
+    // Multi-Organ Engine state
+    this.currentOrganId = null;
+    this.organLoadToken = 0;
+    this.isLoadingOrgan = false;
+    this.organConfig = null;
+    this.currentStructures = [];
+    this.currentPresets = {};
     this.hotspotGroups = []; // Array of hotspot objects
     this.hotspotRaycastMeshes = []; // Direct hitbox meshes
     this.selectedStructureId = null;
@@ -55,12 +59,15 @@ export class OrgansViewer {
     this.activeAudioNodes = [];
     this.lastS1Cycle = -1;
     this.lastS2Cycle = -1;
+    this.lastPhase = 0;
     this.lastFrameTime = performance.now() * 0.001;
 
     // Callbacks
     this.onRegionClick = null; // callback(structure | null, screenPos)
     this.onHover = null;       // callback(structure | null, screenPos)
     this.onLoadProgress = null;// callback(percent)
+    this.onOrganChange = null; // callback(organConfig)
+    this.onLoadError = null;   // callback(error, organId)
     this.onReady = null;
 
     // Floating 3D HUD labels layer
@@ -88,7 +95,7 @@ export class OrgansViewer {
     this.initScene();
     this.initLights();
     this.initCameraControls();
-    this.loadHeartModel();
+    this.loadOrgan('heart');
 
     // Event listeners
     this._onMouseMove = this._handleMouseMove.bind(this);
@@ -161,62 +168,206 @@ export class OrgansViewer {
     this.controls.target.set(0, 0, 0);
   }
 
-  loadHeartModel() {
-    const url = MODEL_URLS.human_heart || '/human_heart_3d.glb';
-    const loader = new GLTFLoader();
+  /**
+   * Tải mô hình cơ quan theo ID (Kiến trúc Multi-Organ)
+   * Tự động xử lý race-condition, safe rollback khi async error, và giải phóng tài nguyên cục bộ
+   */
+  async loadOrgan(organId, force = false) {
+    if (this.currentOrganId === organId && !force) {
+      // Đang xem cơ quan này rồi -> Không reload
+      return;
+    }
 
-    loader.load(
-      url,
-      (gltf) => {
-        this.modelGroup = new THREE.Group();
-        this.modelGroup.name = 'HeartRootGroup';
+    const config = getOrganConfig(organId);
+    if (!config) {
+      console.warn(`[OrgansViewer] Không tìm thấy cấu hình cho cơ quan: ${organId}`);
+      return;
+    }
 
-        const model = gltf.scene;
+    if (!config.available || !config.modelKey) {
+      console.info(`[OrgansViewer] Cơ quan "${config.name}" đang được phát triển (Sắp có).`);
+      return;
+    }
 
-        // 1. Căn tâm hình học (Center Bounding Box to 0,0,0)
+    const url = MODEL_URLS[config.modelKey] || `/${config.modelKey}_3d.glb`;
+    const token = ++this.organLoadToken;
+    this.isLoadingOrgan = true;
+
+    try {
+      const gltf = await this._loadGltfAsync(url, (percent) => {
+        if (token === this.organLoadToken && this.onLoadProgress) {
+          this.onLoadProgress(percent);
+        }
+      });
+
+      // Token mismatch: Người dùng đã click cơ quan khác nhanh hơn lượt tải này
+      if (token !== this.organLoadToken) {
+        this._disposeSubtree(gltf.scene);
+        return;
+      }
+
+      // Chỉ giải phóng tài nguyên thuộc về cơ quan cũ (Organ-owned resources)
+      // Giữ nguyên các Shared resources: Scene environment, RoomEnvironment, PMREM, Background particles, Camera, Renderer
+      this._unloadCurrentOrgan();
+
+      this.currentOrganId = organId;
+      this.organConfig = config;
+      this.currentStructures = config.structures || [];
+      this.currentPresets = config.camera?.presets || {};
+
+      this.modelGroup = new THREE.Group();
+      this.modelGroup.name = `${organId}RootGroup`;
+
+      const model = gltf.scene;
+
+      // 1. Model Normalization tùy biến riêng theo từng cơ quan
+      const norm = config.normalization || { autoCenter: true, targetSize: null, scaleModifier: 1.0 };
+      if (norm.autoCenter) {
         const box = new THREE.Box3().setFromObject(model);
         const center = new THREE.Vector3();
         box.getCenter(center);
         model.position.sub(center);
-
-        // 2. Kích hoạt texture map sRGB của mô hình PBR gốc
-        model.traverse((child) => {
-          if (child.isMesh && child.material) {
-            this.heartMesh = child;
-            const mats = Array.isArray(child.material) ? child.material : [child.material];
-            mats.forEach((m) => {
-              if (m.map) {
-                m.map.colorSpace = THREE.SRGBColorSpace;
-                m.map.needsUpdate = true;
-              }
-              m.needsUpdate = true;
-            });
-          }
-        });
-
-        this.modelGroup.add(model);
-
-        // 3. Khởi tạo 3D Hotspot Markers & HUD Badges
-        this._createHotspotMarkers();
-
-        // 4. Snap tọa độ các điểm ghim chính xác lên bề mặt ngoài của tim
-        this._snapHotspotsToSurface();
-
-        this.scene.add(this.modelGroup);
-        this.isLoaded = true;
-
-        if (this.onReady) this.onReady();
-      },
-      (xhr) => {
-        if (xhr.lengthComputable && this.onLoadProgress) {
-          const percent = Math.round((xhr.loaded / xhr.total) * 100);
-          this.onLoadProgress(percent);
-        }
-      },
-      (error) => {
-        console.error('[OrgansViewer] Error loading human_heart_3d.glb:', error);
       }
-    );
+      if (norm.targetSize != null) {
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        if (maxDim > 0) {
+          const s = (norm.targetSize / maxDim) * (norm.scaleModifier || 1.0);
+          model.scale.set(s, s, s);
+        }
+      } else if (norm.scaleModifier && norm.scaleModifier !== 1.0) {
+        model.scale.set(norm.scaleModifier, norm.scaleModifier, norm.scaleModifier);
+      }
+
+      // 2. Kích hoạt texture map sRGB của mô hình PBR gốc
+      model.traverse((child) => {
+        if (child.isMesh && child.material) {
+          this.heartMesh = child;
+          const mats = Array.isArray(child.material) ? child.material : [child.material];
+          mats.forEach((m) => {
+            if (m.map) {
+              m.map.colorSpace = THREE.SRGBColorSpace;
+              m.map.needsUpdate = true;
+            }
+            m.needsUpdate = true;
+          });
+        }
+      });
+
+      this.modelGroup.add(model);
+
+      // 3. Khởi tạo 3D Hotspot Markers & HUD Badges (nếu có structures)
+      if (this.currentStructures && this.currentStructures.length > 0) {
+        this._createHotspotMarkers();
+        if (organId === 'heart') {
+          this._snapHotspotsToSurface();
+        }
+      }
+
+      this.scene.add(this.modelGroup);
+
+      // 4. Áp dụng camera config riêng cho cơ quan
+      const camCfg = config.camera || {};
+      const defPos = camCfg.defaultPosition || { x: 0, y: 0.03, z: 0.46 };
+      const defTarget = camCfg.defaultTarget || { x: 0, y: 0, z: 0 };
+      this.camera.position.set(defPos.x, defPos.y, defPos.z);
+      this.controls.target.set(defTarget.x, defTarget.y, defTarget.z);
+      this.controls.minDistance = camCfg.minDistance || 0.15;
+      this.controls.maxDistance = camCfg.maxDistance || 1.2;
+      this.controls.update();
+
+      // Reset các trạng thái âm thanh & chu kỳ
+      this.lastS1Cycle = -1;
+      this.lastS2Cycle = -1;
+      this.lastPhase = 0;
+
+      this.isLoaded = true;
+      this.isLoadingOrgan = false;
+
+      if (this.onOrganChange) this.onOrganChange(config);
+      if (this.onReady) this.onReady();
+    } catch (err) {
+      if (token === this.organLoadToken) {
+        this.isLoadingOrgan = false;
+        console.error(`[OrgansViewer] Lỗi tải cơ quan ${organId}:`, err);
+        if (this.onLoadError) this.onLoadError(err, organId);
+      }
+    }
+  }
+
+  /**
+   * Helper tải GLTF bất đồng bộ bằng Promise
+   */
+  _loadGltfAsync(url, onProgress) {
+    return new Promise((resolve, reject) => {
+      const loader = new GLTFLoader();
+      loader.load(
+        url,
+        (gltf) => resolve(gltf),
+        (xhr) => {
+          if (xhr.lengthComputable && onProgress) {
+            const percent = Math.round((xhr.loaded / xhr.total) * 100);
+            onProgress(percent);
+          }
+        },
+        (error) => reject(error)
+      );
+    });
+  }
+
+  /**
+   * Tương thích ngược với code cũ
+   */
+  loadHeartModel() {
+    return this.loadOrgan('heart');
+  }
+
+  /**
+   * Giải phóng tài nguyên cục bộ của cơ quan hiện tại (Organ-owned resources)
+   * TUYỆT ĐỐI KHÔNG giải phóng tài nguyên dùng chung (Shared resources):
+   * RoomEnvironment / PMREM / scene.environment / bgParticles / renderer / controls
+   */
+  _unloadCurrentOrgan() {
+    this._stopAllAudio();
+    if (this.modelGroup) {
+      this.scene.remove(this.modelGroup);
+      this._disposeSubtree(this.modelGroup);
+      this.modelGroup = null;
+    }
+    this.heartMesh = null;
+    this.hotspotGroups = [];
+    this.hotspotRaycastMeshes = [];
+    if (this.floatingLabelsContainer) {
+      this.floatingLabelsContainer.innerHTML = '';
+    }
+    this.selectedStructureId = null;
+    this.hoveredStructure = null;
+    this.isLoaded = false;
+  }
+
+  /**
+   * Đệ quy giải phóng geometry và material của một nhánh đối tượng 3D
+   */
+  _disposeSubtree(obj) {
+    if (!obj) return;
+    obj.traverse((child) => {
+      if (child.geometry) {
+        child.geometry.dispose();
+      }
+      if (child.material) {
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach((m) => {
+          if (m.map) m.map.dispose();
+          if (m.normalMap) m.normalMap.dispose();
+          if (m.roughnessMap) m.roughnessMap.dispose();
+          if (m.metalnessMap) m.metalnessMap.dispose();
+          if (m.emissiveMap) m.emissiveMap.dispose();
+          m.dispose();
+        });
+      }
+    });
   }
 
   /**
@@ -508,6 +659,11 @@ export class OrgansViewer {
 
   // ---------- Visual State & Selection (Layer 4) ----------
 
+  getStructure(structureId) {
+    if (!structureId) return null;
+    return this.currentStructures?.find((s) => s.id === structureId) || getHeartStructure(structureId);
+  }
+
   setHoveredStructure(structure) {
     this.hoveredStructure = structure;
     this._updateMarkerVisuals();
@@ -515,7 +671,7 @@ export class OrgansViewer {
 
   setHoveredFromSidebar(structureId) {
     if (structureId) {
-      const structure = getHeartStructure(structureId);
+      const structure = this.getStructure(structureId);
       this.setHoveredStructure(structure);
     } else {
       this.setHoveredStructure(null);
@@ -528,7 +684,7 @@ export class OrgansViewer {
 
     if (!structureId) return;
 
-    const structure = getHeartStructure(structureId);
+    const structure = this.getStructure(structureId);
     if (!structure) return;
 
     // Smooth camera focus tới cấu trúc được chọn
@@ -642,7 +798,7 @@ export class OrgansViewer {
   // ---------- Camera Focus & Presets (Easing Tween) ----------
 
   focusStructure(structureId) {
-    const structure = getHeartStructure(structureId);
+    const structure = this.getStructure(structureId);
     if (!structure) return;
 
     const targetPos = new THREE.Vector3(
@@ -661,9 +817,10 @@ export class OrgansViewer {
   }
 
   resetView() {
+    const camCfg = this.organConfig?.camera || {};
     const defPreset = this.currentPresets?.default || {
-      position: { x: 0, y: 0.03, z: 0.46 },
-      target: { x: 0, y: 0, z: 0 },
+      position: camCfg.defaultPosition || { x: 0, y: 0.03, z: 0.46 },
+      target: camCfg.defaultTarget || { x: 0, y: 0, z: 0 },
     };
 
     const targetPos = new THREE.Vector3(defPreset.position.x, defPreset.position.y, defPreset.position.z);
@@ -726,6 +883,18 @@ export class OrgansViewer {
     return this.labelsVisible;
   }
 
+  /**
+   * Kiểm tra xem thời điểm chuyển đổi pha có vượt qua ngưỡng target hay không
+   * Hỗ trợ vượt qua trong cùng chu kỳ hoặc cuộn qua điểm 1.0 -> 0.0
+   */
+  _hasCrossedPhase(prev, curr, target) {
+    if (prev <= curr) {
+      return prev < target && curr >= target;
+    } else {
+      return prev < target || curr >= target;
+    }
+  }
+
   // ---------- Animation Loop & Single Cardiac Clock ----------
 
   _animate() {
@@ -753,23 +922,20 @@ export class OrgansViewer {
         this.modelGroup.scale.set(beatScale, beatScale * 1.02, beatScale);
       }
 
-      // Âm thanh nhịp tim Web Audio S1 / S2 đồng bộ cùng 1 nguồn thời gian nhịp đập
+      // Âm thanh nhịp tim Web Audio S1 / S2 kích hoạt theo Cardiac Phase Crossing
       if (this.soundEnabled && this.heartbeatEnabled && this.organConfig?.features?.heartbeatAudio) {
-        // S1 (Lubb): Đầu pha co thất (phase < 0.15), đóng van nhĩ - thất
-        if (phase < 0.15) {
-          if (cycleIndex !== this.lastS1Cycle) {
-            this.lastS1Cycle = cycleIndex;
-            this._playS1Lubb();
-          }
-        }
-        // S2 (Dubb): Đầu pha dãn chung (phase 0.35 -> 0.52), đóng van tổ chim
-        else if (phase >= 0.35 && phase < 0.52) {
-          if (cycleIndex !== this.lastS2Cycle) {
-            this.lastS2Cycle = cycleIndex;
-            this._playS2Dubb();
-          }
+        const S1_PHASE = 0.125; // Đỉnh co tâm nhĩ / đầu co tâm thất
+        const S2_PHASE = 0.50;  // Đóng van tổ chim / đầu dãn chung
+
+        if (this._hasCrossedPhase(this.lastPhase, phase, S1_PHASE) && cycleIndex !== this.lastS1Cycle) {
+          this.lastS1Cycle = cycleIndex;
+          this._playS1Lubb();
+        } else if (this._hasCrossedPhase(this.lastPhase, phase, S2_PHASE) && cycleIndex !== this.lastS2Cycle) {
+          this.lastS2Cycle = cycleIndex;
+          this._playS2Dubb();
         }
       }
+      this.lastPhase = phase;
 
       // 2. Diễn hoạt vòng Hotspots nhấp nháy hướng về camera
       this.hotspotGroups.forEach((h) => {
@@ -993,6 +1159,8 @@ export class OrgansViewer {
     this.container.removeEventListener('mouseup', this._onMouseUp);
     window.removeEventListener('resize', this._onResize);
 
+    this._unloadCurrentOrgan();
+
     if (this.floatingLabelsContainer) {
       this.floatingLabelsContainer.innerHTML = '';
       if (this.floatingLabelsContainer.parentNode === this.container) {
@@ -1000,17 +1168,15 @@ export class OrgansViewer {
       }
     }
 
+    if (this.bgParticles) {
+      if (this.bgParticles.geometry) this.bgParticles.geometry.dispose();
+      if (this.bgParticles.material) this.bgParticles.material.dispose();
+      this.scene.remove(this.bgParticles);
+      this.bgParticles = null;
+    }
+
     if (this.scene) {
-      this.scene.traverse((obj) => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material)) {
-            obj.material.forEach((m) => m.dispose());
-          } else {
-            obj.material.dispose();
-          }
-        }
-      });
+      this._disposeSubtree(this.scene);
     }
 
     if (this.renderer) {
