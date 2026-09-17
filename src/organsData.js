@@ -213,19 +213,219 @@ export function getHeartStructure(id) {
   return HEART_STRUCTURES.find((s) => s.id === id) || null;
 }
 
-/**
- * ====================================================================
- * DỮ LIỆU TỔNG THỂ CÁC HỆ CƠ QUAN TRONG CƠ THỂ NGƯỜI (GDPT 2018)
- * ====================================================================
- * Cấu trúc dữ liệu Multi-Organ chuẩn hóa:
- * - curriculum: Thông tin chuyên đề/chủ đề sinh học KHTN.
- * - implementationStatus: Trạng thái phát triển ('stable', 'in_development', 'planned').
- * - available: Cờ boolean cho phép load mô hình 3D.
- * - features: Bảng năng lực (capabilities) riêng của từng cơ quan.
- * - interaction.mode: Chiến lược tương tác 3D ('hybrid', 'hotspots', 'mesh').
- * - normalization: Tùy biến chuẩn hóa trọng tâm và scale riêng cho từng cơ quan.
- * - camera: Cấu hình camera và presets riêng.
- */
+
+// ====================================================================
+// BỘ DỮ LIỆU GIẢI PHẪU PHỔI NGƯỜI (HỆ HÔ HẤP - KHTN 8)
+// ====================================================================
+export const LUNGS_STRUCTURES = [
+  {
+    id: 'trachea',
+    number: 1,
+    badge: '1',
+    name: 'Khí quản',
+    shortName: 'Khí quản',
+    latin: 'Trachea',
+    color: '#38bdf8',
+    position: { x: -0.001, y: 0.112, z: 0.010 },
+    hoverRadius: 0.045,
+    cameraPosition: { x: 0.0, y: 0.12, z: 0.42 },
+    cameraTarget: { x: 0.0, y: 0.10, z: 0.0 },
+    visibility: {
+      preferredView: 'front',
+    },
+    anatomy: {
+      type: 'external',
+      note: 'Ống dẫn khí chính',
+    },
+    structure:
+      'Ống dẫn khí hình trụ dài khoảng 11-13 cm, gồm 16-20 vòng sụn khuyết chữ C xếp chồng lên nhau, phía sau là lớp cơ trơn đàn hồi giúp thực quản dễ dàng dãn nở khi nuốt thức ăn. Lớp niêm mạc lót có biểu mô trụ có lông rung và tuyến tiết chất nhầy.',
+    function:
+      'Dẫn không khí từ thanh quản xuống phế quản; lớp chất nhầy giữ lại bụi bẩn, vi khuẩn và các vi mao lông rung liên tục đẩy dị vật ngược lên hầu họng để ho hoặc khạc ra ngoài, giúp sưởi ấm, làm ẩm và làm sạch luồng không khí hít vào.',
+    healthNote:
+      'Khói thuốc lá và bụi mịn làm tê liệt, phá hủy hệ thống lông rung của khí quản, khiến đường thở mất khả năng tự làm sạch, dẫn tới viêm khí quản mạn tính và ho khan dai dẳng.',
+  },
+  {
+    id: 'bronchi',
+    number: 2,
+    badge: '2',
+    name: 'Phế quản chính',
+    shortName: 'Phế quản',
+    latin: 'Bronchi principales',
+    color: '#a855f7',
+    position: { x: -0.001, y: 0.061, z: 0.008 },
+    hoverRadius: 0.038,
+    cameraPosition: { x: 0.0, y: 0.07, z: 0.38 },
+    cameraTarget: { x: 0.0, y: 0.05, z: 0.0 },
+    visibility: {
+      preferredView: 'front',
+    },
+    anatomy: {
+      type: 'external',
+      note: 'Nhánh phân nhánh vào 2 phổi',
+    },
+    structure:
+      'Nơi khí quản chia đôi (chẽ ba khí quản - Carina) thành hai nhánh: phế quản chính phải (ngắn hơn, đường kính to hơn và dốc đứng hơn) và phế quản chính trái (dài hơn, nhỏ hơn và nằm ngang hơn). Cấu tạo bởi các vòng sụn hoàn chỉnh bao quanh.',
+    function:
+      'Phân chia và dẫn truyền không khí trực tiếp vào rốn phổi của từng lá phổi tương ứng, sau đó tiếp tục phân nhánh liên tục thành cây phế quản (phế quản thùy, phân thùy và tiểu phế quản tận).',
+    healthNote:
+      'Do phế quản chính phải to và dốc hơn phế quản trái, các dị vật đường thở (hạt dưa, đồ chơi nhỏ trẻ em vô tình hít phải) có tới hơn 70% trường hợp rơi mắc vào phế quản bên phải.',
+  },
+  {
+    id: 'pulmo_dexter',
+    number: 3,
+    badge: '3',
+    name: 'Phổi phải (3 thùy)',
+    shortName: 'Phổi phải',
+    latin: 'Pulmo dexter',
+    color: '#ef4444',
+    position: { x: -0.045, y: 0.020, z: 0.020 },
+    hoverRadius: 0.055,
+    cameraPosition: { x: -0.16, y: 0.02, z: 0.45 },
+    cameraTarget: { x: -0.04, y: 0.01, z: 0.0 },
+    visibility: {
+      preferredView: 'right',
+    },
+    anatomy: {
+      type: 'external',
+      note: 'Lá phổi lớn hơn (3 thùy)',
+    },
+    structure:
+      'Lá phổi nằm ở nửa bên phải khoang ngực, có thể tích và trọng lượng lớn hơn phổi trái (~600g). Được chia thành 3 thùy riêng biệt (thùy trên, thùy giữa, thùy dưới) bởi hai rãnh xẻ sâu: khe chếch và khe ngang.',
+    function:
+      'Thực hiện trao đổi khí chủ lực của cơ thể: tiếp nhận khí O₂ từ phế nang khuếch tán vào máu và đào thải CO₂ từ mao mạch máu ra ngoài. Đóng góp khoảng 55% tổng dung tích hô hấp của cơ thể.',
+    healthNote:
+      'Phổi phải nằm ngay phía trên cơ hoành và gan; viêm phổi thùy dưới bên phải có thể gây đau lan tỏa xuống vùng hạ sườn phải dễ nhầm lẫn với các bệnh lý gan mật cấp.',
+  },
+  {
+    id: 'pulmo_sinister',
+    number: 4,
+    badge: '4',
+    name: 'Phổi trái (2 thùy & Khuyết tim)',
+    shortName: 'Phổi trái',
+    latin: 'Pulmo sinister',
+    color: '#3b82f6',
+    position: { x: 0.048, y: 0.020, z: 0.020 },
+    hoverRadius: 0.055,
+    cameraPosition: { x: 0.16, y: 0.02, z: 0.45 },
+    cameraTarget: { x: 0.04, y: 0.01, z: 0.0 },
+    visibility: {
+      preferredView: 'left',
+    },
+    anatomy: {
+      type: 'external',
+      note: 'Có khuyết tim đặc trưng',
+    },
+    structure:
+      'Lá phổi nằm ở nửa bên trái lồng ngực, dung tích nhỏ hơn phổi phải (~500g). Chỉ gồm 2 thùy (thùy trên và thùy dưới) ngăn cách bởi khe chếch. Ở bờ trước phía trong có một vết lõm sâu gọi là khuyết tim (Incisura cardiaca) để nhường chỗ cho đỉnh quả tim tựa vào.',
+    function:
+      'Cùng với phổi phải duy trì thông khí và khuếch tán khí O₂ / CO₂ liên tục giữa cơ thể với môi trường ngoài. Đóng góp khoảng 45% chức năng trao đổi khí toàn cơ thể.',
+    healthNote:
+      'Khuyết tim trên phổi trái là minh chứng cho sự tối ưu không gian giải phẫu giữa hệ tuần hoàn và hệ hô hấp trong lồng ngực người.',
+  },
+  {
+    id: 'lobi_pulmonis',
+    number: 5,
+    badge: '5',
+    name: 'Các thùy phổi & Màng phổi',
+    shortName: 'Màng phổi',
+    latin: 'Lobi pulmonis & Pleura',
+    color: '#f59e0b',
+    position: { x: -0.038, y: 0.075, z: 0.012 },
+    hoverRadius: 0.045,
+    cameraPosition: { x: -0.10, y: 0.08, z: 0.40 },
+    cameraTarget: { x: -0.02, y: 0.06, z: 0.0 },
+    visibility: {
+      preferredView: 'front',
+    },
+    anatomy: {
+      type: 'external',
+      note: 'Bao bọc & bảo vệ phổi',
+    },
+    structure:
+      'Phổi được bao bọc bởi màng phổi gồm 2 lá thanh mạc: lá thành lót mặt trong lồng ngực và lá tạng dính sát mặt ngoài nhu mô phổi. Giữa hai lá là khoang màng phổi kín chứa một lượng dịch nhờn vi lượng giúp hai lá trượt êm ái lên nhau khi thở.',
+    function:
+      'Khoang màng phổi kín duy trì áp suất âm so với khí quyển, giúp phổi luôn nở ôm sát lồng ngực và dãn nở thụ động dễ dàng theo sự chuyển động của khung xương sườn và cơ hoành.',
+    healthNote:
+      'Tràn khí hoặc tràn dịch màng phổi làm mất áp suất âm, khiến nhu mô phổi bị co xẹp (xẹp phổi), gây khó thở cấp tính và đau ngực nhói dữ dội khi hít sâu.',
+  },
+  {
+    id: 'alveoli',
+    number: 6,
+    badge: '6',
+    name: 'Phế nang & Mạng mao mạch',
+    shortName: 'Phế nang',
+    latin: 'Alveoli pulmonis',
+    color: '#10b981',
+    position: { x: 0.035, y: -0.030, z: 0.015 },
+    hoverRadius: 0.040,
+    cameraPosition: { x: 0.12, y: -0.04, z: 0.38 },
+    cameraTarget: { x: 0.03, y: -0.03, z: 0.0 },
+    visibility: {
+      preferredView: 'front',
+    },
+    anatomy: {
+      type: 'internal',
+      note: 'Đơn vị trao đổi khí vi mô',
+      educationalNote: 'Phế nang là cấu trúc vi mô nằm sâu trong nhu mô phổi (300-500 triệu phế nang), điểm ghim đại diện cho đơn vị chức năng trao đổi khí.',
+    },
+    structure:
+      'Đơn vị cấu tạo và chức năng cơ bản của phổi. Ở người có khoảng 300 - 500 triệu phế nang hình túi cầu tí hon, tạo nên tổng diện tích bề mặt trao đổi khí khổng lồ lên tới 70 - 100 m² (gấp 40 - 50 lần diện tích da). Thành phế nang cực mỏng, chỉ gồm một lớp tế bào dẹt tiếp xúc với mạng mao mạch máu dày đặc.',
+    function:
+      'Là nơi diễn ra sự khuếch tán khí sinh học: O₂ từ lòng phế nang khuếch tán qua màng hô hấp vào hồng cầu máu, đồng thời CO₂ từ máu mao mạch khuếch tán ngược vào lòng phế nang để tống ra ngoài khi thở ra.',
+    healthNote:
+      'Bụi mịn siêu vi PM2.5 và khói thuốc có thể vượt qua toàn bộ hàng rào bảo vệ, xâm nhập sâu vào tận các phế nang, làm vỡ các vách ngăn phế nang (bệnh khí phế thũng) gây suy hô hấp không hồi phục.',
+  },
+];
+
+export const LUNGS_CAMERA_PRESETS = {
+  front: {
+    position: { x: 0, y: 0.02, z: 0.62 },
+    target: { x: 0, y: 0.02, z: 0 },
+    description: 'Mặt trước: Quan sát khí quản, phế quản và các thùy phổi',
+  },
+  back: {
+    position: { x: 0, y: 0.02, z: -0.62 },
+    target: { x: 0, y: 0.02, z: 0 },
+    description: 'Mặt sau: Quan sát mặt sau khí quản và rốn phổi',
+  },
+  left: {
+    position: { x: 0.62, y: 0.02, z: 0 },
+    target: { x: 0, y: 0.02, z: 0 },
+    description: 'Bên trái: Quan sát thùy trên, thùy dưới và khuyết tim phổi trái',
+  },
+  right: {
+    position: { x: -0.62, y: 0.02, z: 0 },
+    target: { x: 0, y: 0.02, z: 0 },
+    description: 'Bên phải: Quan sát 3 thùy phổi phải và các khe rãnh',
+  },
+  top: {
+    position: { x: 0, y: 0.65, z: 0.05 },
+    target: { x: 0, y: 0.02, z: 0 },
+    description: 'Góc nhìn từ trên: Quan sát đỉnh phổi và đường vào khí quản',
+  },
+};
+
+export const LUNGS_CYCLE_INFO = {
+  name: 'Cơ chế thông khí phổi',
+  duration: '3.5 - 4.0 giây (16-18 nhịp/phút)',
+  insight: 'Ở trạng thái nghỉ ngơi, mỗi nhịp thở lưu thông khoảng 500 ml không khí (khí lưu thông). Khi gắng sức, dung tích sống có thể đạt tới 3.5 - 4.5 lít.',
+  phases: [
+    {
+      name: 'Pha hít vào chủ động',
+      time: '1.5 giây',
+      action: 'Cơ liên sườn ngoài và cơ hoành co, lồng ngực dãn rộng và cơ hoành hạ thấp -> Thể tích khoang ngực tăng -> Áp suất phế nang giảm dưới áp suất khí quyển -> Không khí giàu O₂ ùa vào phổi.',
+    },
+    {
+      name: 'Pha thở ra thụ động',
+      time: '2.5 giây',
+      action: 'Cơ liên sườn ngoài và cơ hoành dãn, lồng ngực hạ xuống và cơ hoành nhô lên -> Thể tích khoang ngực giảm -> Áp suất phế nang tăng cao hơn khí quyển -> Đẩy không khí giàu CO₂ ra ngoài.',
+    },
+  ],
+};
+
+// ====================================================================
+// MASTER DATABASE - 5 CƠ QUAN GIẢI PHẪU (KHTN 8)
+// ====================================================================
 export const ORGANS_DATA = {
   heart: {
     id: 'heart',
@@ -277,34 +477,34 @@ export const ORGANS_DATA = {
       grade: 8,
       topic: 'Hệ hô hấp',
     },
-    implementationStatus: 'in_development',
-    available: false,
-    statusNote: 'Đang phát triển (Sắp có)',
-    modelKey: null,
+    implementationStatus: 'stable',
+    available: true,
+    statusNote: 'Đã hoàn thiện v1',
+    modelKey: 'lungs',
     features: {
       heartbeat: false,
       heartbeatAudio: false,
       particles: false,
-      safeSurfaceHover: false,
+      safeSurfaceHover: true,
       xray: false,
     },
     interaction: {
-      mode: 'mesh', // Sẵn sàng cho mô hình tách mesh trong tương lai
+      mode: 'hybrid', // 2 mesh (đường dẫn khí + nhu mô phổi) kết hợp 6 3D Hotspots
     },
     normalization: {
       autoCenter: true,
-      targetSize: 0.28,
+      targetSize: null, // Giữ nguyên kích thước gốc chuẩn của mô hình 0.369m
       scaleModifier: 1.0,
     },
     camera: {
-      defaultPosition: { x: 0, y: 0.05, z: 0.5 },
-      defaultTarget: { x: 0, y: 0, z: 0 },
-      minDistance: 0.2,
-      maxDistance: 1.5,
-      presets: {},
+      defaultPosition: { x: 0, y: 0.02, z: 0.62 },
+      defaultTarget: { x: 0, y: 0.02, z: 0 },
+      minDistance: 0.25,
+      maxDistance: 1.8,
+      presets: LUNGS_CAMERA_PRESETS,
     },
-    structures: [],
-    cycleInfo: null,
+    structures: LUNGS_STRUCTURES,
+    cycleInfo: LUNGS_CYCLE_INFO,
   },
 
   stomach: {

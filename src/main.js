@@ -361,8 +361,20 @@ function switchMode(mode) {
       organsViewer.onRegionClick = handleOrganStructureClick;
       organsViewer.onHover = handleOrganHover;
       organsViewer.onOrganChange = (config) => {
+        if (organsInfoPopup) organsInfoPopup.classList.add('hidden');
+        selectedOrganStructure = null;
+        updateOrganListHighlight(null);
         updateOrganSidebar(config);
         updateDockActiveState(config.id);
+
+        const soundBtn = document.getElementById('organs-sound-btn');
+        if (soundBtn) {
+          soundBtn.classList.remove('active');
+          const soundIcon = document.getElementById('organs-sound-icon');
+          const soundLabel = document.getElementById('organs-sound-label');
+          if (soundIcon) soundIcon.textContent = '🔇';
+          if (soundLabel) soundLabel.textContent = 'Âm thanh: TẮT';
+        }
       };
     } else {
       updateOrganSidebar(organsViewer.organConfig || getOrganConfig('heart'));

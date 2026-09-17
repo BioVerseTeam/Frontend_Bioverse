@@ -35,6 +35,7 @@ export class OrgansViewer {
     this.controls = null;
     this.modelGroup = null;
     this.heartMesh = null;
+    this.organMeshes = [];
 
     // Multi-Organ Engine state
     this.currentOrganId = null;
@@ -241,10 +242,12 @@ export class OrgansViewer {
         model.scale.set(norm.scaleModifier, norm.scaleModifier, norm.scaleModifier);
       }
 
-      // 2. Kích hoạt texture map sRGB của mô hình PBR gốc
+      // 2. Kích hoạt texture map sRGB của mô hình PBR gốc & thu thập meshes
+      this.organMeshes = [];
       model.traverse((child) => {
         if (child.isMesh && child.material) {
-          this.heartMesh = child;
+          this.organMeshes.push(child);
+          this.heartMesh = child; // Giữ tham chiếu backward compatibility
           const mats = Array.isArray(child.material) ? child.material : [child.material];
           mats.forEach((m) => {
             if (m.map) {
@@ -255,6 +258,11 @@ export class OrgansViewer {
           });
         }
       });
+
+      // Bật/tắt background particles dựa theo config cơ quan
+      if (this.bgParticles) {
+        this.bgParticles.visible = !!config.features?.particles;
+      }
 
       this.modelGroup.add(model);
 
@@ -337,6 +345,7 @@ export class OrgansViewer {
       this.modelGroup = null;
     }
     this.heartMesh = null;
+    this.organMeshes = [];
     this.hotspotGroups = [];
     this.hotspotRaycastMeshes = [];
     if (this.floatingLabelsContainer) {
@@ -571,11 +580,16 @@ export class OrgansViewer {
       }
     }
 
-    // 2. Safe Surface Proximity (Raycast vào heartMesh)
-    if (this.heartMesh) {
-      const surfaceHits = this.raycaster.intersectObject(this.heartMesh, false);
+    // 2. Safe Surface Proximity (Raycast vào meshes của cơ quan)
+    const targetMeshes = (this.organMeshes && this.organMeshes.length > 0)
+      ? this.organMeshes
+      : (this.heartMesh ? [this.heartMesh] : []);
+
+    if (targetMeshes.length > 0) {
+      const surfaceHits = this.raycaster.intersectObjects(targetMeshes, false);
       if (surfaceHits.length > 0) {
-        const hitPoint = surfaceHits[0].point; // World coordinate space
+        const hit = surfaceHits[0];
+        const hitPoint = hit.point; // World coordinate space
 
         let nearestCandidate = null;
         let minDistance = Infinity;
@@ -583,7 +597,7 @@ export class OrgansViewer {
         for (const h of this.hotspotGroups) {
           const item = h.data;
 
-          // LOẠI TRỪ cấu trúc bên trong (internal): Van tim không nhận diện từ surface!
+          // LOẠI TRỪ cấu trúc bên trong (internal): Van tim, phế nang không nhận diện từ surface!
           if (item.anatomy?.type === 'internal') continue;
 
           // Lấy tọa độ thế giới của hotspot
@@ -599,6 +613,24 @@ export class OrgansViewer {
 
         if (nearestCandidate) {
           return nearestCandidate;
+        }
+
+        // Hybrid mesh mapping fallback cho Lungs:
+        // Phân vùng hình học giải phẫu của 2 mesh khi click ngoài bán kính hotspot
+        if (this.currentOrganId === 'lungs' && this.modelGroup) {
+          const localHit = this.modelGroup.worldToLocal(hitPoint.clone());
+          const meshName = hit.object.name || '';
+          if (meshName.includes('part01')) {
+            // Mesh 1: Đường dẫn khí (Khí quản ở trên, phế quản ở chỗ chẽ đôi)
+            const structId = localHit.y > 0.08 ? 'trachea' : 'bronchi';
+            const candidate = this.currentStructures.find((s) => s.id === structId);
+            if (candidate) return candidate;
+          } else if (meshName.includes('part02')) {
+            // Mesh 2: Nhu mô phổi (X < 0 là phổi phải, X > 0 là phổi trái)
+            const structId = localHit.x < 0 ? 'pulmo_dexter' : 'pulmo_sinister';
+            const candidate = this.currentStructures.find((s) => s.id === structId);
+            if (candidate) return candidate;
+          }
         }
       }
     }
@@ -756,13 +788,17 @@ export class OrgansViewer {
       h.group.getWorldPosition(this._tempVecA);
 
       // 2. Occlusion test bằng raycast từ Camera -> Hotspot
-      if (this.heartMesh) {
+      const targetMeshes = (this.organMeshes && this.organMeshes.length > 0)
+        ? this.organMeshes
+        : (this.heartMesh ? [this.heartMesh] : []);
+
+      if (targetMeshes.length > 0) {
         this._tempDir.subVectors(this._tempVecA, this.camera.position);
         const distToHotspot = this._tempDir.length();
         this._tempDir.normalize();
 
         this.occlusionRaycaster.set(this.camera.position, this._tempDir);
-        const hits = this.occlusionRaycaster.intersectObject(this.heartMesh, false);
+        const hits = this.occlusionRaycaster.intersectObjects(targetMeshes, false);
 
         // Nếu tia va chạm mesh trước khi đến hotspot (dung sai 0.015), hotspot đang bị che lấp
         if (hits.length > 0 && hits[0].distance < distToHotspot - 0.015) {

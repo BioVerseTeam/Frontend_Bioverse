@@ -46,15 +46,20 @@ const ROOT_DIR   = process.cwd();
 const GLB_FILES  = [];
 
 async function collectFiles(dir, prefix = '') {
-  const entries = await readdir(dir);
-  for (const entry of entries) {
-    const fullPath = join(dir, entry);
-    const s = await stat(fullPath);
-    if (s.isFile() && extname(entry).toLowerCase() === '.glb') {
-      const key = prefix ? `${prefix}/${entry}` : entry;
-      GLB_FILES.push({ path: fullPath, key });
+  try {
+    const entries = await readdir(dir);
+    for (const entry of entries) {
+      const fullPath = join(dir, entry);
+      const s = await stat(fullPath);
+      if (s.isFile() && extname(entry).toLowerCase() === '.glb') {
+        const key = prefix ? `${prefix}/${entry}` : entry;
+        // Do not re-add if key already collected
+        if (!GLB_FILES.some(f => f.key === key)) {
+          GLB_FILES.push({ path: fullPath, key });
+        }
+      }
     }
-  }
+  } catch {}
 }
 
 async function upload(file) {
@@ -80,6 +85,11 @@ async function main() {
   console.log(`📦 Upload models to R2 bucket: ${BUCKET}\n`);
 
   await collectFiles(PUBLIC_DIR);
+
+  const TEMP_DIR = join(process.cwd(), 'temp_models');
+  try {
+    await collectFiles(TEMP_DIR);
+  } catch {}
 
   const rootEntries = await readdir(ROOT_DIR);
   for (const entry of rootEntries) {
