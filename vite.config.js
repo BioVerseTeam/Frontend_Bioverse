@@ -4,8 +4,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8088',
-        changeOrigin: true
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        timeout: 300000
       },
       '/tripoapi': {
         target: 'https://api.tripo3d.ai',
