@@ -1110,104 +1110,6 @@ input:checked + .slider-switch:before {
 }
 
 /* ===========================
-   TRIPO3D AI PANEL STYLES
-   =========================== */
-.tripo-section {
-  border-top: 1px solid var(--panel-border);
-  padding-top: 16px;
-  margin-top: 12px;
-}
-
-.tripo-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.tripo-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tripo-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  letter-spacing: 0.5px;
-}
-
-.tripo-input {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--panel-border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 13px;
-  outline: none;
-  transition: var(--transition-smooth);
-  width: 100%;
-}
-
-.tripo-input:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
-}
-
-textarea.tripo-input {
-  resize: none;
-}
-
-.tripo-file-upload {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.tripo-file-name {
-  font-size: 11px;
-  color: var(--text-muted);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tripo-status {
-  background: rgba(34, 197, 94, 0.05);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-top: 10px;
-}
-
-.tripo-status-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 500;
-  color: #86efac;
-  margin-bottom: 6px;
-}
-
-.tripo-progress-bar {
-  background: rgba(255, 255, 255, 0.05);
-  height: 4px;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.tripo-progress-fill {
-  background: #22c55e;
-  height: 100%;
-  width: 0%;
-  transition: width 0.3s ease;
-  box-shadow: 0 0 6px #22c55e;
-}
-
-/* ===========================
    RESPONSIVE
    =========================== */
 
@@ -2273,4 +2175,275 @@ textarea.tripo-input {
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
 }
+
+/* ====================================================================
+   ORGANS 3D HUD FLOATING LABELS & BADGES (GDPT 2018)
+   ==================================================================== */
+.organs-floating-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+  overflow: hidden;
+}
+
+.organ-hud-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+  white-space: nowrap;
+  user-select: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  will-change: transform, opacity, left, top;
+}
+
+.organ-hud-badge .badge-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.72rem;
+  color: #ffffff;
+  background: var(--badge-color, #ef4444);
+  box-shadow: 0 0 10px var(--badge-color, #ef4444);
+  flex-shrink: 0;
+}
+
+.organ-hud-badge .badge-text {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  letter-spacing: -0.01em;
+  transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, padding 0.2s ease;
+}
+
+/* Tự động mở rộng tên khi hover hoặc selected */
+.organ-hud-badge:hover,
+.organ-hud-badge.is-hovered,
+.organ-hud-badge.is-selected {
+  border-color: var(--badge-color, #ef4444);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6), 0 0 12px var(--badge-color, #ef4444);
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 10;
+}
+
+.organ-hud-badge:hover .badge-text,
+.organ-hud-badge.is-hovered .badge-text,
+.organ-hud-badge.is-selected .badge-text {
+  max-width: 170px;
+  opacity: 1;
+  padding-right: 4px;
+}
+
+.organ-hud-badge.is-selected {
+  transform: translate(-50%, -50%) scale(1.12);
+  border-width: 1.5px;
+}
+
+.organ-hud-badge.is-occluded {
+  opacity: 0.15 !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -50%) scale(0.85);
+}
+
+/* Badge biểu thị cấu trúc bên trong */
+.internal-structure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+/* Sidebar hover & active synchronization */
+#organs-part-list .skull-bone-item {
+  transition: all 0.2s ease;
+}
+
+#organs-part-list .skull-bone-item.is-hovered:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateX(4px);
+}
+
+#organs-part-list .skull-bone-item.active {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: var(--accent-pink);
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.3);
+  transform: translateX(6px);
+}
+
+/* Educational disclaimer note for internal structure */
+.organs-info-edu-note {
+  margin-top: 6px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #fde047;
+  line-height: 1.45;
+}
+
+/* ====================================================================
+ * MULTI-ORGAN SUB-NAVIGATION DOCK & STATUS TOAST (KHTN 8)
+ * ==================================================================== */
+
+.organs-subdock {
+  position: absolute;
+  bottom: 136px;
+  left: calc((100% - 424px) / 2 + 24px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(11, 15, 29, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+  pointer-events: auto;
+  max-width: calc(100vw - 480px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.organs-subdock::-webkit-scrollbar {
+  display: none;
+}
+
+.organ-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.organ-dock-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.organ-dock-btn.active {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.4), rgba(225, 29, 72, 0.55));
+  border-color: rgba(244, 63, 94, 0.85);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.4);
+  font-weight: 600;
+}
+
+.organ-dock-btn[aria-disabled="true"] {
+  opacity: 0.7;
+  cursor: pointer; /* Cho phép click để hiện status toast thông báo */
+}
+
+.organ-dock-btn[aria-disabled="true"]:hover {
+  opacity: 0.95;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.organ-dock-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.organ-dock-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.organs-status-toast {
+  position: absolute;
+  bottom: 188px;
+  left: calc((100% - 424px) / 2 + 24px);
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #e0f2fe;
+  font-size: 0.82rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 30;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.organs-status-toast.hidden {
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .organs-subdock {
+    left: 50%;
+    bottom: calc(100px + 24px);
+    max-width: calc(100vw - 48px);
+  }
+  .organs-status-toast {
+    left: 50%;
+    bottom: calc(100px + 72px);
+    max-width: calc(100vw - 48px);
+    white-space: normal;
+    text-align: center;
+  }
+}
+
 

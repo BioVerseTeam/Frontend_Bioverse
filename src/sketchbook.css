@@ -1,0 +1,308 @@
+/* ===================================================================
+   BIOVERSE - SCIENTIFIC SKETCHBOOK DESIGN SYSTEM (sketchbook.css)
+   =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+:root {
+  /* Canvas & Paper */
+  --bg-paper: #fdfbf7;
+  --bg-dot: #dcd5cb;
+  --paper-white: #ffffff;
+  --paper-low: #f6f3f2;
+  --paper-container: #f0eded;
+  --paper-high: #eae7e7;
+  --paper-kraft: #e5e0d8;
+
+  /* Charcoal Ink & Outlines */
+  --ink-charcoal: #2d2d2d;
+  --ink-faint: #76716a;
+  --ink-subtle: #5b403e;
+
+  /* Marker & Pen Accents */
+  --marker-red: #ff4d4d;
+  --primary-red: #b71422;
+  --primary-container: #db3237;
+  --ballpoint-blue: #2d5da1;
+  --secondary-blue: #2e5ea2;
+  --postit-yellow: #fff9c4;
+
+  /* STEM Disciplines */
+  --stem-bio: #48bb78;
+  --stem-bio-dark: #00864c;
+  --stem-bio-bg: #e8f5e9;
+
+  --stem-chem: #9f7aea;
+  --stem-chem-dark: #7c3aed;
+  --stem-chem-bg: #f3e8ff;
+
+  --stem-phys: #ed8936;
+  --stem-phys-dark: #dd6b20;
+  --stem-phys-bg: #fffaf0;
+
+  /* Typography */
+  --font-headline: 'Epilogue', cursive, -apple-system, sans-serif;
+  --font-body: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-label: 'Space Grotesk', monospace, sans-serif;
+
+  /* Neo-brutalist Shadows */
+  --shadow-hard: 4px 4px 0px #2d2d2d;
+  --shadow-hard-sm: 2px 2px 0px #2d2d2d;
+  --shadow-hard-lg: 6px 6px 0px #2d2d2d;
+}
+
+/* Base resets & typography */
+body {
+  font-family: var(--font-body);
+  color: var(--ink-charcoal);
+  background-color: var(--bg-paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-headline {
+  font-family: var(--font-headline);
+}
+
+.font-label, .font-code {
+  font-family: var(--font-label);
+}
+
+/* Dot Grid Paper Background */
+.sketch-paper {
+  background-color: var(--bg-paper);
+  background-image: radial-gradient(var(--bg-dot) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+/* Sketch Border & Shapes */
+.sketch-border {
+  border: 2.5px solid var(--ink-charcoal);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: var(--shadow-hard);
+}
+
+.sketch-border-alt {
+  border: 2.5px solid var(--ink-charcoal);
+  border-radius: 18px 240px 20px 230px / 240px 18px 230px 20px;
+  box-shadow: var(--shadow-hard);
+}
+
+.sketch-shadow {
+  box-shadow: var(--shadow-hard);
+}
+
+.sketch-shadow-sm {
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.sketch-shadow-lg {
+  box-shadow: var(--shadow-hard-lg);
+}
+
+/* Neo-Brutalist Buttons */
+.neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-label);
+  font-weight: 700;
+  border: 2.5px solid var(--ink-charcoal);
+  box-shadow: var(--shadow-hard);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-lg);
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--ink-charcoal);
+}
+
+.neo-btn-primary {
+  background-color: var(--marker-red);
+  color: #ffffff;
+}
+
+.neo-btn-secondary {
+  background-color: var(--bg-paper);
+  color: var(--ink-charcoal);
+}
+
+.neo-btn-blue {
+  background-color: var(--secondary-blue);
+  color: #ffffff;
+}
+
+/* Washi Tape & Post-it Notes */
+.washi-tape {
+  position: absolute;
+  height: 20px;
+  background-color: rgba(240, 230, 210, 0.85);
+  border: 1px dashed var(--ink-charcoal);
+  transform: rotate(-2.5deg);
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.postit-note {
+  background-color: var(--postit-yellow);
+  border: 2px solid var(--ink-charcoal);
+  border-radius: 8px;
+  box-shadow: var(--shadow-hard-sm);
+  transform: rotate(1deg);
+  transition: transform 0.2s ease;
+}
+
+.postit-note:hover {
+  transform: rotate(0deg);
+}
+
+/* STEM Badges */
+.stem-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  border: 1.5px solid var(--ink-charcoal);
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.stem-badge-bio {
+  background-color: var(--stem-bio-bg);
+  color: var(--stem-bio-dark);
+}
+
+.stem-badge-chem {
+  background-color: var(--stem-chem-bg);
+  color: var(--stem-chem-dark);
+}
+
+.stem-badge-phys {
+  background-color: var(--stem-phys-bg);
+  color: var(--stem-phys-dark);
+}
+
+/* ===================================================================
+   ADAPTATION RULES FOR 3D LAB VIEWPORT OVERLAY
+   Transforms old dark glassmorphic panels into Scientific Sketchbook
+   =================================================================== */
+
+.sketch-lab-overlay .header-card,
+.sketch-lab-overlay .glass-card {
+  background: rgba(253, 251, 247, 0.96) !important;
+  border: 2.5px solid var(--ink-charcoal) !important;
+  box-shadow: var(--shadow-hard) !important;
+  color: var(--ink-charcoal) !important;
+  backdrop-filter: none !important;
+  border-radius: 16px !important;
+}
+
+.sketch-lab-overlay .brand h1,
+.sketch-lab-overlay #app-title {
+  font-family: var(--font-headline) !important;
+  color: var(--primary-red) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.5px !important;
+}
+
+.sketch-lab-overlay .mode-btn {
+  font-family: var(--font-label) !important;
+  font-weight: 700 !important;
+  background: var(--paper-white) !important;
+  border: 2px solid var(--ink-charcoal) !important;
+  color: var(--ink-charcoal) !important;
+  border-radius: 10px !important;
+  box-shadow: 2px 2px 0px var(--ink-charcoal) !important;
+  transition: all 0.15s ease !important;
+}
+
+.sketch-lab-overlay .mode-btn:hover {
+  background: var(--paper-low) !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 3px 3px 0px var(--ink-charcoal) !important;
+}
+
+.sketch-lab-overlay .mode-btn.active {
+  background: var(--marker-red) !important;
+  color: #ffffff !important;
+  border-color: var(--ink-charcoal) !important;
+}
+
+/* Info Popups (Skull & Organs) */
+.skull-info-popup {
+  background: var(--paper-white) !important;
+  border: 2.5px solid var(--ink-charcoal) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-hard-lg) !important;
+  color: var(--ink-charcoal) !important;
+}
+
+.skull-info-popup .skull-info-header {
+  border-bottom: 2px dashed var(--ink-charcoal) !important;
+}
+
+.skull-info-popup h3 {
+  font-family: var(--font-headline) !important;
+  color: var(--primary-red) !important;
+}
+
+.skull-info-popup .skull-info-label {
+  font-family: var(--font-label) !important;
+  font-weight: 700 !important;
+  color: var(--secondary-blue) !important;
+}
+
+.skull-hover-tag {
+  background: var(--paper-white) !important;
+  color: var(--ink-charcoal) !important;
+  border: 2px solid var(--ink-charcoal) !important;
+  box-shadow: 2px 2px 0px var(--ink-charcoal) !important;
+  font-family: var(--font-label) !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+}
+
+/* Floating labels in 3D scene */
+.skull-label-tag,
+.floating-3d-tag {
+  background: rgba(253, 251, 247, 0.95) !important;
+  color: var(--ink-charcoal) !important;
+  border: 2px solid var(--ink-charcoal) !important;
+  box-shadow: 2px 2px 0px var(--ink-charcoal) !important;
+  font-family: var(--font-label) !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+}
+
+/* Custom Scrollbar for notebook feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-paper);
+}
+::-webkit-scrollbar-thumb {
+  background: #c8c0b5;
+  border: 1.5px solid var(--ink-charcoal);
+  border-radius: 4px;
+}

@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { parameciumRegions, identifyParameciumRegion } from './parameciumData.js';
-import { MODEL_URLS } from './modelUrls.js';
+import { MODEL_URLS } from '../../services/modelUrls.js';
 
 /**
  * ParameciumViewer — mô hình 3D Trùng giày tương tác.

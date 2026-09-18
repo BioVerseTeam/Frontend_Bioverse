@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { MODEL_URLS } from './modelUrls.js';
+import { MODEL_URLS } from '../../services/modelUrls.js';
 
 
 export class ChemistryViewer {

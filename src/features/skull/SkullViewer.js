@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { skullRegions, identifyRegionByMeshName } from './skullData.js';
-import { MODEL_URLS } from './modelUrls.js';
+import { MODEL_URLS } from '../../services/modelUrls.js';
 
 /**
  * SkullViewer — hiển thị mô hình hộp sọ 3D đã tách sẵn từng xương.
