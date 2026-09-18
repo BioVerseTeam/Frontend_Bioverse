@@ -1,5 +1,6 @@
 import '../styles/chatBox.css';
 import { sendChatMessage } from '../api/aiApi.js';
+import { recordChatMessage } from '../features/progress/progressService.js';
 
 export class ChatBox {
   constructor() {
@@ -273,6 +274,11 @@ export class ChatBox {
       if (response && response.conversationId) {
         localStorage.setItem('bioverse_conversation_id', response.conversationId);
       }
+
+      try {
+        recordChatMessage();
+        window.dispatchEvent(new CustomEvent('bioverse_progress_updated'));
+      } catch (err) {}
     } catch (error) {
       this.setLoading(false);
       this.appendMessage('system', 'Mình chưa kết nối được với máy chủ AI. Bạn hãy kiểm tra backend rồi thử lại nhé.');
@@ -319,6 +325,16 @@ export class ChatBox {
         e.preventDefault();
         this.sendMessage();
       }
+    });
+
+    // Support external triggers on the page
+    document.querySelectorAll('[aria-label="Mở trợ lý ảo AI BioBot"], [data-open-chat]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!this.isOpen) {
+          this.toggle();
+        }
+      });
     });
   }
 }

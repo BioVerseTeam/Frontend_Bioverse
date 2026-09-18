@@ -1,759 +1,326 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mô phỏng Sinh học 3D - Phân bào & Giải phẫu Hộp sọ</title>
-  <meta name="description" content="Ứng dụng tương tác 3D mô phỏng quá trình phân bào và giải phẫu hộp sọ người. Công cụ học Sinh học trực quan, sinh động.">
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <link rel="stylesheet" href="/src/style.css">
-</head>
-<body>
-  <div id="app">
-    <!-- 3D Canvas Viewport -->
-    <main id="canvas-container" aria-label="Khung nhìn mô phỏng 3D"></main>
-
-    <!-- Floating 3D Labels Layer -->
-    <div id="labels-container" class="labels-overlay"></div>
-    <svg id="hud-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6;"></svg>
-
-    <!-- Skull hover tag (bone name following cursor) -->
-    <div id="skull-hover-tag" class="skull-hover-tag hidden"></div>
-
-    <!-- Skull Info Popup (shown when clicking a region) -->
-    <div id="skull-info-popup" class="skull-info-popup hidden" aria-label="Thông tin vùng xương">
-      <button id="skull-info-close" class="skull-info-close" title="Đóng" aria-label="Đóng popup">&times;</button>
-      <div class="skull-info-header">
-        <div id="skull-info-color-dot" class="skull-info-dot"></div>
-        <div>
-          <h3 id="skull-info-name" class="skull-info-name"></h3>
-          <span id="skull-info-latin" class="skull-info-latin"></span>
-        </div>
-      </div>
-      <div class="skull-info-body">
-        <div class="skull-info-section">
-          <div class="skull-info-label">📋 Mô tả</div>
-          <p id="skull-info-desc"></p>
-        </div>
-        <div class="skull-info-section">
-          <div class="skull-info-label">⚙️ Chức năng</div>
-          <p id="skull-info-function"></p>
-        </div>
-        <div class="skull-info-section">
-          <div class="skull-info-label">📍 Vị trí</div>
-          <p id="skull-info-location"></p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Organs hover tag (structure name following cursor) -->
-    <div id="organs-hover-tag" class="skull-hover-tag hidden"></div>
-
-    <!-- 3D Floating HUD Labels layer for OrgansViewer -->
-    <div id="organs-floating-labels" class="organs-floating-labels"></div>
-
-    <!-- Organs Info Popup (shown when clicking a heart hotspot) -->
-    <div id="organs-info-popup" class="skull-info-popup hidden" aria-label="Thông tin cơ quan">
-      <button id="organs-info-close" class="skull-info-close" title="Đóng" aria-label="Đóng popup">&times;</button>
-      <div class="skull-info-header">
-        <div id="organs-info-color-dot" class="skull-info-dot"></div>
-        <div>
-          <h3 id="organs-info-name" class="skull-info-name"></h3>
-          <span id="organs-info-latin" class="skull-info-latin"></span>
-          <div id="organs-info-type-wrap" style="margin-top: 4px;">
-            <span id="organs-info-type" class="internal-structure-badge hidden">🔒 Cấu trúc bên trong tim</span>
-          </div>
-        </div>
-      </div>
-      <div class="skull-info-body">
-        <div id="organs-info-edu-note" class="organs-info-edu-note hidden"></div>
-        <div class="skull-info-section">
-          <div class="skull-info-label">📋 Đặc điểm cấu tạo</div>
-          <p id="organs-info-structure"></p>
-        </div>
-        <div class="skull-info-section">
-          <div class="skull-info-label">⚙️ Chức năng sinh học (KHTN 8)</div>
-          <p id="organs-info-function"></p>
-        </div>
-        <div class="skull-info-section">
-          <div class="skull-info-label">🩺 Lưu ý sức khỏe & Bệnh lý</div>
-          <p id="organs-info-health"></p>
-        </div>
-      </div>
-    </div>
-
-    <!-- UI Interaction Overlay -->
-    <div class="ui-overlay">
-      
-      <!-- Header -->
-      <header class="glass-card header-card">
-        <div class="brand">
-          <div class="brand-icon" aria-hidden="true"></div>
-          <h1 id="app-title">MÔ PHỎNG SINH HỌC 3D</h1>
-        </div>
-        <!-- Mode Switcher -->
-        <div class="mode-switcher">
-          <button id="mode-skull" class="mode-btn active" title="Giải phẫu hộp sọ 3D tương tác">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 2.76 1.12 5.26 2.93 7.07l1.41-1.41A7.95 7.95 0 014 12c0-4.42 3.58-8 8-8s8 3.58 8 8a7.95 7.95 0 01-2.34 5.66l1.41 1.41A9.97 9.97 0 0022 12c0-5.52-4.48-10-10-10zm0 6c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm-1 6v2h2v-2h-2zm0-8v2h2V6h-2z"/></svg>
-            Hộp sọ
-          </button>
-          <button id="mode-paramecium" class="mode-btn" title="Trùng giày 3D tương tác">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><ellipse cx="12" cy="12" rx="9" ry="5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="8" cy="11" r="1" fill="currentColor"/><circle cx="16" cy="13" r="1" fill="currentColor"/></svg>
-            Trùng giày
-          </button>
-          <button id="mode-chemistry" class="mode-btn" title="Phòng Thí Nghiệm Hóa học 3D tương tác">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3h15M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3M9 11h6M8 15h8"></path></svg>
-            Lab Hóa học
-          </button>
-          <button id="mode-organs" class="mode-btn" title="Giải phẫu Cơ thể người - Tim & Hệ tuần hoàn (KHTN 8)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            Cơ thể người (KHTN 8)
-          </button>
-          <button id="mode-exams" class="mode-btn" title="Làm bài thi trắc nghiệm ôn tập" onclick="window.location.href='/exams.html'">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
-            Thi Trắc Nghiệm
-          </button>
-        </div>
-      </header>
-
-      <!-- Sidebar (Learning / Quiz panel) - MITOSIS MODE -->
-      <aside id="mitosis-sidebar" class="glass-card sidebar-card" aria-label="Bảng thông tin học tập">
-        <!-- Main dynamic content container -->
-        <div id="sidebar-content" style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
-          <!-- Section 1: Lesson Content -->
-          <section class="sidebar-section" aria-labelledby="section-lesson-title">
-            <div id="section-lesson-title" class="sidebar-title">Nội dung học tập</div>
-            <div class="phase-info">
-              <h2 id="phase-title" style="transition: opacity 0.2s">Kỳ trung gian</h2>
-              <p id="phase-subtitle" class="phase-subtitle" style="transition: opacity 0.2s">Chuẩn bị phân chia</p>
-              <p id="phase-desc" class="phase-desc">Tế bào chuẩn bị các điều kiện cần thiết trước khi bước vào quá trình phân chia thực sự.</p>
+<!DOCTYPE html><html lang="vi" style=""><head><title>BioVerse - Sổ Tay Khoa Học STEM THCS</title><link rel="stylesheet" href="/src/sketchbook.css"></head><body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen"><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}.sketch-paper{background-color:#fdfbf7;background-image:radial-gradient(#dcd5cb 1.5px,transparent 1.5px);background-size:24px 24px;}.sketch-border{border:2.5px solid #2d2d2d;border-radius:255px 15px 225px 15px/15px 225px 15px 255px;box-shadow:4px 4px 0px #2d2d2d;}.sketch-shadow{box-shadow:4px 4px 0px #2d2d2d;}.sketch-shadow-sm{box-shadow:2px 2px 0px #2d2d2d;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","surface-container-low":"#f6f3f2","on-surface":"#1b1c1c","on-background":"#1b1c1c","error-container":"#ffdad6","tertiary-container":"#00864c","on-tertiary":"#ffffff","on-primary-fixed-variant":"#930014","on-error-container":"#93000a","surface-container-high":"#eae7e7","primary-fixed-dim":"#ffb3ae","primary-fixed":"#ffdad7","surface-container":"#f0eded","surface-variant":"#e4e2e1","background":"#fcf9f8","inverse-on-surface":"#f3f0f0","on-tertiary-fixed":"#00210f","secondary-fixed-dim":"#a9c7ff","primary-container":"#db3237","surface-bright":"#fcf9f8","on-primary-fixed":"#410004","on-secondary-fixed-variant":"#0a4689","surface-dim":"#dcd9d9","inverse-primary":"#ffb3ae","outline-variant":"#e4beba","tertiary":"#006a3b","on-error":"#ffffff","on-primary-container":"#fffbff","tertiary-fixed-dim":"#6bdc96","primary":"#b71422","on-tertiary-container":"#f6fff4","secondary":"#2e5ea2","on-surface-variant":"#5b403e","surface":"#fcf9f8","on-tertiary-fixed-variant":"#00522c","error":"#ba1a1a","surface-container-lowest":"#ffffff","on-secondary":"#ffffff","surface-tint":"#ba1724","on-secondary-fixed":"#001b3d","inverse-surface":"#303030","tertiary-fixed":"#88f9b0","secondary-container":"#89b4fe","surface-container-highest":"#e4e2e1","on-secondary-container":"#064487","outline":"#8f6f6d","secondary-fixed":"#d6e3ff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-mobile":"1rem","space-xl":"3rem","margin":"2rem","space-lg":"2rem","space-sm":"0.75rem","space-md":"1.25rem","gutter":"1.5rem","gutter-mobile":"1rem","space-xs":"0.375rem"},"fontFamily":{"headline-sm":["Epilogue"],"body-sm":["Be Vietnam Pro"],"body-md":["Be Vietnam Pro"],"headline-lg":["Epilogue"],"label-md":["Space Grotesk"],"headline-md":["Epilogue"],"label-sm":["Space Grotesk"],"body-lg":["Be Vietnam Pro"],"title-md":["Epilogue"],"headline-xl":["Epilogue"],"label-lg":["Space Grotesk"],"headline-lg-mobile":["Epilogue"],"headline-xl-mobile":["Epilogue"]},"fontSize":{"headline-sm":["22px",{"lineHeight":"30px","fontWeight":"700"}],"body-sm":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","fontWeight":"700"}],"label-md":["14px",{"lineHeight":"18px","fontWeight":"700"}],"headline-md":["28px",{"lineHeight":"36px","fontWeight":"700"}],"label-sm":["12px",{"lineHeight":"16px","fontWeight":"600"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"title-md":["20px",{"lineHeight":"28px","fontWeight":"600"}],"headline-xl":["44px",{"lineHeight":"52px","fontWeight":"800"}],"label-lg":["16px",{"lineHeight":"20px","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"headline-xl-mobile":["32px",{"lineHeight":"40px","fontWeight":"800"}]}}}};</script><header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]"><div class="h-20 w-full px-margin flex items-center justify-between gap-gutter"><div class="flex items-center gap-space-lg"><a class="flex items-center gap-space-xs group" data-path="home" href="/index.html"><div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform"><span class="material-symbols-outlined text-on-primary text-[24px]">biotech</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span><span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Sổ tay STEM THCS</span></div></a><nav class="hidden xl:flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]"><a aria-current="page" class="px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]" data-path="home" href="/index.html">Khám Phá</a><a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="lessons-3d" href="/lab.html">Bài Học 3D</a><a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="virtual-lab" href="/lab.html?mode=chemistry">Phòng Thí Nghiệm</a><a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="study-corner" title="Luyện đề trắc nghiệm" href="/exams.html">Góc Học Tập</a><a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="stem-qa" href="/index.html">Hỏi Đáp STEM</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden md:flex items-center gap-space-xs px-space-md py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm transform rotate-1"><span class="material-symbols-outlined text-[#ed8936] text-[18px]">award_star</span><span id="header-user-xp" class="font-label-sm text-label-sm text-on-surface">0 XP</span></div><div class="hidden sm:flex flex-col items-end"><span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span><span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span></div><a href="/login.html" title="Tài khoản / Đăng nhập" class="w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></a></div></div></header><main class="w-full pt-20 sketch-paper min-h-[calc(100vh-80px)]"><div class="flex flex-col w-full">
+<!-- BANNER KHỞI ĐỘNG HỌC TẬP VỚI CHẤT LIỆU SỔ TAY KHOA HỌC -->
+<section class="w-full px-margin-mobile md:px-margin pt-space-md pb-space-lg">
+<div class="max-w-7xl mx-auto flex flex-col gap-space-lg">
+<!-- KHỐI CHÀO MỪNG HỌC SINH + HUY HIỆU DÁN STICKER LỆCH GÓC -->
+<div class="relative bg-surface-container-lowest sketch-border p-space-md md:p-space-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md overflow-visible">
+<!-- Băng dán Washi góc trên bên trái -->
+<div class="absolute -top-3.5 left-8 w-28 h-6 bg-[#f0e6d2]/80 border border-dashed border-[#2d2d2d] transform -rotate-2 pointer-events-none z-10 flex items-center justify-center">
+<span class="text-[10px] font-label-sm text-[#76716a] tracking-widest uppercase">LAB NOTE #05</span>
+</div>
+<div class="flex items-center gap-space-md">
+<!-- Avatar vẽ tay có kính bảo hộ phòng thí nghiệm -->
+<div class="relative group cursor-pointer">
+<div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#ffe8d6] border-[2.5px] border-[#2d2d2d] sketch-shadow flex items-center justify-center overflow-hidden transform -rotate-3 group-hover:rotate-0 transition-transform">
+<svg class="w-full h-full p-1" fill="none" stroke="#2d2d2d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 100 100">
+<!-- Tóc và khuôn mặt vẽ phác thảo -->
+<circle cx="50" cy="52" fill="#ffdfba" r="32"></circle>
+<path d="M26 38 C32 20, 68 18, 74 38 C70 32, 60 28, 50 30 C38 28, 30 32, 26 38 Z" fill="#2d2d2d"></path>
+<!-- Kính bảo hộ khoa học viền xanh to bản -->
+<rect fill="#a9c7ff" fill-opacity="0.6" height="14" rx="4" stroke="#2d2d2d" stroke-width="2.5" width="18" x="28" y="42"></rect>
+<rect fill="#a9c7ff" fill-opacity="0.6" height="14" rx="4" stroke="#2d2d2d" stroke-width="2.5" width="18" x="54" y="42"></rect>
+<path d="M46 48 L54 48" stroke="#2d2d2d" stroke-width="3"></path>
+<path d="M28 48 L22 46" stroke="#2d2d2d" stroke-width="2"></path>
+<path d="M72 48 L78 46" stroke="#2d2d2d" stroke-width="2"></path>
+<!-- Mắt cười sau kính -->
+<path d="M34 50 Q37 47 40 50"></path>
+<path d="M60 50 Q63 47 66 50"></path>
+<!-- Nụ cười tự tin -->
+<path d="M42 66 Q50 74 58 66" fill="#ff6b6b"></path>
+<path d="M40 66 Q50 71 60 66"></path>
+<!-- Dấu lấp lánh phản quang trên kính -->
+<path d="M31 45 L35 49" stroke="#ffffff" stroke-width="1.5"></path>
+<path d="M57 45 L61 49" stroke="#ffffff" stroke-width="1.5"></path>
+</svg>
+</div>
+<!-- Sticker mini bút dạ xanh -->
+<div class="absolute -bottom-1 -right-2 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] px-1.5 py-0.5 border-2 border-[#2d2d2d] rounded-md sketch-shadow-sm rotate-6">
+              Online
             </div>
-          </section>
-          
-          <!-- Section 2: Biological Events -->
-          <section class="sidebar-section" aria-labelledby="section-events-title">
-            <div id="section-events-title" class="sidebar-title">Diễn biến sinh học</div>
-            <ul id="events-list" class="events-list" style="transition: opacity 0.2s">
-              <!-- Dynamically populated -->
-            </ul>
-          </section>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
-
-        <!-- Section 3: Legend / Colors -->
-        <section class="sidebar-section" aria-labelledby="section-legend-title">
-          <div id="section-legend-title" class="sidebar-title">Chú thích màu sắc</div>
-          <div class="legend-grid">
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: var(--accent-pink);"></div>
-              <span>Nhiễm sắc thể</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: var(--accent-green);"></div>
-              <span>Trung tử</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: var(--accent-gold);"></div>
-              <span>Tơ vô sắc</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: var(--accent-blue);"></div>
-              <span>Màng nhân</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Section 4: Camera & Options -->
-        <section class="sidebar-section" aria-labelledby="section-settings-title">
-          <div id="section-settings-title" class="sidebar-title">Tùy chọn & Góc nhìn</div>
-          
-          <div class="camera-presets">
-            <div class="btn-group">
-              <button id="btn-persp" class="btn active" title="Góc nhìn phối cảnh toàn cảnh">Toàn cảnh</button>
-              <button id="btn-side" class="btn" title="Góc nhìn mặt bên">Mặt bên</button>
-              <button id="btn-equator" class="btn" title="Góc nhìn mặt phẳng xích đạo tế bào">Mặt xích đạo</button>
-            </div>
-          </div>
-
-          <div class="switch-container">
-            <span class="switch-label">Hiển thị nhãn chú thích</span>
-            <label class="switch">
-              <input id="labels-toggle" type="checkbox" checked>
-              <span class="slider-switch"></span>
-            </label>
-          </div>
-        </section>
-
-        <!-- Quiz / Learn Action -->
-        <button id="quiz-btn" class="btn btn-primary" title="Làm bài kiểm tra trắc nghiệm ôn tập">Làm Trắc Nghiệm</button>
-      </aside>
-
-      <!-- Sidebar - SKULL MODE -->
-      <aside id="skull-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin giải phẫu hộp sọ">
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
-          <!-- Intro Section -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Giải phẫu hộp sọ</div>
-            <div class="phase-info">
-              <h2 style="font-size: 18px; font-weight: 600;">Hộp sọ người</h2>
-              <p class="phase-subtitle">Cranium</p>
-              <p class="phase-desc">Nhấn vào các vùng trên mô hình 3D hoặc chọn tên xương bên dưới để xem thông tin chi tiết về từng bộ phận.</p>
-            </div>
-          </section>
-
-          <!-- Bone List -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Danh sách xương</div>
-            <div id="skull-bone-list" class="skull-bone-list">
-              <!-- Dynamically populated -->
-            </div>
-          </section>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
-
-        <!-- Camera Presets for Skull -->
-        <section class="sidebar-section">
-          <div class="sidebar-title">Góc nhìn</div>
-          <div class="camera-presets">
-            <div class="btn-group">
-              <button id="skull-btn-front" class="btn active" title="Mặt trước">Trước</button>
-              <button id="skull-btn-side" class="btn" title="Mặt bên">Bên</button>
-              <button id="skull-btn-back" class="btn" title="Mặt sau">Sau</button>
-              <button id="skull-btn-top" class="btn" title="Nhìn từ trên">Trên</button>
-            </div>
-          </div>
-        </section>
-      </aside>
-
-      <!-- Sidebar - PARAMECIUM MODE -->
-      <aside id="paramecium-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin trùng giày">
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
-          <!-- Intro Section -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Cấu tạo Trùng giày</div>
-            <div class="phase-info">
-              <h2 style="font-size: 18px; font-weight: 600;">Trùng giày</h2>
-              <p class="phase-subtitle">Paramecium caudatum</p>
-              <p class="phase-desc" id="paramecium-intro-desc">Đang xem nguyên con. Nhấn nút <b>“Xem bên trong”</b> (hoặc bấm thẳng vào con trùng) để bổ đôi và khám phá từng bào quan.</p>
-            </div>
-          </section>
-
-          <!-- Organelle List -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Các bộ phận</div>
-            <div id="paramecium-part-list" class="skull-bone-list">
-              <!-- Dynamically populated -->
-            </div>
-          </section>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
-
-        <!-- Camera Presets -->
-        <section class="sidebar-section">
-          <div class="sidebar-title">Góc nhìn</div>
-          <div class="camera-presets">
-            <div class="btn-group">
-              <button id="para-btn-front" class="btn active" title="Mặt trước">Trước</button>
-              <button id="para-btn-side" class="btn" title="Mặt bên">Bên</button>
-              <button id="para-btn-top" class="btn" title="Nhìn từ trên">Trên</button>
-            </div>
-          </div>
-        </section>
-      </aside>
-
-      <!-- Sidebar - ORGANS MODE (HEART & CIRCULATORY SYSTEM - KHTN 8) -->
-      <aside id="organs-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin giải phẫu cơ quan">
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding-right: 4px;">
-          <!-- Intro Section -->
-          <section class="sidebar-section">
-            <div id="organs-sidebar-topic" class="sidebar-title">HỆ TUẦN HOÀN - KHTN 8</div>
-            <div class="phase-info">
-              <h2 id="organs-sidebar-title" style="font-size: 18px; font-weight: 600;">Trái tim người</h2>
-              <p id="organs-sidebar-latin" class="phase-subtitle">Cor humanum</p>
-              <p id="organs-sidebar-desc" class="phase-desc">Nhấn vào các điểm ghim số (Hotspots) trên quả tim 3D hoặc chọn danh sách bên dưới để khám phá cấu tạo và chức năng.</p>
-            </div>
-          </section>
-
-          <!-- Structure List (Quick-select) -->
-          <section id="organs-sidebar-structures-section" class="sidebar-section">
-            <div id="organs-sidebar-structures-title" class="sidebar-title">Cấu trúc trọng tâm (Click để xem)</div>
-            <div id="organs-part-list" class="skull-bone-list">
-              <!-- Dynamically populated -->
-            </div>
-          </section>
-
-          <!-- Cardiac Cycle Card (or organ-specific education) -->
-          <section id="organs-sidebar-cycle-section" class="sidebar-section">
-            <div id="organs-sidebar-cycle-title" class="sidebar-title">Chu kỳ hoạt động của tim (0.8s)</div>
-            <div id="organs-sidebar-cycle-body" style="background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; line-height: 1.6;">
-              <div style="margin-bottom: 6px;"><span style="color: #f43f5e; font-weight: 600;">● Pha co tâm nhĩ (0.1s):</span> Nhĩ co dồn máu xuống thất.</div>
-              <div style="margin-bottom: 6px;"><span style="color: #ef4444; font-weight: 600;">● Pha co tâm thất (0.3s):</span> Thất co bơm máu vào các động mạch.</div>
-              <div style="margin-bottom: 8px;"><span style="color: #9ca3af; font-weight: 600;">○ Pha dãn chung (0.4s):</span> Toàn bộ tim dãn nghỉ hút máu về nhĩ.</div>
-              <div style="color: #10b981; font-size: 0.75rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 6px;">
-                💡 <em>Nhờ thời gian nghỉ xen kẽ (0.4s/chu kỳ), cơ tim có thể làm việc bền bỉ suốt đời không mệt mỏi.</em>
+</div>
+<!-- Lời chào cá nhân hoá -->
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight" style="font-family: 'Epilogue', cursive, sans-serif;">
+                Chào nhà khoa học trẻ, <span id="hero-user-name" class="text-primary underline decoration-wavy decoration-[#ff4d4d] decoration-2">bạn!</span>
+</h1>
+<span class="text-2xl animate-bounce">🔬</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+              Hôm nay cậu muốn mổ xẻ mẫu vật nào trong phòng thí nghiệm ảo?
+            </p>
+</div>
+</div>
+<!-- Cụm nhãn dán sticker & Post-it XP -->
+<div class="flex items-center gap-space-md flex-wrap self-stretch lg:self-auto justify-end">
+<!-- Huy hiệu cấp độ dán nghiêng -->
+<div class="relative bg-tertiary-fixed text-on-tertiary-fixed border-2 border-[#2d2d2d] px-space-md py-2 rounded-xl sketch-shadow-sm transform -rotate-2 hover:rotate-0 transition-transform">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-tertiary" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span id="user-level-badge" class="font-label-md text-label-md tracking-tight">Cấp độ 1: Tập Sự Phòng Thí Nghiệm</span>
+</div>
+<!-- Vết kim kẹp trang -->
+<div class="absolute -top-2 right-4 w-1.5 h-4 bg-outline rounded-full"></div>
+</div>
+<!-- Nhãn dán vàng Post-it điểm kinh nghiệm -->
+<div class="bg-[#fff9c4] text-[#1b1c1c] border-2 border-[#2d2d2d] px-space-md py-2 rounded-lg sketch-shadow transform rotate-3 hover:scale-105 transition-transform flex items-center gap-2">
+<span class="text-xl">⭐</span>
+<div class="flex flex-col leading-none">
+<span class="font-label-sm text-[11px] text-[#5b403e] uppercase tracking-wider font-bold">Tổng tích lũy</span>
+<span id="user-xp-display" class="font-label-lg text-label-lg text-primary font-extrabold">0 XP</span>
+</div>
+</div>
+</div>
+</div>
+<!-- THANH TIẾN ĐỘ HỌC TẬP DẠNG VẼ TAY (Hand-drawn Weekly Goal) -->
+<div class="bg-[#fcf9f8] border-[2.5px] border-[#2d2d2d] rounded-2xl p-space-md sketch-shadow relative overflow-hidden">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">flag</span>
+<span id="weekly-goal-text" class="font-headline-sm text-headline-sm text-on-surface">Mục tiêu tuần này: Hoàn thành 0/4 mô hình 3D</span>
+</div>
+<div class="flex items-center gap-2 bg-[#ffdad7] border border-[#2d2d2d] px-2.5 py-0.5 rounded-full">
+<span id="weekly-progress-percent" class="font-label-sm text-label-sm text-on-primary-fixed font-bold">0% Tiến trình</span>
+<span class="text-xs">⚡ Đang bứt phá</span>
+</div>
+</div>
+<!-- Khung tiến độ viền nét chì méo tay bất đối xứng -->
+<div class="relative w-full h-8 bg-surface-container-highest border-[2.5px] border-[#2d2d2d] rounded-xl overflow-hidden p-1 flex items-center">
+<!-- Vạch tiến độ 0% nét bút chì sọc đỏ marker #ff4d4d -->
+<div id="weekly-progress-bar" class="h-full rounded-lg relative overflow-hidden transition-all duration-700" style="width: 0%; background-color: #ff4d4d;">
+<!-- Hoạ tiết vạch sọc bút chì marker vẽ tay -->
+<svg class="absolute inset-0 w-full h-full opacity-30" height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="8" id="pencil-hatch" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse" width="8">
+<line stroke="#ffffff" stroke-width="2.5" x1="0" x2="0" y1="0" y2="8"></line>
+</pattern>
+</defs>
+<rect fill="url(#pencil-hatch)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<!-- Mầm cây khoa học đang vươn lên ở mốc tiến trình -->
+<div id="weekly-progress-sprout" class="absolute left-[0%] -top-1 pointer-events-none transform -translate-x-1/2">
+<svg class="animate-bounce" fill="none" height="34" viewBox="0 0 36 36" width="34">
+<path d="M18 30 C18 20 18 14 18 8" stroke="#2d2d2d" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M18 16 C12 14 8 8 10 4 C14 4 18 10 18 14" fill="#48bb78" stroke="#2d2d2d" stroke-width="2"></path>
+<path d="M18 12 C24 10 28 6 26 2 C22 2 18 8 18 10" fill="#6bdc96" stroke="#2d2d2d" stroke-width="2"></path>
+<circle cx="18" cy="30" fill="#8f6f6d" r="3"></circle>
+</svg>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 mt-2 text-[#5b403e] font-label-sm text-label-sm">
+<span id="explored-models-text">Đã giải phẫu: Chưa có mô hình nào</span>
+<span id="remaining-models-text" class="italic underline decoration-dashed">Còn lại: 4 mô hình</span>
+</div>
+</div>
+<!-- BA THẺ MÔN HỌC LỚN (TRỌNG TÂM VISUAL NOTEBOOK BENTO) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch pt-space-xs">
+<!-- 1. THẺ HÓA HỌC (BÊN TRÁI - NGHIÊNG NHẸ +1.8 DEG) -->
+<div class="lg:col-span-3 flex flex-col justify-between bg-surface-container-lowest border-[2.5px] border-[#2d2d2d] rounded-2xl p-space-md sketch-shadow relative transform lg:rotate-[1.8deg] hover:rotate-0 transition-transform duration-300">
+<!-- Băng dính washi tape xanh tím dán chéo góc phải -->
+<div class="absolute -top-3 -right-3 w-24 h-6 bg-[#d6e3ff]/90 border border-dashed border-[#2d2d2d] transform rotate-12 pointer-events-none z-10 flex items-center justify-center">
+<span class="text-[9px] font-label-sm text-[#064487] font-bold">WASHI-CHEM</span>
+</div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded-full bg-[#9f7aea] text-white font-label-sm text-label-sm border-2 border-[#2d2d2d] sketch-shadow-sm font-bold">
+                Hóa Học THCS
+              </span>
+<span class="text-xs font-label-sm text-on-surface-variant font-semibold">Lớp 8-9</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface leading-tight mb-2">
+              Hóa Học 3D - Phản Ứng Kỳ Thú
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+              Pha chế dung dịch, quan sát hiện tượng kết tủa và mô phỏng mạng tinh thể mà không lo cháy nổ.
+            </p>
+<!-- Minh họa: Ống nghiệm và mô hình phân tử nước H2O -->
+<div class="w-full h-44 rounded-xl border-2 border-[#2d2d2d] bg-[#f8f5ff] relative overflow-hidden flex items-center justify-center mb-4">
+<!-- Grid li ti nền giấy vẽ kỹ thuật -->
+<div class="absolute inset-0 opacity-20" style="background-image: linear-gradient(#9f7aea 1px, transparent 1px), linear-gradient(to right, #9f7aea 1px, transparent 1px); background-size: 14px 14px;"></div>
+<img class="w-full h-full object-cover" data-alt="A vivid stylized scientific 3D illustration of a chemistry laboratory test tube bubbling with glowing purple chemical reaction fluid and floating H2O water molecules, sketched paper notebook style with clean ink borders and soft laboratory shading." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR-OAkYbifw1DN10wov7sej56Ta2YY6tIpjSojQYq6Oprnw2h8r2R09lJhRAmErB3qqqby2RpEdOCIscHxkelROih68euRRdrTjPiV5sMdoBtVx_1hyj5ejF1_YXbGCRs3-Ll6mwPna1rHYPA992YK9fHT_3rmdi-HKI-lmppXYk8IShKhvtN2jDTCRLwoAQ5W6Rull3GgBM8qkHluieV1mvyXVb7BUkmm9Y4-kc8GeeJ_tQlVANOFQA">
+<!-- Tag phân tử nổi -->
+<div class="absolute bottom-2 left-2 bg-[#ffffff]/90 px-2 py-0.5 rounded border border-[#2d2d2d] text-[11px] font-label-sm font-bold text-[#2d2d2d]">
+                H₂O &amp; Phản ứng Axit
               </div>
-            </div>
-          </section>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--panel-border); margin: 8px 0;" />
-
-        <!-- Camera Presets for Organs -->
-        <section class="sidebar-section">
-          <div class="sidebar-title">Góc nhìn quan sát</div>
-          <div class="camera-presets">
-            <div class="btn-group">
-              <button id="organs-btn-front" class="btn active" title="Mặt trước">Trước</button>
-              <button id="organs-btn-back" class="btn" title="Mặt sau">Sau</button>
-              <button id="organs-btn-left" class="btn" title="Bên trái">Trái</button>
-              <button id="organs-btn-right" class="btn" title="Bên phải">Phải</button>
-              <button id="organs-btn-top" class="btn" title="Đỉnh tim">Đỉnh</button>
-            </div>
+</div>
+<!-- Thông số học phần -->
+<div class="space-y-1.5 mb-6 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#9f7aea] border border-[#2d2d2d]"></span>
+<span class="">28 Thí nghiệm phản ứng ảo</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary border border-[#2d2d2d]"></span>
+<span class="">Bảng tuần hoàn 118 nguyên tố 3D</span>
+</div>
+</div>
+</div>
+<!-- Nút CTA -->
+<a class="w-full py-2.5 px-space-sm bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md rounded-xl border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center gap-2 group transition-all" href="/lab.html?mode=chemistry">
+<span class="">Vào Khám Phá</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<!-- 2. THẺ SINH HỌC (MÔN TRUNG TÂM - TO NHẤT, VƯỢT TRỘI, POST-IT VÀNG RỰC RỠ) -->
+<div class="lg:col-span-6 flex flex-col justify-between bg-[#fff9c4] border-[3px] border-[#2d2d2d] rounded-2xl p-space-md md:p-space-lg sketch-shadow relative transform lg:-rotate-[1.5deg] hover:rotate-0 transition-transform duration-300 z-20" style="box-shadow: 6px 6px 0px #2d2d2d;">
+<!-- 2 Chiếc đinh ghim màu đỏ rực rỡ ở viền trên cùng -->
+<div class="absolute -top-3 left-1/4 transform -translate-x-1/2 flex flex-col items-center pointer-events-none">
+<div class="w-4 h-4 rounded-full bg-[#ff4d4d] border-2 border-[#2d2d2d] shadow-sm"></div>
+<div class="w-0.5 h-2 bg-[#2d2d2d] -mt-0.5"></div>
+</div>
+<div class="absolute -top-3 right-1/4 transform translate-x-1/2 flex flex-col items-center pointer-events-none">
+<div class="w-4 h-4 rounded-full bg-[#ff4d4d] border-2 border-[#2d2d2d] shadow-sm"></div>
+<div class="w-0.5 h-2 bg-[#2d2d2d] -mt-0.5"></div>
+</div>
+<!-- Nhãn dán đỏ nổi bật góc phải -->
+<div class="absolute -top-3 -right-2 bg-primary text-on-primary font-label-sm text-label-sm px-3 py-1 rounded-md border-2 border-[#2d2d2d] sketch-shadow-sm transform rotate-6 uppercase tracking-wider font-extrabold">
+            MÔN TRỌNG TÂM THCS
           </div>
-        </section>
-      </aside>
-
-      <!-- Sidebar - PLANT MODE -->
-      <aside id="plant-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin vòng đời cây mít">
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
-          <!-- Intro Section -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Vòng đời Cây Mít</div>
-            <div class="phase-info">
-              <h2 id="plant-phase-title" style="font-size: 18px; font-weight: 600; color: #854d0e;">Hạt Mít</h2>
-              <p id="plant-phase-subtitle" class="phase-subtitle">Trạng thái ngủ nghỉ của hạt</p>
-              <p id="plant-phase-desc" class="phase-desc">Hạt mít nằm dưới lớp đất, hấp thụ nước để nứt vỏ và bắt đầu nảy mầm.</p>
-            </div>
-          </section>
-
-          <!-- Biological Events -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Diễn biến sinh học</div>
-            <ul id="plant-events-list" class="events-list">
-              <!-- Dynamically populated -->
-            </ul>
-          </section>
-
-          <!-- Part List -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Các bộ phận sinh học</div>
-            <div id="plant-part-list" class="skull-bone-list">
-              <!-- Dynamically populated -->
-            </div>
-          </section>
-
-          <!-- Tripo3D AI Generator Panel -->
-          <section class="sidebar-section tripo-section">
-            <div class="sidebar-title">Tripo3D AI Generator</div>
-            <div class="tripo-panel">
-              <div class="tripo-input-group">
-                <label for="tripo-api-key" class="tripo-label">Tripo3D API Key</label>
-                <input type="password" id="tripo-api-key" class="tripo-input" placeholder="Nhập API Key của bạn..." autocomplete="off">
+<div>
+<!-- Badge môn học -->
+<div class="flex items-center gap-2 mb-3">
+<span class="px-3 py-1 rounded-full bg-[#48bb78] text-[#1b1c1c] font-label-md text-label-md border-2 border-[#2d2d2d] sketch-shadow-sm font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+                Sinh Học 3D Thực Nghiệm
+              </span>
+<span class="text-xs bg-white/80 px-2 py-0.5 rounded border border-[#2d2d2d] font-label-sm text-[#2d2d2d] font-bold">Chương trình mới GDPT</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight leading-none mb-2">
+              Sinh Học 3D - Khám Phá Sự Sống
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 max-w-xl">
+              Tách từng lớp màng tế bào, xoay 360 độ chuỗi xoắn kép DNA và mô phỏng nhịp đập quả tim sinh học bằng công nghệ 3D trực quan.
+            </p>
+<!-- HÌNH ẢNH 3D TÂM ĐIỂM: MÔ HÌNH TẾ BÀO VÀ XOẮN KÉP DNA -->
+<div class="relative w-full h-64 md:h-72 rounded-2xl border-[2.5px] border-[#2d2d2d] bg-[#ffffff] overflow-hidden mb-5 sketch-shadow-sm group">
+<!-- Góc đo đạc kỹ thuật sketchbook -->
+<div class="absolute top-2 left-2 font-label-sm text-[11px] text-[#8f6f6d] z-10 bg-[#fdfbf7]/90 px-1.5 rounded border border-[#2d2d2d]">
+                ⌜ Tế bào thực vật x10,000 ⌝
               </div>
-
-              <div class="tripo-input-group">
-                <label class="tripo-label">Phương thức tạo</label>
-                <div class="btn-group" style="margin-top: 4px;">
-                  <button id="tripo-tab-text" class="btn active" style="padding: 6px; font-size: 11px;">Văn bản (Text)</button>
-                  <button id="tripo-tab-image" class="btn" style="padding: 6px; font-size: 11px;">Hình ảnh (Image)</button>
-                </div>
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A magnificent, hyper-detailed 3D cross-section model of a plant cell and an ethereal glowing DNA double helix structure, glowing chloroplasts and mitochondria, scientific sketchbook illustration style, vibrant biology laboratory aesthetics, vivid emerald green and warm studio lighting, 8k resolution rendered specimen." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAM2HMfsVR0Bs5cN18tJy7ZjwsMORzS_m3tc5HbPllP8G8UIJ3pmMOxSIjgRckOd2tdzaZeX5G9dCaQ5gqVIwmSJifiG0MuDCm4DM9FSPW7XK0_XBli2xxismiVsp6onCHfR3n2LPICHyX4En0asLDuhmaj0UuQ-EfxKetav--C3LPFRq2i5uC6JG7MohSE3w3t3ANF7De4-TwLDAzsj_j67HfDBB65HLzUcWW_k3AkNRnjg5pCZIrDFA">
+<!-- Nút tương tác nhanh xoay 3D đè lên ảnh -->
+<div class="absolute bottom-3 right-3 bg-surface-container-lowest/90 backdrop-blur-sm border-2 border-[#2d2d2d] px-3 py-1.5 rounded-xl sketch-shadow-sm flex items-center gap-2 pointer-events-none">
+<span class="material-symbols-outlined text-primary text-[20px] animate-spin">3d_rotation</span>
+<span class="font-label-sm text-label-sm text-on-surface font-bold">Kéo để xoay 360°</span>
+</div>
+<!-- Thước tỉ lệ phác thảo góc trái -->
+<div class="absolute bottom-3 left-3 bg-[#fdfbf7]/95 border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-label-sm text-[#2d2d2d]">
+                Tỉ lệ: 10 µm [————]
               </div>
-
-              <!-- Text to 3D Input -->
-              <div id="tripo-text-inputs" class="tripo-input-group">
-                <label for="tripo-prompt" class="tripo-label">Prompt miêu tả cây/quả</label>
-                <textarea id="tripo-prompt" class="tripo-input" rows="3" placeholder="Ví dụ: A photorealistic young jackfruit sprout with green leaves..."></textarea>
+</div>
+<!-- Thông số điểm nhấn sinh học -->
+<div class="grid grid-cols-2 gap-3 mb-6">
+<div class="bg-white/80 border-2 border-[#2d2d2d] p-2.5 rounded-xl sketch-shadow-sm flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-[#dcfce7] border border-[#2d2d2d] flex items-center justify-center text-[#166534]">
+<span class="material-symbols-outlined text-[20px]">view_in_ar</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">42 Mô hình</span>
+<span class="text-[11px] font-body-sm text-[#5b403e]">Tương tác giải phẫu sâu</span>
+</div>
+</div>
+<div class="bg-white/80 border-2 border-[#2d2d2d] p-2.5 rounded-xl sketch-shadow-sm flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-[#ffedd5] border border-[#2d2d2d] flex items-center justify-center text-[#9a3412]">
+<span class="material-symbols-outlined text-[20px]">science</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">15 Thực hành ảo</span>
+<span class="text-[11px] font-body-sm text-[#5b403e]">Soi kính hiển vi điện tử</span>
+</div>
+</div>
+</div>
+</div>
+<!-- NÚT CTA ĐỎ MARKER NỔI BẬT NHẤT -->
+<a class="w-full py-3.5 px-space-md bg-[#ff4d4d] hover:bg-[#ff3333] text-white font-headline-sm text-headline-sm rounded-xl border-[2.5px] border-[#2d2d2d] sketch-shadow flex items-center justify-center gap-3 transition-transform active:translate-x-1 active:translate-y-1" href="/lab.html">
+<span class="">Mở Phòng Lab Sinh Học</span>
+<span class="material-symbols-outlined text-[24px]">rocket_launch</span>
+</a>
+</div>
+<!-- 3. THẺ VẬT LÍ (BÊN PHẢI - NGHIÊNG NHẸ -1.2 DEG) -->
+<div class="lg:col-span-3 flex flex-col justify-between bg-surface-container-lowest border-[2.5px] border-[#2d2d2d] rounded-2xl p-space-md sketch-shadow relative transform lg:-rotate-[1.2deg] hover:rotate-0 transition-transform duration-300">
+<!-- Ghim bấm màu đỏ ở góc trên giữa -->
+<div class="absolute -top-3 left-1/2 transform -translate-x-1/2 flex flex-col items-center pointer-events-none">
+<div class="w-4 h-4 rounded-full bg-[#ff4d4d] border-2 border-[#2d2d2d]"></div>
+<div class="w-0.5 h-2 bg-[#2d2d2d] -mt-0.5"></div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-1 rounded-full bg-[#ed8936] text-[#1b1c1c] font-label-sm text-label-sm border-2 border-[#2d2d2d] sketch-shadow-sm font-bold">
+                Vật Lí THCS
+              </span>
+<span class="text-xs font-label-sm text-on-surface-variant font-semibold">Lớp 6-9</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface leading-tight mb-2">
+              Vật Lí 3D - Lực &amp; Vũ Trụ
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+              Uốn cong tia sáng qua lăng kính, thử nghiệm mạch điện không chập cháy và ngắm quỹ đạo hành tinh.
+            </p>
+<!-- Minh họa: Quỹ đạo electron và thấu kính hội tụ -->
+<div class="w-full h-44 rounded-xl border-2 border-[#2d2d2d] bg-[#fffaf0] relative overflow-hidden flex items-center justify-center mb-4">
+<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#ed8936 1.5px, transparent 1.5px); background-size: 12px 12px;"></div>
+<img class="w-full h-full object-cover" data-alt="A stylized scientific hand-sketched 3D physical model of an atom with glowing electron orbits and light rays refracting through an optical glass prism, technical notebook draft style with crisp ink outlines and vibrant physics dynamics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuYyuIeJCZaeg4l8omRvTlZm_j0ZCT3gpCMEtt74f5xTRFgrksSJurYrSznVinwBPyLpHtC7ktS5guzl3RLwWPTggyYNpV_T83Y9kd3iqLffjjmc_IhbXrlpQfbu6t39OXFp3eRBzLwIlDjbpjNHABsY8TsG9nxvkJuwlIuVGKNdA88sIxtb48XxvvdFa02KeCo1trhO5DwvFdyz_quo8_kpag7fXAs4_42OQaATuDaV-jOV18DfYdpg">
+<div class="absolute bottom-2 left-2 bg-[#ffffff]/90 px-2 py-0.5 rounded border border-[#2d2d2d] text-[11px] font-label-sm font-bold text-[#2d2d2d]">
+                Quang học &amp; Điện từ
               </div>
+</div>
+<!-- Thông số học phần -->
+<div class="space-y-1.5 mb-6 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#ed8936] border border-[#2d2d2d]"></span>
+<span class="">35 Mô phỏng cơ học &amp; quang học</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary border border-[#2d2d2d]"></span>
+<span class="">Thí nghiệm con lắc &amp; đòn bẩy</span>
+</div>
+</div>
+</div>
+<!-- Nút CTA -->
+<a class="w-full py-2.5 px-space-sm bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-md text-label-md rounded-xl border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center gap-2 group transition-all" href="/lab.html">
+<span class="">Vào Khám Phá</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</div><div class="mt-4 mb-2 flex flex-col gap-4"><div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b-2 border-dashed border-[#2d2d2d] pb-2"><div class="flex items-center gap-2"><span class="w-3 h-8 bg-primary rounded-sm border border-[#2d2d2d]"></span><div><div class="flex items-center gap-2"><h3 class="font-headline-md text-headline-md text-on-surface tracking-tight">Bộ Sưu Tập Giải Phẫu 3D Đang Mở Khóa</h3><span class="px-2 py-0.5 rounded-full bg-[#fed7aa] border border-[#2d2d2d] text-[#7c2d12] font-label-sm text-[11px] font-bold">5 Mẫu Mới 🔬</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Tương tác chạm, xoay 360 độ và bóc tách từng lớp mô hình thực nghiệm chuẩn THCS GDPT mới</p></div></div><div class="flex items-center gap-2"><span class="font-label-sm text-xs text-[#5b403e] bg-[#fff9c4] border border-[#2d2d2d] px-2.5 py-1 rounded-lg sketch-shadow-sm font-semibold">🎯 Hoàn thành bài để mở khóa thêm</span></div></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"><div class="group bg-surface-container-lowest border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative"><div class="absolute -top-2.5 right-3 bg-[#ffdad7] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-label-sm font-bold text-primary">Lớp 8</div><div class="h-40 rounded-xl bg-[#f8f5ff] border-2 border-[#2d2d2d] overflow-hidden relative mb-2.5 flex items-center justify-center p-1"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx1NA6BR5H8m8OYMOazAdMteKguya7ZcDIqa4goTdehlzBwH4X8BXhfuTWqalZvnItg7t5GzQw-cGaWCYrLtNFuPTF3G4OsinInjayi297Fov-E6FKr0tuh7ogOpj5Uu4fDWxA2-T0hHGR_rkp4jYW7VLC-MoECRh0corcqVNSwqlJJcqxVjH8kjB-bMvDD1NlejPXrcfOPvjMEQ4Ty-D0H8bMFJzSOTMYQDqpJ2W6D98bzXn-XS1izSGD3iNzAVtQ0rU" alt="Hệ thần kinh 3D" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"><span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-white/90 border border-[#2d2d2d] text-[9px] font-label-sm font-bold">360° VR</span></div><div><div class="flex items-center gap-1 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span><span class="font-label-sm text-[10px] text-secondary font-bold uppercase">Hệ thần kinh</span></div><h4 class="font-headline-sm text-[16px] text-on-surface leading-snug mb-1 font-bold">Hệ Thần Kinh &amp; Dây Thần Kinh</h4><p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mb-3">Giải phẫu não bộ, tủy sống và mạng lưới dây thần kinh ngoại biên toàn thân.</p></div><a href="/lab.html?mode=skull" class="w-full py-1.5 bg-[#fdfbf7] hover:bg-primary-container hover:text-white border-2 border-[#2d2d2d] rounded-lg font-label-sm text-xs font-bold flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-[16px]">3d_rotation</span><span class="">Phẫu tích 3D</span></a></div><div class="group bg-[#fffaf0] border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative"><div class="absolute -top-2.5 right-3 bg-[#dcfce7] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-label-sm font-bold text-[#166534]">Lớp 8</div><div class="h-40 rounded-xl bg-[#e6fffa] border-2 border-[#2d2d2d] overflow-hidden relative mb-2.5 flex items-center justify-center p-1"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGmeihJGhi_1k90xVq_cvzr4Qw4caStqW_otZAr1cGklp5OnEb8GSPzI3wqosQF6KFEVVK1YIF1x7AvRvSlzi6nQIr43twiJQA7NDRuMtiyAQreOk45sVn_nZ88WASKb-_pIXXScW5nZ7UWgxxNk7EJIYhF6dnGfcHHXzI6XPOgR3wzW6HKoLS_cpzD9PAQEcux3Jo5FIvEifp-3VtaFwgFE0AULzP2SQSe9EILxeVm-gW2BRm9omVX7W2mUcrbIV_yw0" alt="Hệ tiêu hóa 3D" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"><span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-white/90 border border-[#2d2d2d] text-[9px] font-label-sm font-bold">Tương tác</span></div><div><div class="flex items-center gap-1 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-[#00864c]"></span><span class="font-label-sm text-[10px] text-[#00864c] font-bold uppercase">Hệ tiêu hóa</span></div><h4 class="font-headline-sm text-[16px] text-on-surface leading-snug mb-1 font-bold">Hệ Tiêu Hóa &amp; Nội Tạng</h4><p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mb-3">Mô phỏng đường tiêu hóa từ thực quản, dạ dày, gan mật đến đường ruột.</p></div><a href="/lab.html?mode=organs" class="w-full py-1.5 bg-[#fdfbf7] hover:bg-primary-container hover:text-white border-2 border-[#2d2d2d] rounded-lg font-label-sm text-xs font-bold flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-[16px]">visibility</span><span class="">Khám phá ngay</span></a></div><div class="group bg-surface-container-lowest border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative"><div class="absolute -top-2.5 right-3 bg-[#ffedd5] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-label-sm font-bold text-[#9a3412]">Lớp 8</div><div class="h-40 rounded-xl bg-[#fff1f2] border-2 border-[#2d2d2d] overflow-hidden relative mb-2.5 flex items-center justify-center p-1"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC-LX89ypbBkMHTZlUZ7etrRMwTYXsXjQpE4YDrRWlLSkCjlKSreI7NlLGso7KvT4FVU_tLaRQagBAtLc_hmX0p9xYdNRTNuuuPEWGHX34APO_jAQnQK2feh5xfObphzuypOZPnmmvDe-4eTffswsCgusrH06JEkyPvkjMfU-wlUCpeEgg_vclBikGdNad5OWEuZj_Qsk162pheB8UF6JXqdkOg4R7LDbmr1WS_aA2ufhWtPr2OL7sww9d7DD8-VBgS0k" alt="Hệ tuần hoàn 3D" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"><span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-white/90 border border-[#2d2d2d] text-[9px] font-label-sm font-bold">Co bóp 75 BPM</span></div><div><div class="flex items-center gap-1 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="font-label-sm text-[10px] text-primary font-bold uppercase">Hệ tuần hoàn</span></div><h4 class="font-headline-sm text-[16px] text-on-surface leading-snug mb-1 font-bold">Hệ Tuần Hoàn &amp; Tim Mạch</h4><p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mb-3">Dòng chảy máu qua tim, động mạch lớn và mao mạch vận chuyển khí O2.</p></div><a href="/lab.html?mode=organs" class="w-full py-1.5 bg-[#fdfbf7] hover:bg-primary-container hover:text-white border-2 border-[#2d2d2d] rounded-lg font-label-sm text-xs font-bold flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-[16px]">vital_signs</span><span class="">Xem nhịp tim</span></a></div><div class="group bg-surface-container-lowest border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative"><div class="absolute -top-2.5 right-3 bg-[#d6e3ff] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-label-sm font-bold text-[#064487]">Lớp 8</div><div class="h-40 rounded-xl bg-[#eff6ff] border-2 border-[#2d2d2d] overflow-hidden relative mb-2.5 flex items-center justify-center p-1"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuKv4MbLt7E2DocsEGVE9dCgPrJw19-W-4kVR7eEBbloaV9hKlhed14pG8UZThG11rCKkdO1FBUl18v4Lomq5G8AXIlmPIaUkRhlmoDLzk2blgzfHHTW1WFh1gDmZPgLb-pQ8FaanHi33w2eE44BGk3bUFCDpkPtAKyUmyTkLHWKc3LOoMejBeQKqHW-xLM2_qmAT0lyhtzpL2Lcqnas6CLlf-YtA4atRGcBART0tgEarpVLl0930rrYii-3cQF4ZrtMY" alt="Hệ xương khớp 3D" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"><span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-white/90 border border-[#2d2d2d] text-[9px] font-label-sm font-bold">206 Xương</span></div><div><div class="flex items-center gap-1 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-[#7c2d12]"></span><span class="font-label-sm text-[10px] text-[#7c2d12] font-bold uppercase">Hệ vận động</span></div><h4 class="font-headline-sm text-[16px] text-on-surface leading-snug mb-1 font-bold">Hệ Xương &amp; Khung Xương Người</h4><p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mb-3">Khảo sát cấu trúc sọ, lồng ngực, cột sống và các khớp cử động linh hoạt.</p></div><a href="/lab.html?mode=skull" class="w-full py-1.5 bg-[#fdfbf7] hover:bg-primary-container hover:text-white border-2 border-[#2d2d2d] rounded-lg font-label-sm text-xs font-bold flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-[16px]">view_in_ar</span><span class="">Khám phá xương</span></a></div><div class="group bg-surface-container-lowest border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative"><div class="absolute -top-2.5 right-3 bg-[#fed7aa] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-label-sm font-bold text-[#7c2d12]">Lớp 8</div><div class="h-40 rounded-xl bg-[#fffbeb] border-2 border-[#2d2d2d] overflow-hidden relative mb-2.5 flex items-center justify-center p-1"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPOHLaSQitnfZ14g2Ju8hKuB2PoLddolFvuQahUEsZYOGyQbKUNHtpEclV-m0sSYxeC2e0spR9JPAs-WlvW46EbKA0DnfNQj5__l52UM1UkLMO8QLGmgjVDuGMBa_02_qbDnIQfQ7Go3XrxL31BxiOeMf_DGfK1Cfl1aDOHniBT-HlMncVJ8sOOZb_c1U_Xe5t7YsIv-Z5y7CMaPHq0IROwRVEqsUL7ATiOuyDUK-imAgu33LKW4CGL82P0VIqpfGJUfM" alt="Hệ cơ bắp 3D" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"><span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-white/90 border border-[#2d2d2d] text-[9px] font-label-sm font-bold">Giải phẫu cơ</span></div><div><div class="flex items-center gap-1 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span><span class="font-label-sm text-[10px] text-primary font-bold uppercase">Hệ vận động</span></div><h4 class="font-headline-sm text-[16px] text-on-surface leading-snug mb-1 font-bold">Hệ Cơ Bắp Toàn Thân</h4><p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-2 mb-3">Mô phỏng co giãn cơ vân, cơ trơn và cơ tim khi cơ thể vận động.</p></div><a href="/lab.html?mode=paramecium" class="w-full py-1.5 bg-[#fdfbf7] hover:bg-primary-container hover:text-white border-2 border-[#2d2d2d] rounded-lg font-label-sm text-xs font-bold flex items-center justify-center gap-1 transition-colors"><span class="material-symbols-outlined text-[16px]">biotech</span><span class="">Soi mô cơ</span></a></div></div></div>
+<!-- MỤC "TIẾP TỤC HỌC" GẦN NHẤT (QUICK RESUME CARD) -->
+<div class="relative bg-surface-container-lowest border-[2.5px] border-[#2d2d2d] rounded-2xl p-space-md sketch-shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+<!-- Tab giấy kẹp bên lề -->
+<div class="absolute -top-3 left-6 bg-[#fed7aa] border-2 border-[#2d2d2d] px-3 py-0.5 rounded-md text-[11px] font-label-sm font-bold text-[#7c2d12] sketch-shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">history_edu</span>
+<span id="resume-lesson-tag">BÀI HỌC DỞ DANG</span>
+</div>
+<div class="flex items-center gap-space-md mt-2 md:mt-0">
+<div class="w-14 h-14 rounded-xl bg-tertiary-container border-2 border-[#2d2d2d] flex items-center justify-center text-on-tertiary sketch-shadow-sm shrink-0">
+<span id="resume-lesson-icon" class="material-symbols-outlined text-[32px]">biotech</span>
+</div>
+<div class="flex flex-col">
+<span id="resume-lesson-subject" class="font-label-sm text-label-sm text-tertiary font-bold uppercase tracking-wider">Sinh học 8 • Bài thực hành số 3</span>
+<h4 id="resume-lesson-title" class="font-headline-sm text-headline-sm text-on-surface">Cấu tạo tế bào nhân thực &amp; Màng sinh chất</h4>
+<div class="flex items-center gap-3 mt-1">
+<div class="w-36 h-2.5 bg-surface-container-highest border border-[#2d2d2d] rounded-full overflow-hidden">
+<div id="resume-lesson-bar" class="h-full bg-tertiary rounded-full transition-all duration-500" style="width: 0%;"></div>
+</div>
+<span id="resume-lesson-percent" class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Đã học 0%</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto justify-end">
+<a id="resume-lesson-link" class="w-full md:w-auto py-2.5 px-space-md bg-primary text-on-primary font-label-md text-label-md rounded-xl border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-colors" href="/lab.html">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+<span id="resume-lesson-btn-text">Học tiếp ngay</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- THANH ĐIỀU HƯỚNG DƯỚI CÙNG (DẢI KẸP SỔ TAY NOTEBOOK CLIPPING BAR) -->
 
-              <!-- Image to 3D Input -->
-              <div id="tripo-image-inputs" class="tripo-input-group hidden">
-                <label for="tripo-file" class="tripo-label">Tải ảnh dái mít/quả mít thật</label>
-                <div class="tripo-file-upload">
-                  <input type="file" id="tripo-file" accept="image/*" class="hidden">
-                  <button id="tripo-file-trigger" class="btn" style="width: 100%;">📁 Chọn hình ảnh...</button>
-                  <span id="tripo-file-name" class="tripo-file-name">Chưa chọn ảnh nào</span>
-                </div>
-              </div>
+</div></main><footer class="w-full border-t-[2.5px] border-[#2d2d2d] bg-[#fdfbf7] py-space-md"><div class="w-full px-margin flex flex-col md:flex-row items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><span class="w-2.5 h-2.5 rounded-full bg-tertiary border border-[#2d2d2d]"></span><span class="font-label-md text-label-md text-on-surface">BioVerse STEM Lab</span><span class="font-body-sm text-body-sm text-on-surface-variant">• Phác thảo nghiên cứu khoa học THCS</span></div><div class="flex items-center gap-space-md font-label-sm text-label-sm text-on-surface-variant"><span class="border-b border-dashed border-[#2d2d2d]">Thước đo thực địa: mm / cm</span><span class="">Phiên bản Sổ tay điện tử 2.4</span></div></div></footer>
 
-              <div class="tripo-action-group" style="margin-top: 14px;">
-                <button id="tripo-generate-btn" class="btn btn-primary" style="width: 100%;">⚡ Tạo mô hình 3D bằng AI</button>
-                <button id="tripo-reset-btn" class="btn hidden" style="width: 100%; margin-top: 8px;">🔄 Khôi phục mô hình gốc</button>
-              </div>
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end group"><div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none mb-2 bg-[#fff9c4] text-[#1b1c1c] border-2 border-[#2d2d2d] px-2.5 py-1 rounded-lg sketch-shadow-sm font-label-sm text-xs font-bold flex items-center gap-1 transform rotate-2"><span class="w-2 h-2 rounded-full bg-[#00864c] animate-pulse"></span><span class="">Hỏi BioBot AI</span></div><button type="button" class="w-14 h-14 bg-[#ff4d4d] hover:bg-[#ff3333] text-white border-[2.5px] border-[#2d2d2d] sketch-shadow rounded-full flex items-center justify-center relative cursor-pointer group hover:scale-105 active:translate-x-1 active:translate-y-1 transition-all" aria-label="Mở trợ lý ảo AI BioBot"><span class="material-symbols-outlined text-[32px] group-hover:rotate-12 transition-transform">smart_toy</span><span class="absolute -top-1 -right-1 w-4 h-4 bg-[#88f9b0] border-2 border-[#2d2d2d] rounded-full flex items-center justify-center"><span class="w-1.5 h-1.5 rounded-full bg-[#00864c]"></span></span><span class="absolute -bottom-2.5 bg-[#fed7aa] text-[#7c2d12] border border-[#2d2d2d] px-1.5 py-0.2 rounded font-label-sm text-[9px] font-bold uppercase tracking-tight -rotate-3">BioBot</span></button></div>
 
-              <!-- Progress / Status Indicator -->
-              <div id="tripo-status-container" class="tripo-status hidden">
-                <div class="tripo-status-header">
-                  <span id="tripo-status-text">Đang xếp hàng...</span>
-                  <span id="tripo-status-percentage">0%</span>
-                </div>
-                <div class="tripo-progress-bar">
-                  <div id="tripo-progress-fill" class="tripo-progress-fill" style="width: 0%;"></div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--panel-border);" />
-
-        <!-- Camera Presets -->
-        <section class="sidebar-section">
-          <div class="sidebar-title">Góc nhìn</div>
-          <div class="camera-presets">
-            <div class="btn-group">
-              <button id="plant-btn-front" class="btn active" title="Nhìn toàn cảnh">Toàn cảnh</button>
-              <button id="plant-btn-top" class="btn" title="Nhìn từ trên xuống">Trên xuống</button>
-              <button id="plant-btn-detail" class="btn" title="Cận cảnh cụm quả mọc thân">Quả mọc thân</button>
-            </div>
-          </div>
-        </section>
-      </aside>
-
-      <!-- Sidebar - CHEMISTRY LAB MODE -->
-      <aside id="chemistry-sidebar" class="glass-card sidebar-card hidden" aria-label="Bảng thông tin phòng thí nghiệm hóa học">
-        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
-          <!-- Intro Section -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Phòng Thí Nghiệm Hóa Học</div>
-            <div class="phase-info">
-              <h2 id="chemistry-lab-title" style="font-size: 18px; font-weight: 600; color: var(--accent-blue);">Bàn thí nghiệm 3D</h2>
-              <p class="phase-subtitle">Phản ứng tương tác trực quan</p>
-              <p class="phase-desc" id="chemistry-lab-desc">Hãy kích hoạt các dụng cụ và thêm hóa chất từ dock dưới để tiến hành các phản ứng pha chế.</p>
-              <button id="chem-btn-back-selection" class="chem-action-btn primary" style="margin-top: 12px; padding: 10px 14px; font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Quay lại Chọn Vật Liệu
-              </button>
-            </div>
-          </section>
-
-          <!-- Telemetry Status Panel -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Thông số đo lường</div>
-            <div class="chem-telemetry-section">
-              <div class="chem-telemetry-label-row">
-                <span class="chem-telemetry-title">Nhiệt độ môi trường</span>
-                <span id="chem-telemetry-temp" class="chem-telemetry-value">298.15 K</span>
-              </div>
-              <div class="chem-telemetry-bar">
-                <div id="chem-temp-bar-fill" class="chem-telemetry-bar-fill" style="width: 25.5%;"></div>
-              </div>
-            </div>
-            <div class="chem-telemetry-section">
-              <div class="chem-telemetry-label-row">
-                <span class="chem-telemetry-title">Tốc độ phản ứng</span>
-                <span id="chem-telemetry-rate" class="chem-telemetry-value">0.000 mol/s</span>
-              </div>
-              <div class="chem-telemetry-bar">
-                <div id="chem-rate-bar-fill" class="chem-telemetry-bar-fill" style="width: 0%; background-color: var(--accent-teal);"></div>
-              </div>
-            </div>
-            <div class="chem-telemetry-section">
-              <div class="chem-telemetry-label-row">
-                <span class="chem-telemetry-title">Độ pH dung dịch</span>
-                <span id="chem-telemetry-ph" class="chem-telemetry-value">7.0</span>
-              </div>
-              <div class="chem-telemetry-bar">
-                <div id="chem-ph-bar-fill" class="chem-telemetry-bar-fill" style="width: 50%; background-color: var(--accent-green);"></div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Current Materials on Table -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Vật chất trên bàn</div>
-            <div id="chemistry-materials-list" class="chem-list-group">
-              <!-- Dynamically populated -->
-            </div>
-          </section>
-
-          <!-- Chemical reaction alert -->
-          <section class="sidebar-section">
-            <div id="chemistry-reaction-alert" class="chem-reaction-alert hidden">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-              <div>
-                <p style="font-weight:bold; margin-bottom: 2px;">Phản ứng đang diễn ra!</p>
-                <span id="chemistry-reaction-alert-text">Nhiệt lượng tỏa ra và đổi màu dung dịch.</span>
-              </div>
-            </div>
-          </section>
-
-          <!-- Graph panel -->
-          <section class="sidebar-section">
-            <div class="sidebar-title">Đồ thị động học (Kinematics)</div>
-            <div class="chem-telemetry-graph-box">
-              <span class="chem-telemetry-graph-label">Nhiệt độ (K) theo thời gian</span>
-              <svg id="chem-graph-svg" viewBox="0 0 100 45" preserveAspectRatio="none">
-                <path id="chem-graph-path" d="M0 40 L 100 40" fill="none" stroke="var(--accent-blue)" stroke-width="1.5"></path>
-                <path id="chem-graph-area" d="M0 45 L 0 40 L 100 40 L 100 45 Z" fill="url(#chem-grad)" opacity="0.15"></path>
-                <defs>
-                  <linearGradient id="chem-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="var(--accent-blue)" stop-opacity="1"></stop>
-                    <stop offset="100%" stop-color="var(--accent-blue)" stop-opacity="0"></stop>
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-          </section>
-        </div>
-      </aside>
-
-      <!-- Bottom Control Bar (MITOSIS only) -->
-      <section id="mitosis-controls" class="glass-card controls-card" aria-label="Bộ điều khiển dòng thời gian">
-        <!-- Media Buttons -->
-        <div class="media-btns">
-          <button id="prev-btn" class="btn-icon" title="Kỳ trước" aria-label="Chuyển sang kỳ trước">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-            </svg>
-          </button>
-          
-          <button id="play-btn" class="btn-icon" title="Phát mô phỏng" aria-label="Bắt đầu hoặc tạm dừng mô phỏng">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          </button>
-          
-          <button id="next-btn" class="btn-icon" title="Kỳ tiếp theo" aria-label="Chuyển sang kỳ tiếp theo">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 18l8.5-6L6 6zm9-12h2v12h-2z"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Timeline slider -->
-        <div class="timeline-container">
-          <div class="slider-wrapper">
-            <input id="timeline-slider" type="range" class="timeline-slider" min="0" max="100" value="0" aria-label="Trục tiến trình phân bào">
-          </div>
-          
-          <div id="timeline" class="phase-ticks">
-            <span class="tick active" data-phase="0">Kỳ trung gian</span>
-            <span class="tick" data-phase="1">Kỳ đầu</span>
-            <span class="tick" data-phase="2">Kỳ giữa</span>
-            <span class="tick" data-phase="3">Kỳ sau</span>
-            <span class="tick" data-phase="4">Kỳ cuối & Phân chia</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Bottom Hint Bar (SKULL mode) -->
-      <section id="skull-controls" class="glass-card controls-card hidden" aria-label="Hướng dẫn tương tác hộp sọ">
-        <div class="skull-hint">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--accent-purple)" style="flex-shrink:0;">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-          </svg>
-          <span>Nhấn chuột vào mô hình 3D hoặc chọn tên xương ở sidebar để xem thông tin chi tiết. Kéo thả để xoay mô hình.</span>
-        </div>
-      </section>
-
-      <!-- Bottom Control Bar (PARAMECIUM mode) -->
-      <section id="paramecium-controls" class="glass-card controls-card hidden" aria-label="Điều khiển trùng giày">
-        <button id="para-reveal-btn" class="btn btn-primary reveal-btn" title="Bổ đôi để xem cấu tạo bên trong">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="flex-shrink:0;"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5c-1.7-4.4-6-7.5-11-7.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
-          <span id="para-reveal-label">Xem bên trong</span>
-        </button>
-        <div class="skull-hint para-hint">
-          <span id="para-hint-text">Đang xem nguyên con. Bấm “Xem bên trong” để vỏ tế bào mờ đi và lộ các bào quan — sau đó nhấn từng bộ phận để xem thông tin.</span>
-        </div>
-      </section>
-
-      <!-- Sub-navigation Dock for Organs (KHTN 8) -->
-      <nav id="organs-subdock" class="glass-card organs-subdock hidden" aria-label="Chọn cơ quan giải phẫu"></nav>
-      <div id="organs-status-toast" class="organs-status-toast hidden" role="status" aria-live="polite"></div>
-
-      <!-- Bottom Control Bar (ORGANS mode - HEART KHTN 8) -->
-      <section id="organs-controls" class="glass-card controls-card hidden" aria-label="Điều khiển mô phỏng tim">
-        <button id="organs-heartbeat-btn" class="btn btn-primary reveal-btn" title="Bật / tắt mô phỏng nhịp đập tim">
-          <span id="organs-heartbeat-icon">💓</span>
-          <span id="organs-heartbeat-label">Nhịp đập: Đang BẬT</span>
-        </button>
-        <button id="organs-sound-btn" class="btn btn-secondary reveal-btn" title="Bật / tắt âm thanh nhịp tim">
-          <span id="organs-sound-icon">🔇</span>
-          <span id="organs-sound-label">Âm thanh: TẮT</span>
-        </button>
-        <button id="organs-labels-btn" class="btn btn-secondary reveal-btn active" title="Bật / tắt hiển thị nhãn 3D">
-          <span id="organs-labels-icon">🏷️</span>
-          <span id="organs-labels-label">Nhãn 3D: Đang BẬT</span>
-        </button>
-        <button id="organs-reset-btn" class="btn btn-secondary" title="Trở lại góc nhìn tổng quan">
-          <span>↩ Khám phá</span>
-        </button>
-        <div class="skull-hint">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--accent-pink)" style="flex-shrink:0;">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-          <span>Khám phá 6 cấu trúc qua nhãn 3D, rê chuột trên bề mặt hoặc chọn từ danh mục bên phải.</span>
-        </div>
-      </section>
-
-      <!-- Bottom Control Bar (PLANT mode) -->
-      <section id="plant-controls" class="glass-card controls-card hidden" aria-label="Điều khiển vòng đời cây mít">
-        <!-- Media Buttons -->
-        <div class="media-btns">
-          <button id="plant-prev-btn" class="btn-icon" title="Giai đoạn trước" aria-label="Chuyển sang giai đoạn trước">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-            </svg>
-          </button>
-          
-          <button id="plant-play-btn" class="btn-icon" title="Phát tự động sinh trưởng" aria-label="Bắt đầu hoặc tạm dừng tự động sinh trưởng">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          </button>
-          
-          <button id="plant-next-btn" class="btn-icon" title="Giai đoạn tiếp theo" aria-label="Chuyển sang giai đoạn tiếp theo">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 18l8.5-6L6 6zm9-12h2v12h-2z"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Timeline slider -->
-        <div class="timeline-container">
-          <div class="slider-wrapper">
-            <input id="plant-slider" type="range" class="timeline-slider" min="0" max="100" value="0" aria-label="Trục tiến trình sinh trưởng cây mít">
-          </div>
-          
-          <div id="plant-timeline" class="phase-ticks">
-            <span class="tick active" data-stage="0">Hạt mít</span>
-            <span class="tick" data-stage="1">Nảy mầm</span>
-            <span class="tick" data-stage="2">Cây con</span>
-            <span class="tick" data-stage="3">Trưởng thành</span>
-            <span class="tick" data-stage="4">Ra hoa</span>
-            <span class="tick" data-stage="5">Kết quả</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Bottom Control Bar (CHEMISTRY mode) -->
-      <section id="chemistry-controls" class="glass-card controls-card hidden" aria-label="Điều khiển phòng thí nghiệm hóa học">
-        <div class="chem-hud-bottom-dock" style="position:static; transform:none; flex: 1;">
-          <div class="chem-dock-card" style="border:none; background:transparent; padding:0; box-shadow:none;">
-            <!-- Inventory grid showing active materials on workbench -->
-            <div id="chemistry-dock-grid" class="chem-dock-grid">
-              <!-- Dynamically populated -->
-            </div>
-            
-            <div class="chem-dock-divider"></div>
-            
-            <!-- Quick actions -->
-            <button id="chem-btn-ignite" class="chem-dock-action" title="Đốt/Tắt đèn cồn">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
-              <span>Đèn Cồn</span>
-            </button>
-            <button id="chem-btn-mix" class="chem-dock-action" title="Đổ lẫn hóa chất giữa 2 dụng cụ">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
-              <span>Pha Trộn</span>
-            </button>
-            <button id="chem-btn-reset" class="chem-dock-action" title="Dọn dẹp làm sạch bàn thí nghiệm">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              <span>Dọn Bàn</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <!-- Fullscreen Almanac Material Selector (CHEMISTRY Mode Selection View) -->
-    <div id="chemistry-almanac" class="chem-almanac-overlay hidden">
-      <!-- Left Column: Material Grid -->
-      <div class="chem-almanac-left">
-        <div class="chem-almanac-header">
-          <h2>Chọn Vật Liệu Thí Nghiệm</h2>
-          <div class="chem-tabs-bar">
-            <button id="chem-tab-chemicals" class="chem-tab-btn active">Hóa Chất</button>
-            <button id="chem-tab-tools" class="chem-tab-btn">Dụng Cụ</button>
-          </div>
-        </div>
-        <div class="chem-grid-scroll">
-          <div id="chemistry-almanac-grid" class="chem-grid">
-            <!-- Dynamically populated card items -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Detail Information Panel -->
-      <div class="chem-almanac-right">
-        <div class="chem-detail-card">
-          <div class="chem-detail-preview">
-            <div class="chem-detail-circle">
-              <div id="chem-detail-symbol" class="chem-detail-symbol-large">H₂O</div>
-            </div>
-            <h3 id="chem-detail-title" class="chem-detail-name">Nước cất</h3>
-            <span id="chem-detail-latin" class="chem-detail-latin">Distilled Water</span>
-            <span id="chem-detail-type" class="chem-detail-type">Dung môi</span>
-          </div>
-
-          <div class="chem-detail-scroll">
-            <div class="chem-detail-section">
-              <span class="chem-detail-label">📦 Lượng cấp / Quy cách</span>
-              <span id="chem-detail-cost" class="chem-detail-text bold">100 ml</span>
-            </div>
-            <div class="chem-detail-section">
-              <span class="chem-detail-label">📋 Mô tả</span>
-              <p id="chem-detail-desc" class="chem-detail-text">Nước cất tinh khiết làm dung môi.</p>
-            </div>
-            <div class="chem-detail-section">
-              <span class="chem-detail-label">🧪 Đặc tính vật lý / hóa học</span>
-              <p id="chem-detail-properties" class="chem-detail-text">Độ pH: 7.0 (Trung tính).</p>
-            </div>
-            <div class="chem-detail-section">
-              <span class="chem-detail-label">⚠️ Cảnh báo an toàn (Hazards)</span>
-              <div id="chem-detail-hazards">
-                <span class="chem-hazard-badge">An toàn</span>
-              </div>
-            </div>
-          </div>
-
-          <button id="chem-add-cart-btn" class="chem-action-btn primary">+ Thêm vào bộ thí nghiệm</button>
-        </div>
-      </div>
-
-      <!-- Bottom Bar: Selected list and Initialization -->
-      <div class="chem-almanac-bottom">
-        <div class="chem-cart-summary">
-          <button class="chem-cart-btn-trigger">
-            <!-- Flask/Beaker icon for lab context -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M9 3v8l-4 9h14l-4-9V3"/><line x1="6" y1="14" x2="18" y2="14"/></svg>
-            <span id="chemistry-cart-count" class="chem-cart-counter">0</span>
-          </button>
-          <div class="chem-cart-info">
-            <span class="chem-cart-label">Bộ thí nghiệm</span>
-            <span id="chemistry-cart-summary-text" class="chem-cart-value">Chưa chọn vật liệu nào</span>
-          </div>
-          <div id="chemistry-cart-preview" class="chem-cart-items-preview">
-            <!-- Selected item dots will go here -->
-          </div>
-        </div>
-        
-        <button id="chemistry-init-btn" class="chem-initialize-btn" disabled>
-          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M12 2L2 22h20L12 2z"></path></svg>
-          Bước vào Phòng Lab
-        </button>
-      </div>
-    </div>
-
-    <!-- Vessel Picker Modal: chọn dụng cụ đựng hóa chất -->
-    <div id="vessel-picker-modal" class="vessel-picker-overlay hidden">
-      <div class="vessel-picker-card">
-        <div class="vessel-picker-header">
-          <h3 id="vessel-picker-title">Chọn dụng cụ đựng</h3>
-          <button id="vessel-picker-close" class="vessel-picker-close-btn">&times;</button>
-        </div>
-        <p class="vessel-picker-subtitle" id="vessel-picker-chem-name"></p>
-        <div id="vessel-picker-options" class="vessel-picker-options">
-          <!-- Dynamically populated -->
-        </div>
-        <p class="vessel-picker-hint" id="vessel-picker-hint"></p>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="/src/main.js"></script>
-</body>
-</html>
+<script type="module" src="/src/pages/home.js"></script>
+</body></html>

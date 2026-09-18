@@ -1,0 +1,397 @@
+/* ===================================================================
+   BIOVERSE - SCIENTIFIC SKETCHBOOK MODAL & TOAST DESIGN SYSTEM
+   =================================================================== */
+
+/* ─── Modal Overlay Backdrop ─── */
+.bv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background-color: rgba(45, 45, 45, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+}
+
+.bv-modal-backdrop.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ─── Modal Dialog Container ─── */
+.bv-modal-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background-color: #fdfbf7;
+  background-image: radial-gradient(#dcd5cb 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 22px 16px 24px 18px;
+  box-shadow: 8px 8px 0px #2d2d2d;
+  padding: 2rem 1.75rem 1.5rem 1.75rem;
+  transform: scale(0.9) translateY(12px) rotate(-0.5deg);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease-out;
+  overflow: visible;
+  font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+}
+
+.bv-modal-backdrop.is-active .bv-modal-dialog {
+  transform: scale(1) translateY(0) rotate(0deg);
+  opacity: 1;
+}
+
+/* ─── Washi Tape Header Decoration ─── */
+.bv-modal-washi-tape {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1.5deg);
+  background-color: rgba(240, 230, 210, 0.95);
+  border: 1.5px dashed #2d2d2d;
+  padding: 2px 18px;
+  border-radius: 2px;
+  box-shadow: 1px 1px 0px rgba(45, 45, 45, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.bv-modal-washi-tape span {
+  font-family: 'Space Grotesk', monospace, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #5b403e;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Close Button (X) */
+.bv-modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #2d2d2d;
+  border-radius: 10px;
+  background-color: #f6f3f2;
+  color: #2d2d2d;
+  box-shadow: 2px 2px 0px #2d2d2d;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 5;
+}
+
+.bv-modal-close-btn:hover {
+  background-color: #ffdad7;
+  color: #b71422;
+  transform: scale(1.05);
+}
+
+.bv-modal-close-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #2d2d2d;
+}
+
+/* ─── Icon Badge Container ─── */
+.bv-modal-icon-badge {
+  width: 58px;
+  height: 58px;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 18px 8px 18px 8px;
+  box-shadow: 3.5px 3.5px 0px #2d2d2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  transform: rotate(-3deg);
+  transition: transform 0.25s ease;
+}
+
+.bv-modal-dialog:hover .bv-modal-icon-badge {
+  transform: rotate(0deg) scale(1.05);
+}
+
+/* Icon Type Themes */
+.bv-modal-type-success .bv-modal-icon-badge {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.bv-modal-type-confirm .bv-modal-icon-badge {
+  background-color: #fff9c4;
+  color: #854d0e;
+}
+
+.bv-modal-type-warning .bv-modal-icon-badge {
+  background-color: #fed7aa;
+  color: #9a3412;
+}
+
+.bv-modal-type-error .bv-modal-icon-badge {
+  background-color: #ffdad7;
+  color: #930014;
+}
+
+.bv-modal-type-info .bv-modal-icon-badge {
+  background-color: #d6e3ff;
+  color: #0a4689;
+}
+
+/* ─── Typography & Content ─── */
+.bv-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.bv-modal-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bv-modal-tag {
+  font-family: 'Space Grotesk', monospace, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 6px;
+  box-shadow: 1.5px 1.5px 0px #2d2d2d;
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+
+.bv-modal-type-success .bv-modal-tag { background-color: #88f9b0; color: #00210f; }
+.bv-modal-type-confirm .bv-modal-tag { background-color: #fff9c4; color: #5b403e; }
+.bv-modal-type-warning .bv-modal-tag { background-color: #fed7aa; color: #7c2d12; }
+.bv-modal-type-error .bv-modal-tag { background-color: #ffdad7; color: #93000a; }
+.bv-modal-type-info .bv-modal-tag { background-color: #d6e3ff; color: #064487; }
+
+.bv-modal-title {
+  font-family: 'Epilogue', cursive, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1b1c1c;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.bv-modal-message {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #4a3b3a;
+  margin: 0.5rem 0 1.5rem 0;
+  word-break: break-word;
+}
+
+.bv-modal-message strong {
+  color: #1b1c1c;
+  font-weight: 700;
+  background-color: #fff9c4;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(45, 45, 45, 0.2);
+}
+
+/* ─── Actions Bar ─── */
+.bv-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 1rem;
+}
+
+.bv-modal-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 20px;
+  border-radius: 12px;
+  border: 2px solid #2d2d2d;
+  box-shadow: 3px 3px 0px #2d2d2d;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  min-height: 42px;
+}
+
+.bv-modal-btn:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4.5px 4.5px 0px #2d2d2d;
+}
+
+.bv-modal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #2d2d2d;
+}
+
+/* Button Variants */
+.bv-modal-btn-cancel {
+  background-color: #f6f3f2;
+  color: #1b1c1c;
+}
+
+.bv-modal-btn-cancel:hover {
+  background-color: #eae7e7;
+}
+
+.bv-modal-btn-primary {
+  background-color: #ff4d4d;
+  color: #ffffff;
+}
+
+.bv-modal-btn-primary:hover {
+  background-color: #ff3333;
+}
+
+.bv-modal-btn-success {
+  background-color: #00864c;
+  color: #ffffff;
+}
+
+.bv-modal-btn-success:hover {
+  background-color: #006a3b;
+}
+
+.bv-modal-btn-destructive {
+  background-color: #b71422;
+  color: #ffffff;
+}
+
+.bv-modal-btn-destructive:hover {
+  background-color: #930014;
+}
+
+/* ─── TOAST NOTIFICATION CONTAINER ─── */
+.bv-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  max-width: 380px;
+  width: calc(100% - 48px);
+}
+
+.bv-toast {
+  pointer-events: auto;
+  background-color: #fff9c4;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 14px;
+  box-shadow: 4px 4px 0px #2d2d2d;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: translateX(120%) rotate(2deg);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.bv-toast.is-show {
+  transform: translateX(0) rotate(0deg);
+  opacity: 1;
+}
+
+.bv-toast-icon {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #2d2d2d;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 2px 2px 0px #2d2d2d;
+}
+
+.bv-toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.bv-toast-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b403e;
+  margin-bottom: 2px;
+}
+
+.bv-toast-message {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #1b1c1c;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.bv-toast-close {
+  background: none;
+  border: none;
+  color: #76716a;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+.bv-toast-close:hover {
+  color: #1b1c1c;
+}
+
+/* Toast Progress Bar */
+.bv-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: #2d2d2d;
+  width: 100%;
+  transform-origin: left;
+}
+
+/* Toast Type Variations */
+.bv-toast-success { background-color: #dcfce7; }
+.bv-toast-success .bv-toast-icon { background-color: #88f9b0; color: #00210f; }
+
+.bv-toast-error { background-color: #ffdad7; }
+.bv-toast-error .bv-toast-icon { background-color: #ffb3ae; color: #93000a; }
+
+.bv-toast-info { background-color: #eff6ff; }
+.bv-toast-info .bv-toast-icon { background-color: #d6e3ff; color: #064487; }

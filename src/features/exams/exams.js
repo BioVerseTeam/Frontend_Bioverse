@@ -1,3 +1,5 @@
+import { recordExamResult } from '../progress/progressService.js';
+
 const API_BASE_URL = '/api';
 
 // State
@@ -317,6 +319,13 @@ function calculateScore() {
   else msg = "Hoàn hảo!";
 
   elems.resultMessage.textContent = msg;
+
+  try {
+    recordExamResult(score, total);
+    window.dispatchEvent(new CustomEvent('bioverse_progress_updated'));
+  } catch (err) {
+    console.warn('Record exam result note:', err);
+  }
 
   switchView('results');
 }
