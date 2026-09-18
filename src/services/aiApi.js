@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/ai';
 export function getAnonymousStudentId() {
   let studentId = localStorage.getItem('bioverse_student_id');
   if (!studentId) {
-    studentId = `student-${crypto.randomUUID()}`;
+    studentId = `anonymous-${crypto.randomUUID()}`;
     localStorage.setItem('bioverse_student_id', studentId);
   }
   return studentId;
@@ -37,13 +37,11 @@ export async function sendChatMessage({ question, conversationId }) {
     });
 
     if (!response.ok) {
-      const errorJson = await response.json().catch(() => ({}));
-      throw new Error(errorJson.message || `Lỗi máy chủ AI (${response.status})`);
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`HTTP error ${response.status}: ${errorText}`);
     }
 
-    const resJson = await response.json();
-    // Spring Boot returns ApiResponse: { data: { conversationId, answer }, code: 1000, message: "Thành công" }
-    return resJson.data || resJson;
+    return await response.json();
   } catch (error) {
     console.error('Error sending chat message:', error);
     throw error;
