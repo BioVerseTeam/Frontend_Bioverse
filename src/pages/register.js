@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        await AuthService.register(fullName, email, password, confirmPw);
+        await AuthService.register(fullName, email, password, confirmPw, null, Number(selectedGrade));
         // On success, redirect to OTP page to verify email
         window.location.href = '/otp.html';
       } catch (err) {
