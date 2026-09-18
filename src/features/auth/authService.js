@@ -87,7 +87,7 @@ export const AuthService = {
       role: data.user?.role || 'STUDENT',
       gender: data.user?.gender,
       avatarUrl: data.user?.avatarUrl,
-      grade: '8',
+      grade: data.user?.grade != null ? String(data.user.grade) : '8',
       loggedInAt: new Date().toISOString()
     };
 
@@ -103,11 +103,17 @@ export const AuthService = {
    * @param {string} password
    * @param {string} confirmPassword
    * @param {string} [phone]
+   * @param {number} grade Lớp đang học (6, 7, 8 hoặc 9)
    * @returns {Promise<Object>} OtpSentResponse
    */
-  async register(fullName, email, password, confirmPassword, phone = null) {
+  async register(fullName, email, password, confirmPassword, phone = null, grade) {
     if (!fullName || !email || !password) {
       throw new Error('Vui lòng điền đầy đủ các thông tin bắt buộc!');
+    }
+
+    const gradeNum = Number(grade);
+    if (![6, 7, 8, 9].includes(gradeNum)) {
+      throw new Error('Vui lòng chọn lớp đang học (Lớp 6, 7, 8 hoặc 9)!');
     }
 
     if (password.length < 8) {
@@ -128,7 +134,8 @@ export const AuthService = {
           email: email.trim(),
           password,
           confirmPassword: confirmPassword || password,
-          phone: phone ? phone.trim() : null
+          phone: phone ? phone.trim() : null,
+          grade: gradeNum
         })
       });
     } catch (netErr) {
@@ -181,7 +188,7 @@ export const AuthService = {
       role: data.user?.role || 'STUDENT',
       gender: data.user?.gender,
       avatarUrl: data.user?.avatarUrl,
-      grade: '8',
+      grade: data.user?.grade != null ? String(data.user.grade) : '8',
       xp: 1450,
       loggedInAt: new Date().toISOString()
     };
@@ -378,7 +385,8 @@ export const AuthService = {
           name: data.fullName,
           phone: data.phone,
           role: data.role,
-          avatarUrl: data.avatarUrl
+          avatarUrl: data.avatarUrl,
+          grade: data.grade != null ? String(data.grade) : getCurrentUser()?.grade
         };
         setCurrentUser(user);
         return user;
