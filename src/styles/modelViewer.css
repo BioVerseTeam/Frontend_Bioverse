@@ -1,0 +1,490 @@
+/* Specimen viewer — paper notebook around a clear 3D model */
+
+.specimen-page {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.specimen-stage {
+  position: relative;
+  height: calc(100vh - 80px);
+  margin-top: 80px;
+  background-color: #fdfbf7;
+  background-image: radial-gradient(#dcd5cb 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  overflow: hidden;
+}
+
+.specimen-stage #canvas-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  touch-action: none;
+}
+
+.specimen-stage #canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.specimen-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+  padding: 16px;
+}
+
+.specimen-toolbar,
+.specimen-sidebar,
+.specimen-hint {
+  pointer-events: auto;
+}
+
+.specimen-toolbar {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.specimen-hint {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: end;
+  width: fit-content;
+  max-width: min(480px, calc(100% - 16px));
+  padding: 8px 12px;
+  background: #fff9c4;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  color: #5b403e;
+}
+
+.specimen-sidebar {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fdfbf7;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 #2d2d2d;
+  overflow: hidden;
+}
+
+.specimen-sidebar-head {
+  padding: 16px 16px 12px;
+  border-bottom: 2px dashed #2d2d2d;
+}
+
+.specimen-kicker {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 2px 8px;
+  background: #e8f5e9;
+  border: 1.5px dashed #2d2d2d;
+  transform: rotate(-1.5deg);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #00864c;
+}
+
+.specimen-title {
+  margin: 0;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #1b1c1c;
+}
+
+.specimen-latin {
+  display: block;
+  margin-top: 4px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-style: italic;
+  color: #5b403e;
+}
+
+.specimen-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.specimen-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 999px;
+  background: #e8f5e9;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.specimen-note[hidden],
+.specimen-copy.is-collapsed {
+  display: none;
+}
+
+.specimen-copy {
+  padding: 12px 16px;
+  overflow: auto;
+  max-height: 22vh;
+}
+
+.specimen-copy p {
+  margin: 0 0 8px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #3d332f;
+}
+
+.specimen-copy p:last-child {
+  margin-bottom: 0;
+}
+
+.specimen-facts {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  color: #5b403e;
+}
+
+.specimen-note {
+  margin: 10px 12px 0;
+  padding: 12px 12px 10px;
+  background: #fff9c4;
+  border: 2px solid #2d2d2d;
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  will-change: transform;
+}
+
+.specimen-note-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.specimen-note-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 50%;
+  border: 1.5px solid #2d2d2d;
+  flex-shrink: 0;
+}
+
+.specimen-note h2 {
+  margin: 0;
+  flex: 1;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 16px;
+  line-height: 1.25;
+  color: #1b1c1c;
+}
+
+.specimen-note-close {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #2d2d2d;
+  border-radius: 8px;
+  background: #fdfbf7;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.specimen-note-close:focus-visible,
+.specimen-tool-btn:focus-visible,
+.specimen-part:focus-visible,
+.specimen-part-vis:focus-visible {
+  outline: 3px solid #2d5da1;
+  outline-offset: 2px;
+}
+
+.specimen-note .latin {
+  display: block;
+  margin: 2px 0 8px 18px;
+  font-size: 11px;
+  font-style: italic;
+  color: #5b403e;
+}
+
+.specimen-note dl {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.specimen-note dt {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #00864c;
+}
+
+.specimen-note dd {
+  margin: 2px 0 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #3d332f;
+}
+
+.specimen-parts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px 8px;
+  border-top: 2px dashed #2d2d2d;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.specimen-parts {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.specimen-part {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 8px 8px 10px;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.specimen-part.is-active {
+  background: #e8f5e9;
+  border-color: #00864c;
+  box-shadow: 3px 3px 0 #2d2d2d;
+}
+
+.specimen-part.is-active .specimen-part-name {
+  color: #0f3d24;
+}
+
+.specimen-part-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid #2d2d2d;
+  flex-shrink: 0;
+}
+
+.specimen-part-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1b1c1c;
+}
+
+.specimen-part-vis {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #5b403e;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.specimen-part-vis:hover,
+.specimen-part-vis.is-off {
+  background: #f6f3f2;
+}
+
+.specimen-part-vis .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.specimen-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 2px solid #2d2d2d;
+  border-radius: 10px;
+  background: #fdfbf7;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1b1c1c;
+  cursor: pointer;
+}
+
+.specimen-tool-btn.is-active {
+  background: #48bb78;
+  color: #102016;
+}
+
+.specimen-tool-btn .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.specimen-status {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  background: rgba(253, 251, 247, 0.78);
+  text-align: center;
+  padding: 24px;
+}
+
+.specimen-status[hidden] {
+  display: none;
+}
+
+.specimen-status-card {
+  width: min(420px, 100%);
+  background: #fdfbf7;
+  color: #1b1c1c;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 #2d2d2d;
+  padding: 22px;
+}
+
+.specimen-status-card h2 {
+  margin: 0 0 8px;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 22px;
+}
+
+.specimen-status-card p {
+  margin: 0 0 14px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 14px;
+  color: #5b403e;
+}
+
+.specimen-progress {
+  height: 10px;
+  border: 2px solid #2d2d2d;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e8f5e9;
+}
+
+.specimen-progress > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #48bb78;
+}
+
+.specimen-hover-tag,
+.specimen-pin {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  border: 2.5px solid #2d2d2d;
+  background: #fdfbf7;
+  color: #1b1c1c;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0 #2d2d2d;
+}
+
+.specimen-hover-tag {
+  transform: translate(16px, -50%);
+  background: #fff;
+  border-color: #2e5ea2;
+}
+
+.specimen-pin {
+  transform: translate(-10px, -128%);
+  background: #fff9c4;
+  padding-left: 14px;
+}
+
+.specimen-pin::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff4d4d;
+  border: 2px solid #2d2d2d;
+  transform: translateY(-50%);
+}
+
+.specimen-hover-tag.hidden,
+.specimen-pin.hidden {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .specimen-overlay {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    padding: 10px;
+  }
+
+  .specimen-sidebar {
+    grid-column: 1;
+    grid-row: 4;
+    max-height: 40vh;
+  }
+
+  .specimen-hint {
+    grid-row: 3;
+  }
+
+  .specimen-copy {
+    max-height: 12vh;
+  }
+}

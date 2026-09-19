@@ -1,6 +1,6 @@
 /**
  * Public Bio Model API — catalog for students and guests.
- * GET /api/models/catalog, /featured, /categories
+ * GET /api/models/catalog, /featured, /categories, /detail/:id, /slug/:slug
  */
 
 const API_BASE = '/api/models';
@@ -70,4 +70,12 @@ export async function getCategories(subject = 'BIOLOGY') {
 
 export async function getFeaturedModels() {
   return request('/featured');
+}
+
+export async function getModelById(id) {
+  return request(`/detail/${encodeURIComponent(id)}`);
+}
+
+export async function getModelBySlug(slug) {
+  return request(`/slug/${encodeURIComponent(slug)}`);
 }
