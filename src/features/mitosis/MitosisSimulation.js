@@ -39,6 +39,7 @@ export class MitosisSimulation {
 
     this.progress = 0.0;
     this.ready = false;
+    this._hidden = false;
     this.onPartClick = null;
     this.parts = {};
 
@@ -291,7 +292,7 @@ export class MitosisSimulation {
   }
 
   handleClick(e) {
-    if (!this.ready || !this.onPartClick) return;
+    if (this._hidden || !this.ready || !this.onPartClick) return;
     const rect = this.renderer.domElement.getBoundingClientRect();
     this._mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     this._mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -378,12 +379,23 @@ export class MitosisSimulation {
   }
 
   render() {
+    if (this._hidden) return;
     if (this.bgParticles) {
       this.bgParticles.rotation.y += 0.0008;
       this.bgParticles.rotation.x += 0.0004;
     }
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
+  }
+
+  show() {
+    this._hidden = false;
+    if (this.renderer) this.renderer.domElement.style.display = 'block';
+  }
+
+  hide() {
+    this._hidden = true;
+    if (this.renderer) this.renderer.domElement.style.display = 'none';
   }
 
   destroy() {

@@ -10,7 +10,7 @@ BioVerse được thiết kế theo mô hình **Kiến Trúc Hướng Miền (Fe
    - **`index.html`:** Duy nhất một file HTML ở thư mục gốc đóng vai trò Trang Chủ (Root Entry).
    - **`pages/`:** Toàn bộ các trang con (`lab.html`, `login.html`, `register.html`, `forgot-password.html`, `otp.html`, `exams.html`, `inspect.html`) được gom gọn vào thư mục `pages/` chuyên biệt.
    - **Clean URL Routing:** Nhờ middleware trong `vite.config.js`, hệ thống hỗ trợ cả định dạng sạch (`/lab`, `/login`, `/register`, `/exams`) và định dạng file (`/pages/lab.html`).
-2. **Feature / Domain Layer (Tầng tính năng nghiệp vụ):** Mỗi phân hệ mô phỏng khoa học (Hộp sọ, Cơ quan nội tạng, Lab Hóa học, Trùng giày, Thực vật, Phân bào, Trắc nghiệm, Xác thực) là một module khép kín gồm Viewer + Dữ liệu + Controller riêng biệt trong `src/features/`.
+2. **Feature / Domain Layer (Tầng tính năng nghiệp vụ):** Mỗi phân hệ mô phỏng khoa học (Hộp sọ, Cơ quan nội tạng, Hoạt ảnh phản ứng phân tử, Trùng giày, Thực vật, Phân bào, Trắc nghiệm, Xác thực) là một module khép kín gồm Viewer + Dữ liệu + Controller riêng biệt trong `src/features/`.
 3. **Core 3D Engine Layer (Tầng lõi 3D Three.js):** Quản lý vòng đời WebGLRenderer, Scene, PerspectiveCamera, OrbitControls, Resize và Animation Ticker trong `src/core/engine.js`.
 4. **Services & Infrastructure Layer:** Xử lý kết nối API AI Trợ lý học tập (`aiApi.js`), Xác thực & Quản lý phiên JWT Backend (`authService.js`), định tuyến CDN/Local asset (`modelUrls.js`), và tiện ích lưu trữ `localStorage`.
 
@@ -24,6 +24,7 @@ bio_3d/
 │
 ├── pages/                        # Thư mục gom toàn bộ các trang web con
 │   ├── lab.html                  # Phòng Thí Nghiệm Mô Phỏng 3D
+│   ├── phan-ung.html             # Studio hoạt ảnh phản ứng phân tử
 │   ├── exams.html                # Trang Trắc Nghiệm Ôn Tập
 │   ├── login.html                # Trang Đăng Nhập
 │   ├── register.html             # Trang Đăng Ký
@@ -53,9 +54,11 @@ bio_3d/
 │   │   ├── organs/               # Phân hệ Cơ thể người, Tim & Tuần hoàn
 │   │   │   ├── OrgansViewer.js   # Khởi tạo tim đập 3D, bóc tách buồng tim, phổi
 │   │   │   └── organsData.js     # Chú thích cấu trúc van tim, tâm thất, động mạch
-│   │   ├── chemistry/            # Phân hệ Phòng Thí Nghiệm Hóa Học KHTN 8
-│   │   │   ├── ChemistryViewer.js# Giá thí nghiệm, ống nghiệm, bình tam giác, rót hóa chất
-│   │   │   └── chemistryData.js  # Danh mục hóa chất, màu sắc & phương trình phản ứng
+│   │   ├── reactionAnim/         # Phân hệ Hoạt ảnh phản ứng phân tử 3D
+│   │   │   ├── moleculeScene.js  # Scene Three.js xem / dựng keyframe
+│   │   │   ├── animationEngine.js# Timeline GSAP nội suy nguyên tử
+│   │   │   ├── chemx.js          # Parse / xuất file .chemx
+│   │   │   └── lessons.js        # Bài H₂+Cl₂, 2H₂+O₂
 │   │   ├── paramecium/           # Phân hệ Sinh vật đơn bào - Trùng giày
 │   │   │   ├── ParameciumViewer.js
 │   │   │   └── parameciumData.js # Bào quan: không bào co bóp, rãnh miệng, nhân
@@ -92,6 +95,7 @@ bio_3d/
 │   └── pages/                    # Entrypoints JavaScript cho từng trang HTML (100% no inline JS)
 │       ├── home.js               # Điều khiển Trang Chủ (index.html)
 │       ├── lab.js                # Điều phối chính của Lab 3D (pages/lab.html)
+│       ├── phanUng.js            # Studio xem / làm hoạt ảnh phân tử (pages/phan-ung.html)
 │       ├── exams.js              # Điều phối trang Trắc nghiệm (pages/exams.html)
 │       ├── login.js              # Xử lý Đăng Nhập (pages/login.html)
 │       ├── register.js           # Xử lý Đăng Ký (pages/register.html)

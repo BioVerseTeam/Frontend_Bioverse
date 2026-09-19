@@ -151,7 +151,7 @@ function fillForm(item, { animate = true } = {}) {
   if (code) code.disabled = Boolean(item.isSystem);
   setCopy(
     item.isSystem ? item.name || 'Lab hệ thống' : item.name || 'Sửa lab',
-    item.isSystem ? 'Lab hệ thống không đổi mã, không ẩn được.' : 'Đổi tên hoặc mã. Lab chưa có viewer sẽ mở hộp sọ.',
+    item.isSystem ? 'Lab hệ thống không đổi mã, không ẩn được.' : 'Đổi tên hoặc mã. Học sinh xem mẫu vật 3D ở tab Sinh học.',
     false
   );
   show(document.getElementById('admin-lab-hide'), !item.isSystem);
@@ -229,7 +229,7 @@ function renderLive() {
   if (name) name.textContent = valueOf('lab-field-name') || 'Tên lab';
   if (code) {
     const raw = valueOf('lab-field-code').trim() || 'tự tạo từ tên khi lưu';
-    code.textContent = `lab.html?mode=${raw}`;
+    code.textContent = raw.trim() || 'tự tạo từ tên khi lưu';
   }
 }
 
