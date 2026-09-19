@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/src/styles/reactionAnim.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
   <style>
     @layer base { html, body { margin: 0; padding: 0; } }
@@ -60,10 +60,18 @@
 
   <div class="rx-stage" id="rx-stage">
     <div id="canvas-container" aria-label="Khung nhìn phân tử 3D"></div>
+    <div class="rx-canvas-empty" id="rx-canvas-empty" hidden>
+      <div class="rx-canvas-empty-card">
+        <p class="rx-title">Chưa chọn phản ứng</p>
+        <p class="rx-copy">Chọn bài bên trái, hoặc kéo thả file <b>.chemx</b> vào trang này để phát ngay. Không bắt buộc mở từ máy.</p>
+      </div>
+    </div>
 
     <div class="rx-overlay">
       <aside class="rx-rail" id="rx-rail" aria-label="Bảng công cụ phản ứng"></aside>
       <aside class="rx-panel" id="rx-panel" aria-label="Thông tin phản ứng"></aside>
+      <div class="rx-howto" id="rx-howto" hidden></div>
+      <div class="rx-guide" id="rx-guide" hidden></div>
       <p class="rx-hint" id="rx-hint">Kéo để xoay · Cuộn để phóng to · Bấm Phát để xem nguyên tử tái sắp xếp</p>
       <div class="rx-transport" aria-label="Điều khiển phát">
         <div class="rx-transport-row">
@@ -74,19 +82,25 @@
             <span class="material-symbols-outlined">replay</span>
           </button>
           <input id="rx-slider" class="rx-slider" type="range" min="0" max="6000" step="16" value="0" aria-label="Thanh thời gian phản ứng">
-          <span id="rx-time" class="rx-time">0.0s / 6.0s</span>
+          <span id="rx-time" class="rx-time">0.0s / 0.0s</span>
         </div>
-        <div id="rx-chips" class="rx-chips"></div>
+        <div class="rx-moments">
+          <p class="rx-moments-help" id="rx-moments-help">Chưa lưu lần nào. Sắp xong thì bấm nút tím “Lưu trạng thái” trên tấm hướng dẫn.</p>
+          <div id="rx-chips" class="rx-chips" role="tablist" aria-label="Các trạng thái đã lưu"></div>
+        </div>
       </div>
       <div class="rx-posdock" id="rx-posdock" hidden></div>
     </div>
 
-    <div class="rx-drop" id="rx-drop" aria-hidden="true">
+    <div class="rx-gate-layer" id="rx-gate-layer" hidden></div>
+    <div class="rx-celebrate" id="rx-celebrate" aria-hidden="true"></div>
+    <div class="rx-drop" id="rx-drop" hidden aria-hidden="true">
       <div class="rx-drop-card">
-        <p class="rx-title">Thả file .chemx vào đây</p>
-        <p class="rx-copy" style="margin:0">Hỗ trợ .chemx và .json xuất từ studio này.</p>
+        <p class="rx-title">Thả file .chemx vào đây để chạy</p>
+        <p class="rx-copy" style="margin:0">Phim sẽ mở và phát. Vẫn có nút Mở file nếu không kéo thả được.</p>
       </div>
     </div>
+    <div class="rx-table" id="rx-table" hidden></div>
     <div class="rx-toast" id="rx-toast" hidden role="alert"></div>
     <input id="rx-file" class="rx-file" type="file" accept=".chemx,.json,application/json">
   </div>
