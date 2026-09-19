@@ -217,7 +217,7 @@ function renderSkeletons(grid) {
   if (!grid) return;
   grid.innerHTML = Array.from({ length: 8 }, () => `
     <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow">
-      <div class="h-40 rounded-xl bg-[#e8f5e9] border-2 border-[#2d2d2d] mb-2.5 animate-pulse"></div>
+      <div class="catalog-thumb mb-2.5 animate-pulse"></div>
       <div class="h-3 w-24 bg-[#dcd5cb] rounded mb-2"></div>
       <div class="h-5 w-3/4 bg-[#dcd5cb] rounded mb-2"></div>
       <div class="h-10 w-full bg-[#f6f3f2] rounded"></div>
@@ -232,13 +232,13 @@ function renderCard(model) {
   const action = model.actionText || 'Khám phá ngay';
   const icon = model.actionIcon || '3d_rotation';
   const thumb = model.thumbnailUrl
-    ? `<img src="${escapeAttr(model.thumbnailUrl)}" alt="${escapeAttr(model.name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">`
+    ? `<img src="${escapeAttr(model.thumbnailUrl)}" alt="${escapeAttr(model.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">`
     : `<span class="material-symbols-outlined text-[48px] text-[#00864c]">view_in_ar</span>`;
 
   return `
     <article class="group bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative">
       <div class="absolute -top-2.5 right-3 bg-[#dcfce7] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-['Space_Grotesk'] font-bold text-[#166534]">${escapeHtml(grade)}</div>
-      <div class="h-40 rounded-xl bg-[#e8f5e9] border-2 border-[#2d2d2d] overflow-hidden relative mb-2.5 flex items-center justify-center p-1">
+      <div class="catalog-thumb mb-2.5">
         ${thumb}
         <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-white/90 border border-[#2d2d2d] text-[9px] font-['Space_Grotesk'] font-bold">${escapeHtml(badge)}</span>
       </div>
