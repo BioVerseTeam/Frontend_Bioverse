@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHomeData();
   });
 
+  window.addEventListener('bioverse_streak_updated', () => {
+    renderHomeData();
+  });
+
   console.log('BioVerse Home Page initialized with real dynamic data & progress tracking.');
 });
 
@@ -54,6 +58,17 @@ export function renderHomeData() {
   const xpDisplay = document.getElementById('user-xp-display');
   if (xpDisplay) {
     xpDisplay.textContent = `${data.xpFormatted} XP`;
+  }
+
+  const streakDisplay = document.getElementById('user-streak-display');
+  if (streakDisplay) {
+    streakDisplay.textContent = `${data.currentStreak} ngày`;
+  }
+  const longestDisplay = document.getElementById('user-longest-streak');
+  if (longestDisplay) {
+    longestDisplay.textContent = data.isLoggedIn
+      ? `Kỷ lục: ${data.longestStreak} ngày`
+      : 'Đăng nhập để tích chuỗi';
   }
 
   // 4. Weekly Goal Title

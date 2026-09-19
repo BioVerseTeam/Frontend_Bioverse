@@ -273,6 +273,8 @@ export function getHomePageData() {
     xp: progress.xp,
     xpFormatted: progress.xp.toLocaleString('vi-VN'),
     levelInfo,
+    currentStreak: isLoggedIn ? (user.currentStreak ?? 0) : 0,
+    longestStreak: isLoggedIn ? (user.longestStreak ?? 0) : 0,
     
     // Weekly goal
     weeklyGoal,
