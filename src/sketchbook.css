@@ -245,6 +245,7 @@ h1, h2, h3, h4, .font-headline {
   border-radius: 10px !important;
   box-shadow: 2px 2px 0px var(--ink-charcoal) !important;
   transition: all 0.15s ease !important;
+  text-decoration: none !important;
 }
 
 .sketch-lab-overlay .mode-btn:hover {

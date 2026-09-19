@@ -111,7 +111,7 @@ export function renderHomeData() {
     if (data.exploredModelNames.length > 0) {
       exploredText.textContent = `Đã giải phẫu: ${data.exploredModelNames.join(', ')}`;
     } else {
-      exploredText.textContent = 'Đã giải phẫu: Chưa có mô hình nào (bấm vào Lab để bắt đầu)';
+      exploredText.textContent = 'Đã giải phẫu: Chưa có mô hình nào (bấm vào Sinh học để bắt đầu)';
     }
   }
 
@@ -157,7 +157,9 @@ export function renderHomeData() {
       percentEl.textContent = lesson.progress > 0 ? `Đã học ${lesson.progress}%` : 'Chưa bắt đầu (0%)';
     }
     if (linkEl) {
-      linkEl.href = `/lab.html?mode=${lesson.modelId}`;
+      linkEl.href = (lesson.modelId === 'reaction' || lesson.modelId === 'chemistry')
+        ? '/phan-ung.html'
+        : '/sinh-hoc.html';
     }
     if (btnTextEl) {
       btnTextEl.textContent = lesson.progress > 0 ? 'Học tiếp ngay' : 'Bắt đầu học ngay';

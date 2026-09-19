@@ -24,12 +24,7 @@ const LEVELS = [
 
 // ─── 3D Models Available in Lab ───
 const LAB_MODELS = [
-  { id: 'skull', name: 'Hộp Sọ Người', subject: 'Sinh Học', grade: 8, icon: 'view_in_ar', xpReward: 150 },
-  { id: 'organs', name: 'Hệ Tuần Hoàn & Tim Mạch', subject: 'Sinh Học', grade: 8, icon: 'vital_signs', xpReward: 200 },
-  { id: 'paramecium', name: 'Trùng Giày (Paramecium)', subject: 'Sinh Học', grade: 7, icon: 'biotech', xpReward: 120 },
-  { id: 'plant', name: 'Cấu Tạo Thực Vật', subject: 'Sinh Học', grade: 6, icon: 'psychiatry', xpReward: 100 },
-  { id: 'mitosis', name: 'Phân Bào Nguyên Phân', subject: 'Sinh Học', grade: 8, icon: 'cell_tower', xpReward: 180 },
-  { id: 'chemistry', name: 'Phòng Thí Nghiệm Hóa Học', subject: 'Hóa Học', grade: 8, icon: 'science', xpReward: 160 },
+  { id: 'reaction', name: 'Hoạt ảnh phản ứng phân tử', subject: 'Hóa Học', grade: 8, icon: 'animation', xpReward: 140 },
 ];
 
 /**
@@ -238,11 +233,11 @@ export function getHomePageData() {
   // If user hasn't started any lesson yet, recommend the 1st model
   if (!lastLessonInfo) {
     lastLessonInfo = {
-      modelId: 'skull',
-      name: 'Hộp Sọ & Cấu Trúc Xương Đầu Mặt',
-      subject: 'Sinh Học',
+      modelId: 'reaction',
+      name: 'Hoạt ảnh phản ứng phân tử',
+      subject: 'Hóa Học',
       grade: 8,
-      icon: 'view_in_ar',
+      icon: 'animation',
       progress: 0,
       isDefault: true
     };
