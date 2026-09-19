@@ -38,6 +38,8 @@
 }
 
 .rx-atom-label {
+  visibility: hidden;
+  opacity: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -49,6 +51,7 @@
   font-family: 'Space Grotesk', sans-serif;
   line-height: 1.15;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .rx-atom-label strong {
@@ -62,8 +65,21 @@
 }
 
 .rx-atom-label.is-selected {
+  visibility: visible;
+  opacity: 1;
   background: #7c3aed;
   border-color: #2d2d2d;
+}
+
+.rx-atom-label.is-hint {
+  visibility: visible;
+  opacity: 1;
+  background: #ed8936;
+}
+
+.rx-stage.is-bonding .rx-atom-label {
+  visibility: visible;
+  opacity: 1;
 }
 
 .rx-overlay {
@@ -72,7 +88,7 @@
   z-index: 8;
   pointer-events: none;
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(240px, 300px);
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) minmax(260px, 320px);
   grid-template-rows: auto 1fr auto;
   gap: 12px;
   padding: 12px 14px 14px;
@@ -101,7 +117,603 @@
   min-height: 0;
   padding: 12px;
   border-radius: 18px 240px 18px 28px / 28px 18px 240px 18px;
-  overflow: hidden;
+  overflow: auto;
+}
+
+.rx-canvas-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.rx-canvas-empty-card {
+  width: min(360px, calc(100% - 48px));
+  padding: 18px 20px;
+  background: #ffffff;
+  border: 2.5px solid #2d2d2d;
+  box-shadow: 4px 4px 0 #2d2d2d;
+  border-radius: 20px 14px 24px 12px / 14px 24px 12px 20px;
+  text-align: center;
+}
+
+.rx-canvas-empty .rx-title {
+  margin: 0;
+}
+
+.rx-canvas-empty .rx-copy {
+  margin: 8px 0 0;
+}
+
+.rx-canvas-empty[hidden] {
+  display: none;
+}
+
+.rx-stage.is-gated .rx-labels,
+.rx-stage.is-guided .rx-labels {
+  visibility: hidden;
+}
+
+.rx-stage.is-guided.is-bonding .rx-labels {
+  visibility: visible;
+}
+
+.rx-stage.is-guided .rx-overlay {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+}
+
+.rx-stage.is-guided .rx-rail,
+.rx-stage.is-guided .rx-panel,
+.rx-stage.is-guided .rx-hint,
+.rx-stage.is-guided .rx-posdock,
+.rx-stage.is-guided .rx-howto,
+.rx-stage.is-gated .rx-howto {
+  display: none;
+}
+
+.rx-stage.is-guided .rx-guide {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  align-self: start;
+  width: min(440px, calc(100% - 8px));
+}
+
+.rx-stage.is-guided .rx-transport {
+  grid-column: 1;
+  grid-row: 3;
+  justify-self: center;
+  position: relative;
+  z-index: 20;
+  width: min(640px, 100%);
+}
+
+.rx-stage.is-guided .rx-transport.is-lit {
+  background: #fffef5;
+  box-shadow: 0 0 0 3px #fff9c4, 5px 5px 0 #2d2d2d;
+}
+
+.rx-gate-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: #fdfbf7;
+  pointer-events: auto;
+}
+
+.rx-gate-layer[hidden] {
+  display: none;
+}
+
+.rx-gate-sheet {
+  width: min(560px, 100%);
+  background: #fff;
+  border: 3px solid #2d2d2d;
+  box-shadow: 6px 6px 0 #2d2d2d;
+  border-radius: 28px 18px 32px 16px / 18px 32px 16px 28px;
+  padding: 22px 20px 18px;
+}
+
+.rx-gate-picks {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+
+.rx-pick {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: 2.5px solid #2d2d2d;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  background: #f3e8ff;
+  color: #1b1c1c;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.rx-pick.is-easy {
+  background: #fff9c4;
+}
+
+.rx-pick:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #2d2d2d;
+}
+
+.rx-pick:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #2d2d2d;
+}
+
+.rx-pick:focus-visible {
+  outline: 3px solid #2e5ea2;
+  outline-offset: 2px;
+}
+
+.rx-pick b {
+  display: block;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  text-wrap: balance;
+}
+
+.rx-pick span {
+  display: block;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #5b403e;
+}
+
+.rx-pick small {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 999px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  background: #fff;
+}
+
+.rx-guide {
+  grid-column: 2;
+  grid-row: 1;
+  position: relative;
+  z-index: 9;
+  width: min(400px, 100%);
+  justify-self: start;
+  pointer-events: none;
+}
+
+.rx-guide.is-center {
+  grid-row: 2;
+  align-self: center;
+  width: min(480px, 100%);
+}
+
+.rx-guide.is-center .rx-guide-card {
+  max-height: min(60vh, 480px);
+  overflow: auto;
+}
+
+.rx-guide[hidden] {
+  display: none;
+}
+
+.rx-guide > * {
+  pointer-events: auto;
+}
+
+.rx-guide-card {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  align-items: start;
+  background: #fff9c4;
+  border: 3px solid #2d2d2d;
+  box-shadow: 5px 5px 0 #2d2d2d;
+  border-radius: 22px 16px 26px 14px / 16px 26px 14px 22px;
+  padding: 12px 14px 12px;
+}
+
+.rx-guide-card.is-slim {
+  padding: 8px 10px 10px;
+  gap: 8px;
+  grid-template-columns: 36px 1fr;
+}
+
+.rx-guide-step {
+  display: inline-block;
+  margin: 0 0 4px;
+  padding: 2px 8px;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 999px;
+  background: #fff;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7c3aed;
+}
+
+.rx-guide-mascot {
+  width: 56px;
+  transform-origin: 50% 80%;
+}
+
+.rx-guide-flask {
+  width: 56px;
+  height: 70px;
+  display: block;
+}
+
+.rx-guide-card.is-slim .rx-guide-mascot {
+  width: 36px;
+}
+
+.rx-guide-card.is-slim .rx-guide-flask {
+  width: 36px;
+  height: 44px;
+}
+
+.rx-guide-say {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.85;
+  margin: 0;
+  letter-spacing: 0.01em;
+  word-spacing: 0.06em;
+  white-space: pre-line;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+}
+
+.rx-guide-card.is-slim .rx-guide-say {
+  font-size: 14px;
+  line-height: 1.85;
+  max-inline-size: none;
+}
+
+.rx-guide-hint {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #5b403e;
+  margin: 12px 0 0;
+  letter-spacing: 0.01em;
+  word-spacing: 0.06em;
+  white-space: pre-line;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.rx-guide-now {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #7c3aed;
+  margin: 10px 0 0;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.rx-guide-list {
+  margin: 14px 0 0;
+  padding: 0 0 0 1.3em;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.8;
+  color: #1b1c1c;
+  word-spacing: 0.05em;
+}
+
+.rx-guide-list li + li {
+  margin-top: 12px;
+}
+
+.rx-guide-list li.is-done {
+  color: #00864c;
+  text-decoration: line-through;
+}
+
+.rx-guide-how {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  background: #fff;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  list-style: none;
+}
+
+.rx-guide-how li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+  word-spacing: 0.05em;
+}
+
+.rx-guide-how li + li {
+  margin-top: 10px;
+}
+
+.rx-guide-how b {
+  flex: 0 0 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e5e0d8;
+  font-size: 12px;
+}
+
+.rx-guide-how li.is-on b {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.rx-guide-how li.is-done {
+  color: #00864c;
+}
+
+.rx-guide-how li.is-done b {
+  background: #00864c;
+  color: #fff;
+}
+
+.rx-guide-pick {
+  margin: 12px 0 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+  color: #7c3aed;
+}
+
+.rx-guide-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 4px;
+}
+
+.rx-guide-tool {
+  min-height: 48px;
+  padding: 10px 18px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-weight: 800;
+}
+
+.rx-guide-tool.is-on,
+.rx-guide-tool.is-spotlight {
+  outline: 3px solid #7c3aed;
+  outline-offset: 3px;
+}
+
+.rx-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rx-flow-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 999px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rx-flow-step b {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e5e0d8;
+  color: #1b1c1c;
+  font-size: 11px;
+}
+
+.rx-flow-step.is-done {
+  background: #f3e8ff;
+}
+
+.rx-flow-step.is-done b {
+  background: #00864c;
+  color: #fff;
+}
+
+.rx-flow-step.is-on {
+  background: #fff9c4;
+  box-shadow: 2px 2px 0 #2d2d2d;
+}
+
+.rx-flow-step.is-on b {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.rx-guide-progress {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 0;
+}
+
+.rx-guide-pip {
+  flex: 1;
+  height: 8px;
+  border: 2px solid #2d2d2d;
+  border-radius: 99px;
+  background: #fff;
+}
+
+.rx-guide-pip.is-on {
+  background: #7c3aed;
+}
+
+.rx-guide-pip.is-done {
+  background: #48bb78;
+}
+
+.rx-guide-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rx-guide-actions.is-row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.rx-guide-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: stretch;
+  margin-top: 22px;
+}
+
+.rx-guide-card.is-slim .rx-guide-foot {
+  margin-top: 20px;
+  gap: 18px;
+}
+
+.rx-guide-foot .rx-btn {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-weight: 800;
+}
+
+.rx-guide-foot .rx-btn-ghost {
+  min-width: 112px;
+  padding-inline: 16px;
+}
+
+.rx-guide-cta {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 18px;
+  font-size: 15px;
+}
+
+.rx-guide-cta.is-spotlight {
+  outline: 3px solid #7c3aed;
+  outline-offset: 3px;
+}
+
+.rx-guide-actions.is-row .rx-guide-cta {
+  width: auto;
+  flex: 1 1 180px;
+}
+
+.rx-guide-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.rx-guide-card.is-slim .rx-guide-nav {
+  margin-top: 6px;
+}
+
+.rx-guide-nav .rx-btn {
+  flex: 1 1 140px;
+  min-height: 44px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-weight: 800;
+}
+
+.rx-guide-nav .rx-link {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.rx-guide-actions .rx-link {
+  align-self: flex-start;
+  min-height: 36px;
+  padding: 6px 2px;
+  text-underline-offset: 3px;
+}
+
+.rx-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.rx-chip-fill {
+  min-height: 40px;
+}
+
+.rx-guide-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+
+.rx-celebrate {
+  position: absolute;
+  left: 50%;
+  top: 28px;
+  z-index: 13;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.rx-bit {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #2d2d2d;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.rx-icon-btn.is-spotlight {
+  width: 48px;
+  height: 48px;
+  background: #fff9c4;
 }
 
 .rx-panel {
@@ -115,15 +727,103 @@
   overflow: hidden;
 }
 
+.rx-panel-stack {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.rx-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rx-panel-foot {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #2d2d2d;
+}
+
+.rx-acc {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  background: #f6f3f2;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  color: #1b1c1c;
+}
+
+.rx-acc span {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+.rx-acc strong {
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.rx-acc.is-on {
+  background: #f3e8ff;
+}
+
+.rx-acc:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #2d2d2d;
+}
+
+.rx-acc:focus-visible {
+  outline: 3px solid #2e5ea2;
+  outline-offset: 2px;
+}
+
+.rx-acc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rx-acc-body .rx-frames,
+.rx-acc-body .rx-lessons {
+  max-height: 28vh;
+}
+
 .rx-transport {
   grid-column: 2;
   grid-row: 3;
   align-self: end;
+  justify-self: center;
+  width: min(640px, 100%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 16px;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-radius: 20px;
+  box-sizing: border-box;
 }
 
 .rx-hint {
@@ -154,7 +854,7 @@
 }
 
 .rx-title {
-  font-family: 'Epilogue', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
   font-size: 18px;
   font-weight: 800;
   margin: 0 0 4px;
@@ -270,35 +970,287 @@
 .rx-palette {
   display: flex;
   flex-wrap: wrap;
+  gap: 14px 10px;
+  padding-bottom: 4px;
+}
+
+.rx-palette-toggle {
+  width: 100%;
+  min-height: 40px;
+}
+
+.rx-table-search {
+  margin: 0 0 12px;
+}
+
+.rx-table-search .rx-input {
+  width: 100%;
+}
+
+.rx-table-count {
+  margin: 6px 0 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5b403e;
+}
+
+.rx-ptable-empty {
+  margin: 10px 0 0;
+  padding: 12px;
+  background: #fff9c4;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rx-ptable-empty[hidden] {
+  display: none;
+}
+
+.rx-ptable.is-filtering {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.rx-ptable.is-filtering .rx-pcell {
+  grid-column: auto;
+  grid-row: auto;
+  width: calc(12.5% - 4px);
+  min-width: 56px;
+}
+
+.rx-howto {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+  width: min(520px, 100%);
+  z-index: 9;
+}
+
+.rx-howto[hidden] {
+  display: none;
+}
+
+.rx-howto-card,
+.rx-howto-mini {
+  background: #fff9c4;
+  border: 2.5px solid #2d2d2d;
+  box-shadow: 4px 4px 0 #2d2d2d;
+  border-radius: 16px;
+  padding: 10px 12px;
+}
+
+.rx-howto-kicker,
+.rx-howto-mini strong {
+  display: block;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.rx-howto-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.rx-howto-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 999px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+}
+
+.rx-howto-steps b {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 11px;
+}
+
+.rx-howto-actions,
+.rx-howto-mini .rx-btn {
+  width: 100%;
+}
+
+.rx-howto-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
+.rx-howto-actions .rx-btn {
+  flex: 1 1 140px;
+  min-height: 40px;
+}
+
+.rx-howto-mini {
+  margin-top: auto;
+}
+
+.rx-howto-mini span {
+  display: block;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  color: #5b403e;
+  margin: 0 0 8px;
+}
+
 .rx-swatch {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 2px solid #2d2d2d;
   cursor: pointer;
   box-shadow: 2px 2px 0 #2d2d2d;
   position: relative;
+  margin-bottom: 10px;
 }
 
 .rx-swatch.is-on {
   outline: 3px solid #7c3aed;
+  outline-offset: 2px;
+}
+
+.rx-swatch-sym {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  min-width: 22px;
+  padding: 1px 5px;
+  background: #fff;
+  color: #1b1c1c;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 6px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  z-index: 1;
+}
+
+.rx-table {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  display: grid;
+  place-items: center;
+  padding: 20px 12px;
+  background: rgba(29, 28, 28, 0.4);
+}
+
+.rx-table[hidden] {
+  display: none;
+}
+
+.rx-table-sheet {
+  width: min(920px, 100%);
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+  background: #fff;
+  border: 3px solid #2d2d2d;
+  box-shadow: 6px 6px 0 #2d2d2d;
+  border-radius: 24px;
+  padding: 16px 16px 14px;
+}
+
+.rx-table-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rx-ptable {
+  display: grid;
+  grid-template-columns: repeat(18, minmax(38px, 1fr));
+  grid-auto-rows: minmax(58px, auto);
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.rx-pcell {
+  grid-column: var(--g);
+  grid-row: var(--p);
+  appearance: none;
+  min-width: 38px;
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 2px solid #2d2d2d;
+  border-radius: 10px;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  cursor: pointer;
+  color: #1b1c1c;
+  padding: 4px 2px;
+}
+
+.rx-pcell small {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #2d2d2d;
+}
+
+.rx-pcell b {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  background: #fff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 6px;
+  padding: 0 5px;
+  line-height: 1.3;
+}
+
+.rx-pcell span {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  background: #fff;
+  border-radius: 4px;
+  padding: 0 3px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rx-pcell.is-on {
+  outline: 3px solid #7c3aed;
   outline-offset: 1px;
 }
 
-.rx-swatch[data-symbol]::after {
-  content: attr(data-symbol);
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  color: #2d2d2d;
-  mix-blend-mode: difference;
+.rx-pcell:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #2d2d2d;
+}
+
+.rx-pcell:focus-visible {
+  outline: 3px solid #2e5ea2;
+  outline-offset: 2px;
 }
 
 .rx-lessons,
@@ -404,8 +1356,9 @@
 }
 
 .rx-icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   border-radius: 12px;
   display: grid;
   place-items: center;
@@ -438,16 +1391,55 @@
   text-align: right;
 }
 
+.rx-moments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 2px 2px;
+  border-top: 1.5px dashed #d4c4f0;
+  min-width: 0;
+}
+
+.rx-moments-help {
+  margin: 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #5b403e;
+  text-wrap: pretty;
+}
+
 .rx-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rx-chips.is-lit {
+  padding: 8px;
+  margin: 0 -2px;
+  border-radius: 14px;
+  background: #fffef5;
+  box-shadow: 0 0 0 3px #fff9c4, 4px 4px 0 #2d2d2d;
 }
 
 .rx-chip {
-  padding: 4px 10px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  min-width: 108px;
+  padding: 6px 12px;
   border-radius: 999px;
-  font-size: 11px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
   background: #fff;
 }
 
@@ -487,17 +1479,15 @@
 .rx-drop {
   position: absolute;
   inset: 0;
-  z-index: 20;
+  z-index: 26;
   display: grid;
   place-items: center;
-  background: rgba(124, 58, 237, 0.18);
+  background: rgba(124, 58, 237, 0.2);
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.18s ease;
 }
 
-.rx-drop.is-on {
-  opacity: 1;
+.rx-drop[hidden] {
+  display: none;
 }
 
 .rx-drop-card {
@@ -540,6 +1530,110 @@
   padding: 10px;
 }
 
+.rx-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.rx-gate-card {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: 2.5px solid #2d2d2d;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  border-radius: 16px;
+  padding: 12px;
+  cursor: pointer;
+  background: #f3e8ff;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  color: #1b1c1c;
+}
+
+.rx-gate-card:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #2d2d2d;
+}
+
+.rx-gate-card.is-create {
+  background: #fff9c4;
+}
+
+.rx-gate-card strong {
+  display: block;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.rx-gate-card span {
+  display: block;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #5b403e;
+}
+
+.rx-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  background: #fff9c4;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  color: #5b403e;
+}
+
+.rx-privacy .material-symbols-outlined {
+  font-size: 16px;
+  color: #7c3aed;
+}
+
+.rx-link {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e5ea2;
+  text-decoration: underline wavy;
+  cursor: pointer;
+}
+
+.rx-lesson.is-mine,
+.rx-frame.is-mine {
+  background: #fff9c4;
+}
+
+.rx-lesson.is-mine.is-on,
+.rx-frame.is-mine.is-on {
+  background: #ed8936;
+  color: #fff;
+}
+
+.rx-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 6px;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 999px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: #fff;
+  color: #7c3aed;
+}
+
 .rx-workspace-wrap {
   display: flex;
   background: #fff;
@@ -577,7 +1671,7 @@
 @media (max-width: 980px) {
   .rx-overlay {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto auto;
+    grid-template-rows: auto auto auto 1fr auto auto;
     padding: 8px;
     gap: 8px;
   }
@@ -586,29 +1680,88 @@
   .rx-panel,
   .rx-transport,
   .rx-hint,
-  .rx-posdock {
+  .rx-posdock,
+  .rx-howto,
+  .rx-coach {
     grid-column: 1;
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .rx-howto {
+    grid-row: 1;
+  }
+
+  .rx-howto-steps {
+    gap: 4px;
+  }
+
+  .rx-howto-steps span {
+    max-width: 14ch;
+  }
+
+  .rx-ptable {
+    display: flex;
+    flex-wrap: wrap;
+    grid-template-columns: none;
+  }
+
+  .rx-pcell {
+    grid-column: auto;
+    grid-row: auto;
+    width: calc(25% - 4px);
+  }
+
+  .rx-stage.is-guided .rx-overlay {
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .rx-guide {
+    grid-column: 1;
+    width: min(380px, 100%);
+    transform: none;
+    top: auto;
+  }
+
+  .rx-guide.is-center {
+    width: min(480px, 100%);
+    justify-self: center;
+  }
+
+  .rx-guide-card,
+  .rx-guide-card.is-slim {
+    grid-template-columns: 40px 1fr;
+    padding: 10px;
+  }
+
+  .rx-guide-flask {
+    width: 44px;
+    height: 56px;
+  }
+
+  .rx-guide-say {
+    font-size: 16px;
   }
 
   .rx-rail {
-    grid-row: 1;
-    max-height: 28vh;
+    grid-row: 2;
+    max-height: 22vh;
     border-radius: 16px;
   }
 
   .rx-panel {
-    grid-row: 2;
-    max-height: 26vh;
+    grid-row: 3;
+    max-height: 24vh;
     border-radius: 16px;
   }
 
   .rx-hint {
-    grid-row: 4;
+    grid-row: 5;
   }
 
   .rx-transport,
   .rx-posdock {
-    grid-row: 5;
+    grid-row: 6;
   }
 }
 

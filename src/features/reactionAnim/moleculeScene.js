@@ -104,6 +104,12 @@ export class MoleculeScene {
 
     const grid = new THREE.GridHelper(16, 16, 0xd4c4f0, 0xe5e0d8);
     grid.position.y = -0.02;
+    const gridMats = Array.isArray(grid.material) ? grid.material : [grid.material];
+    gridMats.forEach((mat) => {
+      mat.transparent = true;
+      mat.opacity = 0.45;
+      mat.depthWrite = false;
+    });
     this.scene.add(grid);
 
     this.floor = new THREE.Mesh(
@@ -113,9 +119,6 @@ export class MoleculeScene {
     this.floor.rotation.x = -Math.PI / 2;
     this.floor.userData.isFloor = true;
     this.scene.add(this.floor);
-
-    this.axes = new THREE.AxesHelper(2.4);
-    this.scene.add(this.axes);
 
     this.raycaster = new THREE.Raycaster();
     this.pointer = new THREE.Vector2();
@@ -132,8 +135,50 @@ export class MoleculeScene {
     window.addEventListener('pointerup', this._onPointerUp);
     window.addEventListener('resize', this._onResize);
 
+    this.labelRenderer.domElement.hidden = true;
+    this._hintTween = null;
     this._raf = 0;
     this._loop();
+  }
+
+  setLabelsVisible(on) {
+    if (this.labelRenderer?.domElement) {
+      this.labelRenderer.domElement.hidden = !on;
+    }
+  }
+
+  firstAtomId() {
+    return this.atomMeshes.keys().next().value || null;
+  }
+
+  clearAtomHint() {
+    if (this._hintTween) {
+      this._hintTween.kill();
+      this._hintTween = null;
+    }
+    this.atomMeshes.forEach((entry) => {
+      gsap.set(entry.mesh.scale, { x: 1, y: 1, z: 1 });
+      entry.labelEl.classList.remove('is-hint');
+    });
+  }
+
+  pulseAtomHint(id) {
+    this.clearAtomHint();
+    const entry = (id && this.atomMeshes.get(id))
+      || this.atomMeshes.values().next().value;
+    if (!entry) return;
+    entry.labelEl.classList.add('is-hint');
+    if (this._reduceMotion) return;
+    this._hintTween = gsap.to(entry.mesh.scale, {
+      x: 1.2,
+      y: 1.2,
+      z: 1.2,
+      duration: 0.55,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut',
+      overwrite: true,
+    });
   }
 
   setInteractive(on) {
@@ -148,8 +193,12 @@ export class MoleculeScene {
   setEditMode(mode) {
     this.editMode = mode;
     this.bondStartId = null;
+    this.renderer.domElement.style.cursor = mode === 'addAtom' || mode === 'addBond' || mode === 'breakBond'
+      ? 'crosshair'
+      : 'grab';
+    this._bondFp = '';
+    this._syncBonds();
     this._refreshHighlights();
-    this.renderer.domElement.style.cursor = mode === 'addAtom' ? 'crosshair' : 'grab';
   }
 
   setSelected(id) {
@@ -168,6 +217,39 @@ export class MoleculeScene {
     this._syncAtoms();
     this._syncBonds();
     this._refreshHighlights();
+  }
+
+  animateAtomsTo(atoms) {
+    this.clearAtomHint();
+    Object.entries(atoms || {}).forEach(([id, atom]) => {
+      const entry = this.atomMeshes.get(id);
+      const pos = atom?.position;
+      if (!entry || !pos) return;
+      this._atoms[id] = { ...(this._atoms[id] || atom), position: { ...pos } };
+      if (this._reduceMotion) {
+        entry.mesh.position.set(pos.x, pos.y, pos.z);
+        this._layoutBonds();
+        return;
+      }
+      gsap.to(entry.mesh.position, {
+        x: pos.x,
+        y: pos.y,
+        z: pos.z,
+        duration: 0.55,
+        ease: 'power2.out',
+        overwrite: true,
+        onUpdate: () => {
+          if (this._atoms[id]) {
+            this._atoms[id].position = {
+              x: entry.mesh.position.x,
+              y: entry.mesh.position.y,
+              z: entry.mesh.position.z,
+            };
+          }
+          this._layoutBonds();
+        },
+      });
+    });
   }
 
   _syncAtoms() {
@@ -191,7 +273,8 @@ export class MoleculeScene {
 
         const labelEl = document.createElement('div');
         labelEl.className = 'rx-atom-label';
-        labelEl.innerHTML = `<strong>${atom.symbol}</strong><span>${atomName(atom.symbol)}</span>`;
+        labelEl.innerHTML = `<strong>${atom.symbol}</strong>`;
+        labelEl.title = atomName(atom.symbol);
         const label = new CSS2DObject(labelEl);
         label.position.set(0, radius + 0.22, 0);
         mesh.add(label);
@@ -212,7 +295,8 @@ export class MoleculeScene {
         if (entry.symbol !== atom.symbol) {
           entry.mesh.geometry = sphereGeo(radius);
           entry.mesh.material.color.set(atom.color || atomColor(atom.symbol));
-          entry.labelEl.innerHTML = `<strong>${atom.symbol}</strong><span>${atomName(atom.symbol)}</span>`;
+          entry.labelEl.innerHTML = `<strong>${atom.symbol}</strong>`;
+          entry.labelEl.title = atomName(atom.symbol);
           entry.label.position.set(0, radius + 0.22, 0);
           entry.symbol = atom.symbol;
           entry.radius = radius;
@@ -265,7 +349,8 @@ export class MoleculeScene {
         );
         mesh.userData = { isBond: true, bondId: bond.id };
         this.moleculeGroup.add(mesh);
-        this.bondMeshes.push({ mesh, bondId: bond.id, offset: off, radius: style.radius });
+        const radius = this.editMode === 'breakBond' ? style.radius * 2.4 : style.radius;
+        this.bondMeshes.push({ mesh, bondId: bond.id, offset: off, radius });
       });
     });
   }
@@ -327,8 +412,16 @@ export class MoleculeScene {
   _pick() {
     const atomMeshes = [...this.atomMeshes.values()].map((e) => e.mesh);
     const bondMeshes = this.bondMeshes.map((b) => b.mesh);
+    if (this.editMode === 'breakBond' && bondMeshes.length) {
+      const bondHit = this.raycaster.intersectObjects(bondMeshes, false)[0];
+      if (bondHit) return bondHit;
+    }
     const hits = this.raycaster.intersectObjects([...atomMeshes, ...bondMeshes, this.floor], false);
     return hits[0] || null;
+  }
+
+  _bondIdOnAtom(atomId) {
+    return this._bonds.find((bond) => bond.atomIds.includes(atomId))?.id || null;
   }
 
   _handlePointerDown(event) {
@@ -411,8 +504,9 @@ export class MoleculeScene {
       return;
     }
 
-    if (this.editMode === 'breakBond' && bondId) {
-      this.onBreakBond?.(bondId);
+    if (this.editMode === 'breakBond') {
+      const target = bondId || (atomId && this._bondIdOnAtom(atomId));
+      if (target) this.onBreakBond?.(target);
       return;
     }
 
@@ -481,6 +575,7 @@ export class MoleculeScene {
   }
 
   dispose() {
+    this.clearAtomHint();
     cancelAnimationFrame(this._raf);
     this.renderer.domElement.removeEventListener('pointerdown', this._onPointerDown);
     window.removeEventListener('pointermove', this._onPointerMove);
