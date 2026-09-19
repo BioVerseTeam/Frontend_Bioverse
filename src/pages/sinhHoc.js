@@ -9,7 +9,6 @@ import { getCatalog, getCategories } from '../api/bioModelApi.js';
 
 const PAGE_SIZE = 12;
 const SUBJECT = 'BIOLOGY';
-const LAB_MODES = ['skull', 'paramecium', 'chemistry', 'organs', 'plant', 'mitosis'];
 
 const state = {
   page: 0,
@@ -238,10 +237,10 @@ function renderCard(model) {
   return `
     <article class="group bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative">
       <div class="absolute -top-2.5 right-3 bg-[#dcfce7] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-['Space_Grotesk'] font-bold text-[#166534]">${escapeHtml(grade)}</div>
-      <div class="catalog-thumb mb-2.5">
+      <a href="${escapeAttr(href)}" class="catalog-thumb mb-2.5">
         ${thumb}
         <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-white/90 border border-[#2d2d2d] text-[9px] font-['Space_Grotesk'] font-bold">${escapeHtml(badge)}</span>
-      </div>
+      </a>
       <div>
         <div class="flex items-center gap-1 mb-1">
           <span class="w-1.5 h-1.5 rounded-full bg-[#00864c]"></span>
@@ -300,11 +299,9 @@ function pageButton(page, label, disabled, current, icon) {
 }
 
 function labHref(model) {
-  const mode = model?.targetMode;
-  if (mode && LAB_MODES.includes(mode)) {
-    return `/lab.html?mode=${encodeURIComponent(mode)}`;
-  }
-  return '/lab.html';
+  if (model?.slug) return `/mo-hinh.html?slug=${encodeURIComponent(model.slug)}`;
+  if (model?.id) return `/mo-hinh.html?id=${encodeURIComponent(model.id)}`;
+  return '/sinh-hoc.html';
 }
 
 function show(el, visible) {
