@@ -4,6 +4,7 @@
  */
 
 import { setupNavbarAuth } from '../utils/authNavbar.js';
+import { setupBiologyNav } from '../utils/siteNav.js';
 import { ChatBox } from '../components/chatBox.js';
 import { getCatalog, getCategories } from '../api/bioModelApi.js';
 
@@ -21,6 +22,7 @@ const state = {
 
 document.addEventListener('DOMContentLoaded', () => {
   setupNavbarAuth();
+  setupBiologyNav();
   try {
     new ChatBox();
   } catch (err) {

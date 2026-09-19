@@ -339,7 +339,7 @@ async function addLabFromInput() {
     setValue('field-targetMode', created.code);
     setValue('field-lab-name', '');
     renderLabChips();
-    showToast('Đã thêm lab. Lab mô phỏng có sẵn sẽ mở phòng thí nghiệm; còn lại học sinh xem mô hình 3D chi tiết.', 'success');
+    showToast('Đã thêm lab. Gắn lab vào mẫu vật để học sinh mở mô hình 3D trong tab Sinh học.', 'success');
   } catch (err) {
     showToast(err.message || 'Không tạo được lab.', 'error');
   }

@@ -347,7 +347,7 @@ elems.btnFinishExam.addEventListener('click', () => {
 
 // Back to 3D
 elems.btnBackTo3D.addEventListener('click', () => {
-  window.location.href = '/lab.html';
+  window.location.href = '/sinh-hoc.html';
 });
 
 // Initialization
