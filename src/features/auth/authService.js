@@ -79,17 +79,11 @@ export const AuthService = {
 
     setTokens(data.accessToken, data.refreshToken);
 
-    const user = {
-      id: data.user?.id,
-      email: data.user?.email || email.trim(),
-      name: data.user?.fullName || email.trim().split('@')[0],
-      phone: data.user?.phone,
-      role: data.user?.role || 'STUDENT',
-      gender: data.user?.gender,
-      avatarUrl: data.user?.avatarUrl,
-      grade: data.user?.grade != null ? String(data.user.grade) : '8',
+    const user = mapAuthUser(data.user, {
+      email: email.trim(),
+      grade: '8',
       loggedInAt: new Date().toISOString()
-    };
+    });
 
     setCurrentUser(user);
     return user;
@@ -180,18 +174,12 @@ export const AuthService = {
 
     setTokens(data.accessToken, data.refreshToken);
 
-    const user = {
-      id: data.user?.id,
-      email: data.user?.email || email.trim(),
-      name: data.user?.fullName || email.trim().split('@')[0],
-      phone: data.user?.phone,
-      role: data.user?.role || 'STUDENT',
-      gender: data.user?.gender,
-      avatarUrl: data.user?.avatarUrl,
-      grade: data.user?.grade != null ? String(data.user.grade) : '8',
+    const user = mapAuthUser(data.user, {
+      email: email.trim(),
+      grade: '8',
       xp: 1450,
       loggedInAt: new Date().toISOString()
-    };
+    });
 
     setCurrentUser(user);
     sessionStorage.removeItem('bioverse_otp_email');
@@ -378,16 +366,7 @@ export const AuthService = {
 
       const data = await parseApiResponse(response);
       if (data) {
-        const user = {
-          ...getCurrentUser(),
-          id: data.id,
-          email: data.email,
-          name: data.fullName,
-          phone: data.phone,
-          role: data.role,
-          avatarUrl: data.avatarUrl,
-          grade: data.grade != null ? String(data.grade) : getCurrentUser()?.grade
-        };
+        const user = mapAuthUser(data, getCurrentUser() || {});
         setCurrentUser(user);
         return user;
       }
@@ -433,3 +412,22 @@ export const AuthService = {
     return getAccessToken();
   }
 };
+
+function mapAuthUser(data, fallback = {}) {
+  const source = data || {};
+  return {
+    ...fallback,
+    id: source.id ?? fallback.id,
+    email: source.email || fallback.email,
+    name: source.fullName || source.name || fallback.name || (source.email || fallback.email || '').split('@')[0],
+    phone: source.phone ?? fallback.phone,
+    role: source.role || fallback.role || 'STUDENT',
+    gender: source.gender ?? fallback.gender,
+    avatarUrl: source.avatarUrl ?? fallback.avatarUrl,
+    grade: source.grade != null ? String(source.grade) : (fallback.grade || '8'),
+    currentStreak: source.currentStreak ?? fallback.currentStreak ?? 0,
+    longestStreak: source.longestStreak ?? fallback.longestStreak ?? 0,
+    lastCheckInDate: source.lastCheckInDate ?? fallback.lastCheckInDate ?? null,
+    checkedInToday: source.checkedInToday ?? fallback.checkedInToday ?? false
+  };
+}

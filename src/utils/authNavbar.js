@@ -24,6 +24,8 @@ export function setupNavbarAuth() {
     xpBadgeEl.textContent = `${progress.xp.toLocaleString('vi-VN')} XP`;
   }
 
+  renderHeaderStreak(isLoggedIn ? user : null);
+
   // Hero greeting element (on home page)
   const heroGreetingName = document.getElementById('hero-user-name') || document.querySelector('h1 span.text-primary.underline');
 
@@ -73,10 +75,14 @@ export function setupNavbarAuth() {
       }
     }
 
-    // Refresh profile in background to get latest server updates
+    // Refresh profile in background — GET /me also records today's streak
     AuthService.getProfile().then(freshUser => {
       if (freshUser && nameEl) {
         nameEl.textContent = freshUser.name || freshUser.email?.split('@')[0] || 'Nhà nghiên cứu';
+      }
+      if (freshUser) {
+        renderHeaderStreak(freshUser);
+        window.dispatchEvent(new CustomEvent('bioverse_streak_updated', { detail: freshUser }));
       }
     }).catch(() => {});
 
@@ -92,5 +98,35 @@ export function setupNavbarAuth() {
       avatarLink.href = '/login.html';
       avatarLink.title = 'Bấm để đăng nhập';
     }
+    renderHeaderStreak(null);
+  }
+}
+
+function renderHeaderStreak(user) {
+  const current = user?.currentStreak ?? 0;
+  const longest = user?.longestStreak ?? 0;
+  let badge = document.getElementById('header-user-streak');
+
+  if (!badge) {
+    const xpWrap = document.getElementById('header-user-xp')?.parentElement;
+    if (!xpWrap || !xpWrap.parentElement) {
+      return;
+    }
+    badge = document.createElement('div');
+    badge.id = 'header-user-streak';
+    badge.className = 'hidden md:flex items-center gap-space-xs px-space-md py-1.5 bg-[#ffedd5] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm transform -rotate-1';
+    badge.innerHTML = '<span class="text-[15px]" aria-hidden="true">🔥</span><span class="header-streak-label font-label-sm text-label-sm text-on-surface">0 ngày</span>';
+    xpWrap.insertAdjacentElement('afterend', badge);
+  }
+
+  const label = badge.querySelector('.header-streak-label') || badge;
+  if (user) {
+    label.textContent = `${current} ngày`;
+    badge.title = `Chuỗi học: ${current} ngày liên tiếp • Kỷ lục: ${longest} ngày`;
+    badge.classList.remove('opacity-50');
+  } else {
+    label.textContent = '0 ngày';
+    badge.title = 'Đăng nhập để tích chuỗi ngày học';
+    badge.classList.add('opacity-50');
   }
 }
