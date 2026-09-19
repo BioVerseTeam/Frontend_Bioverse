@@ -6,17 +6,22 @@
 import { AuthService } from '../features/auth/authService.js';
 import { getProgress } from '../features/progress/progressService.js';
 import { confirmModal } from '../components/modal.js';
+import { applyAdminChrome, isAdmin, isAdminRoute } from './adminGuard.js';
 
 export function setupNavbarAuth() {
   const user = AuthService.getUser();
   const isLoggedIn = AuthService.isLoggedIn();
 
-  // Find navbar user container
-  const userContainer = document.querySelector('header .flex.items-center.gap-space-md');
-  const nameEl = document.getElementById('header-user-name') || document.querySelector('header .font-label-md.text-label-md.text-on-surface');
-  const gradeEl = document.getElementById('header-user-grade') || document.querySelector('header .font-label-sm.text-label-sm.text-tertiary');
+  // Find navbar user container — prefer the stable admin cluster id
+  const userContainer = document.getElementById('header-user-cluster')
+    || document.querySelector('header .admin-topbar-identity')
+    || document.querySelector('header .flex.items-center.gap-space-md');
+  const nameEl = document.getElementById('header-user-name')
+    || document.querySelector('header .admin-topbar-who #header-user-name')
+    || document.querySelector('header .font-label-md.text-label-md.text-on-surface');
+  const gradeEl = document.getElementById('header-user-grade');
   const xpBadgeEl = document.getElementById('header-user-xp') || document.querySelector('header .bg-\\[\\#fff9c4\\] span.font-label-sm');
-  const avatarLink = document.querySelector('header a[title*="Tài khoản"], header a[href*="login"]');
+  const avatarLink = document.querySelector('header .admin-avatar, header a[title*="Tài khoản"], header a[href*="login"]');
 
   // Update header XP badge from real tracked progress
   if (xpBadgeEl) {
@@ -25,6 +30,15 @@ export function setupNavbarAuth() {
   }
 
   renderHeaderStreak(isLoggedIn ? user : null);
+  if (isLoggedIn && isAdmin(user) && isAdminRoute()) {
+    applyAdminChrome();
+  } else {
+    insertAdminNav(isLoggedIn ? user : null);
+  }
+
+  const cluster = document.getElementById('header-user-cluster')
+    || document.querySelector('header .admin-topbar-identity')
+    || userContainer;
 
   // Hero greeting element (on home page)
   const heroGreetingName = document.getElementById('hero-user-name') || document.querySelector('h1 span.text-primary.underline');
@@ -34,7 +48,7 @@ export function setupNavbarAuth() {
       nameEl.textContent = user.name || user.email?.split('@')[0] || 'Nhà nghiên cứu';
     }
     if (gradeEl) {
-      gradeEl.textContent = user.role === 'ADMIN' ? 'Quản Trị Viên' : `Lớp ${user.grade || '8'} • Sinh học`;
+      gradeEl.textContent = isAdmin(user) ? 'Quản Trị Viên' : `Lớp ${user.grade || '8'} • Sinh học`;
     }
     if (heroGreetingName) {
       heroGreetingName.textContent = `${user.name || 'bạn'}!`;
@@ -44,14 +58,14 @@ export function setupNavbarAuth() {
     if (avatarLink && !document.getElementById('btn-navbar-logout')) {
       avatarLink.title = `Đã đăng nhập: ${user.email}`;
       avatarLink.removeAttribute('href');
-      avatarLink.classList.add('cursor-pointer');
+      avatarLink.classList.add('cursor-pointer', 'admin-avatar');
 
       // Add logout button right next to avatar
       const logoutBtn = document.createElement('button');
       logoutBtn.id = 'btn-navbar-logout';
       logoutBtn.type = 'button';
       logoutBtn.title = 'Đăng xuất tài khoản';
-      logoutBtn.className = 'w-8 h-8 rounded-full bg-surface-container-high hover:bg-[#ffebee] hover:text-[#b71422] flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm transition-all cursor-pointer';
+      logoutBtn.className = 'admin-logout-btn w-8 h-8 rounded-full bg-surface-container-high hover:bg-[#ffebee] hover:text-[#b71422] flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm transition-all cursor-pointer';
       logoutBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">logout</span>';
 
       logoutBtn.addEventListener('click', async (e) => {
@@ -70,8 +84,8 @@ export function setupNavbarAuth() {
         }
       });
 
-      if (userContainer) {
-        userContainer.appendChild(logoutBtn);
+      if (cluster) {
+        cluster.appendChild(logoutBtn);
       }
     }
 
@@ -100,6 +114,28 @@ export function setupNavbarAuth() {
     }
     renderHeaderStreak(null);
   }
+}
+
+function insertAdminNav(user) {
+  const nav = document.querySelector('header nav');
+  if (!nav) return;
+
+  const existing = nav.querySelector('[data-path="admin"], a[href="/admin.html"], a[href*="admin-models"], a[href*="admin-roles"]');
+  if (!isAdmin(user)) {
+    if (existing && (existing.id === 'nav-admin-home' || existing.id === 'nav-admin-models')) {
+      existing.remove();
+    }
+    return;
+  }
+  if (existing) return;
+
+  const link = document.createElement('a');
+  link.id = 'nav-admin-home';
+  link.href = '/admin.html';
+  link.dataset.path = 'admin';
+  link.className = 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent';
+  link.textContent = 'Điều hành';
+  nav.appendChild(link);
 }
 
 function renderHeaderStreak(user) {

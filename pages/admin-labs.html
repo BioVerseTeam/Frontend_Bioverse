@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab - BioVerse Admin</title>
+  <meta name="description" content="Quản lý lab 3D gắn với nhân mẫu: tên, mã, ẩn/hiện.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin.html">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Lab</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-space-xs"></nav>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login.html" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-10">
+      <div class="max-w-6xl mx-auto flex flex-col gap-5">
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập ADMIN để quản lý lab.</p>
+          <a id="admin-gate-login" href="/login.html?next=/admin-labs.html" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <div id="admin-workspace" hidden>
+          <div class="relative bg-white sketch-border p-5 md:p-7">
+            <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-3">Lab</h1>
+            <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-[15px]">
+              Lab hệ thống đã có viewer 3D. Lab tự tạo chưa có viewer thì học sinh vào hộp sọ mặc định. Gắn lab vào mô hình ở <a href="/admin-models.html" class="underline decoration-wavy font-bold">Nhân mẫu 3D</a>.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5">
+            <aside class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col gap-3 min-h-[420px]">
+              <div class="admin-rail-head">
+                <div>
+                  <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider">Danh sách</p>
+                  <p id="admin-lab-count" class="font-['Space_Grotesk'] text-[11px] font-bold text-[#76716a] mt-1">Đang tải...</p>
+                </div>
+                <button type="button" id="admin-lab-new" class="neo-btn neo-btn-primary rounded-xl px-3 py-2 inline-flex items-center gap-1 text-sm">
+                  <span class="material-symbols-outlined text-[18px]">add</span>
+                  Thêm mới
+                </button>
+              </div>
+              <div id="admin-lab-list" class="flex flex-col gap-2 overflow-y-auto max-h-[640px]"></div>
+            </aside>
+
+            <form id="admin-lab-form" class="admin-editor bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl sketch-shadow" data-mode="create">
+              <input type="hidden" id="lab-field-id">
+              <input type="hidden" id="lab-field-sort" value="0">
+              <input type="checkbox" id="lab-field-active" checked hidden>
+
+              <div class="admin-mode-strip">
+                <div class="admin-mode-copy">
+                  <span id="admin-lab-badge" class="catalog-chip is-active">Thêm mới</span>
+                  <h2 id="admin-lab-title" class="font-['Epilogue'] text-xl font-bold">Thêm lab</h2>
+                  <p id="admin-lab-hint" class="admin-field-hint">Đặt tên và mã. Mã gắn vào nhân mẫu khi học sinh bấm thẻ.</p>
+                </div>
+                <div class="admin-mode-actions">
+                  <button type="submit" id="admin-lab-save" class="neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Lưu lab</button>
+                  <button type="button" id="admin-lab-hide" hidden class="neo-btn rounded-xl px-4 py-2.5 bg-[#ffdad6]">Ẩn lab</button>
+                </div>
+              </div>
+
+              <div class="admin-editor-body">
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>Định danh</h3>
+                    <div class="admin-status-pills" role="group" aria-label="Trạng thái lab">
+                      <button type="button" data-lab-active="true">Đang dùng</button>
+                      <button type="button" data-lab-active="false">Ẩn</button>
+                    </div>
+                  </div>
+                  <div class="admin-row admin-row-2">
+                    <div class="admin-field">
+                      <label for="lab-field-name">Tên hiển thị *</label>
+                      <input id="lab-field-name" type="text" required maxlength="100" placeholder="VD: Hộp sọ">
+                    </div>
+                    <div class="admin-field">
+                      <label for="lab-field-code">Mã lab</label>
+                      <input id="lab-field-code" type="text" maxlength="100" placeholder="Tự tạo từ tên nếu để trống">
+                      <p class="admin-field-hint">Ví dụ <code>skull</code>. Lab hệ thống không đổi mã được.</p>
+                    </div>
+                  </div>
+                  <div class="admin-field">
+                    <label for="lab-field-desc">Mô tả</label>
+                    <textarea id="lab-field-desc" maxlength="500" placeholder="Lab này mở viewer nào, dùng cho bài nào."></textarea>
+                  </div>
+                </section>
+
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>Thứ tự chip</h3>
+                    <div class="admin-rank-stepper">
+                      <button type="button" id="admin-lab-rank-down" class="catalog-chip" aria-label="Xuống một bậc">−</button>
+                      <span id="admin-lab-rank-value">#1</span>
+                      <button type="button" id="admin-lab-rank-up" class="catalog-chip" aria-label="Lên một bậc">+</button>
+                    </div>
+                  </div>
+                  <p class="admin-field-hint">Chip lab trên phiếu nhân mẫu xếp theo thứ tự này.</p>
+                  <ol id="admin-lab-rank-queue" class="admin-rank-queue"></ol>
+                </section>
+
+                <aside class="admin-live-preview">
+                  <strong>Khi học sinh bấm thẻ</strong>
+                  <p id="admin-lab-live-name" class="font-['Epilogue'] text-lg font-bold">Tên lab</p>
+                  <p id="admin-lab-live-code" class="font-['Space_Grotesk'] text-[11px] font-bold uppercase text-[#00864c]">mã sẽ hiện ở đây</p>
+                </aside>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="w-full border-t-[2.5px] border-[#2d2d2d] bg-[#fdfbf7] py-5">
+    <div class="w-full px-4 md:px-8 flex items-center justify-between">
+      <span class="font-['Space_Grotesk'] text-sm font-bold">BioVerse STEM Lab • Lab</span>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/pages/adminLabs.js"></script>
+</body>
+</html>

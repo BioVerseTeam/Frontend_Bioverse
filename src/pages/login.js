@@ -5,6 +5,7 @@
 
 import { AuthService } from '../features/auth/authService.js';
 import { alertModal, showToast } from '../components/modal.js';
+import { homeAfterLogin, isAdmin } from '../utils/adminGuard.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('form');
@@ -117,10 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        await AuthService.login(identifier, password);
-        showToast('Đăng nhập thành công! Đang mở Sổ tay STEM...', 'success');
+        const user = await AuthService.login(identifier, password);
+        const dest = homeAfterLogin(user);
+        showToast(
+          isAdmin(user) ? 'Đăng nhập thành công! Đang mở phòng điều hành...' : 'Đăng nhập thành công! Đang mở Sổ tay STEM...',
+          'success'
+        );
         setTimeout(() => {
-          window.location.href = '/index.html';
+          window.location.href = dest;
         }, 600);
       } catch (err) {
         console.error('Login error:', err);
