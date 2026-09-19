@@ -30,6 +30,18 @@ const cleanUrlPlugin = () => ({
         '/inspect.html': '/pages/inspect.html',
         '/sinh-hoc': '/pages/sinh-hoc.html',
         '/sinh-hoc.html': '/pages/sinh-hoc.html',
+        '/admin': '/pages/admin.html',
+        '/admin.html': '/pages/admin.html',
+        '/admin-models': '/pages/admin-models.html',
+        '/admin-models.html': '/pages/admin-models.html',
+        '/admin-categories': '/pages/admin-categories.html',
+        '/admin-categories.html': '/pages/admin-categories.html',
+        '/admin-labs': '/pages/admin-labs.html',
+        '/admin-labs.html': '/pages/admin-labs.html',
+        '/admin-users': '/pages/admin-users.html',
+        '/admin-users.html': '/pages/admin-users.html',
+        '/admin-roles': '/pages/admin-roles.html',
+        '/admin-roles.html': '/pages/admin-roles.html',
       };
 
       if (routeMap[pathname]) {
@@ -54,6 +66,12 @@ export default defineConfig({
         exams: resolve(__dirname, 'pages/exams.html'),
         inspect: resolve(__dirname, 'pages/inspect.html'),
         sinhHoc: resolve(__dirname, 'pages/sinh-hoc.html'),
+        admin: resolve(__dirname, 'pages/admin.html'),
+        adminModels: resolve(__dirname, 'pages/admin-models.html'),
+        adminCategories: resolve(__dirname, 'pages/admin-categories.html'),
+        adminLabs: resolve(__dirname, 'pages/admin-labs.html'),
+        adminUsers: resolve(__dirname, 'pages/admin-users.html'),
+        adminRoles: resolve(__dirname, 'pages/admin-roles.html'),
       }
     }
   },
@@ -62,7 +80,13 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        timeout: 300000
+        timeout: 300000,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            // Tránh Spring CORS 403 khi Vite chạy cổng khác 5173.
+            proxyReq.removeHeader('origin');
+          });
+        }
       }
     }
   }

@@ -26,6 +26,9 @@ async function parseApiResponse(response) {
   try {
     json = await response.json();
   } catch (e) {
+    if (response.status === 403) {
+      throw new Error('Máy chủ từ chối kết nối (403). Thường do CORS khi Vite không chạy cổng 5173 — restart backend rồi thử lại.');
+    }
     if (!response.ok) {
       throw new Error(`Lỗi kết nối máy chủ (${response.status})`);
     }
@@ -405,7 +408,11 @@ export const AuthService = {
   },
 
   getUser() {
-    return getCurrentUser();
+    const user = getCurrentUser();
+    if (!user) return null;
+    const role = normalizeRole(user.role);
+    if (!role || role === user.role) return user;
+    return { ...user, role };
   },
 
   getToken() {
@@ -421,7 +428,7 @@ function mapAuthUser(data, fallback = {}) {
     email: source.email || fallback.email,
     name: source.fullName || source.name || fallback.name || (source.email || fallback.email || '').split('@')[0],
     phone: source.phone ?? fallback.phone,
-    role: source.role || fallback.role || 'STUDENT',
+    role: normalizeRole(source.role) || normalizeRole(fallback.role) || 'STUDENT',
     gender: source.gender ?? fallback.gender,
     avatarUrl: source.avatarUrl ?? fallback.avatarUrl,
     grade: source.grade != null ? String(source.grade) : (fallback.grade || '8'),
@@ -430,4 +437,12 @@ function mapAuthUser(data, fallback = {}) {
     lastCheckInDate: source.lastCheckInDate ?? fallback.lastCheckInDate ?? null,
     checkedInToday: source.checkedInToday ?? fallback.checkedInToday ?? false
   };
+}
+
+function normalizeRole(role) {
+  if (!role) return '';
+  const raw = typeof role === 'string'
+    ? role
+    : String(role.code || role.name || role.authority || '');
+  return raw.replace(/^ROLE_/i, '').toUpperCase();
 }

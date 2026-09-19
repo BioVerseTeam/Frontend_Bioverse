@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phòng điều hành - BioVerse Admin</title>
+  <meta name="description" content="Bàn ca quản trị BioVerse: gắn nhãn mô hình 3D, xử lý tài khoản, nhảy thẳng vào việc còn tồn.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","surface-container-low":"#f6f3f2","on-surface":"#1b1c1c","on-background":"#1b1c1c","error-container":"#ffdad6","tertiary-container":"#00864c","on-tertiary":"#ffffff","surface-container-high":"#eae7e7","primary-container":"#db3237","tertiary":"#006a3b","primary":"#b71422","secondary":"#2e5ea2","on-surface-variant":"#5b403e","surface":"#fcf9f8","on-primary-container":"#fffbff"},"fontFamily":{"headline-sm":["Epilogue"],"body-sm":["Be Vietnam Pro"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]},"spacing":{"margin":"2rem","space-lg":"2rem","space-md":"1.25rem","gutter":"1.5rem","space-xs":"0.375rem"}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <!--
+    THESIS: This is a lab intake desk, not a metric gallery. The operator lands on work to finish — incomplete labels, locked accounts — and jumps into it. It refuses a row of equal KPI cards.
+    OWN-WORLD: Scientific sketchbook: #fdfbf7 dot-grid, charcoal 2.5px rules, hard offset shadows, Epilogue / Be Vietnam Pro / Space Grotesk, marker-red stamp, biology green specimen bay, ballpoint-blue accounts, post-it attention.
+    STORY: The admin sees catalog and account health, trusts they can clear the shift from this page, and acts by tagging a model or managing a user.
+    FIRST VIEWPORT: Jump search is the largest control. Two unequal work bays sit under it. Attention queue and specimen log follow. Primary action is “Gắn mẫu mới”.
+    FORM: Operate / lab intake clipboard inside the pinned sketchbook system.
+    FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+  -->
+  <a href="#admin-workspace" class="sr-only">Bỏ qua tới bàn làm việc</a>
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin.html">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Phòng điều hành</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-space-xs"></nav>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login.html" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-10">
+      <div class="max-w-6xl mx-auto">
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập bằng tài khoản ADMIN để vào phòng điều hành.</p>
+          <a id="admin-gate-login" href="/login.html?next=/admin.html" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <div id="admin-workspace" hidden class="admin-desk">
+          <div class="admin-desk-head">
+            <div>
+              <h1>Bàn ca hôm nay</h1>
+              <p>
+                Xin chào <span id="admin-operator-name" class="font-semibold text-[#2d2d2d]">quản trị viên</span>.
+                <span id="admin-desk-date"></span>
+                Chọn một domain bên trái — bàn ca chỉ điều phối, không sửa dữ liệu hộ các mục kia.
+              </p>
+            </div>
+            <div class="admin-desk-actions">
+              <button type="button" id="admin-refresh" class="neo-btn neo-btn-secondary rounded-xl">
+                <span class="material-symbols-outlined text-[18px]" data-refresh-icon>refresh</span>
+                Làm mới
+              </button>
+              <a href="/admin-models.html?create=1" class="neo-btn neo-btn-primary rounded-xl">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Gắn mẫu mới
+              </a>
+            </div>
+          </div>
+
+          <div id="admin-error" class="admin-error" hidden>
+            <p id="admin-stats-hint" class="m-0 font-['Be_Vietnam_Pro'] text-sm"></p>
+            <button type="button" id="admin-retry" class="neo-btn neo-btn-primary rounded-xl px-4 py-2 text-sm">Thử lại</button>
+          </div>
+
+          <form id="admin-jump-form" class="admin-jump" role="search">
+            <span class="material-symbols-outlined admin-jump-icon text-[22px]">search</span>
+            <label class="sr-only" for="admin-jump">Tìm mẫu vật hoặc tài khoản</label>
+            <input id="admin-jump" type="search" role="combobox" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="false" aria-controls="admin-jump-results" placeholder="Tìm tên mẫu, loại, email học sinh…">
+            <span class="admin-jump-hint" aria-hidden="true">/</span>
+            <div id="admin-jump-results" class="admin-jump-panel" role="listbox" hidden></div>
+          </form>
+
+          <div class="admin-work-grid">
+            <article class="admin-work-bay" data-desk-bay="models">
+              <div class="absolute -top-2.5 left-6 w-28 h-5 bg-[#f0e6d2]/90 border border-dashed border-[#2d2d2d] -rotate-2 pointer-events-none z-10 flex items-center justify-center">
+                <span class="text-[9px] font-['Space_Grotesk'] text-[#76716a] tracking-widest uppercase">SPECIMEN</span>
+              </div>
+              <span class="admin-stamp-mark" data-stamp aria-hidden="true">Đã đếm</span>
+              <h2>Nhân mẫu</h2>
+              <p>Gắn tên, loại, lớp cho file GLB trên R2. Loại mẫu và lab nằm mục riêng trên thanh trái.</p>
+              <div class="admin-work-metrics">
+                <div class="admin-metric">
+                  <b id="stat-models">…</b>
+                  <span>Đã gắn nhãn</span>
+                </div>
+                <div class="admin-metric">
+                  <b id="stat-incomplete">…</b>
+                  <span>Thiếu lớp/loại</span>
+                </div>
+                <div class="admin-metric">
+                  <b id="stat-r2">…</b>
+                  <span>File trên R2</span>
+                </div>
+              </div>
+              <div class="admin-work-cta">
+                <a href="/admin-models.html?create=1" class="neo-btn neo-btn-primary rounded-xl">Gắn mẫu mới</a>
+                <a href="/admin-models.html" class="neo-btn neo-btn-secondary rounded-xl">Mở nhân mẫu</a>
+                <a href="/admin-categories.html" class="neo-btn neo-btn-secondary rounded-xl">Loại mẫu</a>
+                <a href="/admin-labs.html" class="neo-btn neo-btn-secondary rounded-xl">Lab</a>
+              </div>
+            </article>
+
+            <article class="admin-work-bay admin-work-bay--roles" data-desk-bay="roles">
+              <h2>Vai trò</h2>
+              <p>Tạo, sửa, xóa vai trò. Gán vai trò cho người dùng nằm ở mục Người dùng.</p>
+              <div class="admin-work-metrics admin-work-metrics--pair">
+                <div class="admin-metric">
+                  <b id="stat-roles">…</b>
+                  <span>Vai trò</span>
+                </div>
+                <div class="admin-metric">
+                  <b id="stat-system-roles">2</b>
+                  <span>Hệ thống</span>
+                </div>
+              </div>
+              <div class="admin-work-cta">
+                <a href="/admin-roles.html" class="neo-btn neo-btn-secondary rounded-xl">Mở vai trò</a>
+                <a href="/admin-roles.html?create=1" class="neo-btn neo-btn-secondary rounded-xl">Tạo vai trò</a>
+              </div>
+            </article>
+
+            <article class="admin-work-bay admin-work-bay--accounts" data-desk-bay="users">
+              <div class="absolute -top-2.5 left-6 w-32 h-5 bg-[#f0e6d2]/90 border border-dashed border-[#2d2d2d] -rotate-1 pointer-events-none z-10 flex items-center justify-center">
+                <span class="text-[9px] font-['Space_Grotesk'] text-[#76716a] tracking-widest uppercase">Sổ đăng ký</span>
+              </div>
+              <div class="admin-roster-head">
+                <div>
+                  <h2>Người dùng</h2>
+                  <p>Học sinh mới vào ca, rồi nhịp ghi danh theo tháng. Tổng sổ chỉ là dòng cuối.</p>
+                </div>
+                <button type="button" id="admin-census-chart-toggle" class="neo-btn neo-btn-blue rounded-xl admin-census-chart-toggle" aria-expanded="false" aria-controls="admin-census-chart">
+                  <span class="material-symbols-outlined text-[18px]" aria-hidden="true">insert_chart</span>
+                  <span data-chart-label>Xem biểu đồ tháng</span>
+                </button>
+              </div>
+              <div class="admin-roster" role="list">
+                <div class="admin-roster-cell is-lead" role="listitem">
+                  <b id="stat-new-week">…</b>
+                  <span>Mới 7 ngày</span>
+                </div>
+                <div class="admin-roster-cell" role="listitem">
+                  <b id="stat-new-month">…</b>
+                  <span>Tháng này</span>
+                </div>
+                <div class="admin-roster-cell" role="listitem">
+                  <b id="stat-users">…</b>
+                  <span>Tổng sổ</span>
+                </div>
+                <div class="admin-roster-cell is-mute" role="listitem">
+                  <b id="stat-locked">…</b>
+                  <span>Đang khóa</span>
+                </div>
+              </div>
+              <p class="admin-roster-note"><span id="stat-students">…</span> học sinh trong sổ.</p>
+              <div id="admin-census-chart" class="admin-census-chart" hidden>
+                <p class="admin-census-chart-caption">Mỗi cột là số tài khoản tạo mới trong tháng. Tháng hiện tại tô đỏ dạ.</p>
+                <div id="admin-census-chart-bars" class="admin-census-bars" role="img" aria-label="Biểu đồ số người dùng mới theo tháng"></div>
+                <p id="admin-census-chart-empty" class="admin-census-empty" hidden>Chưa có lượt ghi danh để vẽ. Khi học sinh đăng ký, cột tháng sẽ hiện ở đây.</p>
+              </div>
+              <div class="admin-work-cta">
+                <a href="/admin-users.html" class="neo-btn neo-btn-blue rounded-xl">Mở người dùng</a>
+                <a href="/admin-users.html?status=INACTIVE" class="neo-btn neo-btn-secondary rounded-xl">Xem đang khóa</a>
+              </div>
+            </article>
+          </div>
+
+          <aside class="admin-attention" aria-labelledby="admin-attention-title">
+            <h2 id="admin-attention-title">Cần xử lý</h2>
+            <div id="admin-attention-list">
+              <p class="admin-attention-empty">Đang kiểm tra từng domain…</p>
+            </div>
+          </aside>
+
+          <p class="admin-kbd-note">
+            <kbd>/</kbd> tìm kiếm
+            · <kbd>M</kbd> nhân mẫu
+            · <kbd>U</kbd> người dùng
+            · <kbd>R</kbd> vai trò
+            · <kbd>N</kbd> gắn mẫu mới
+          </p>
+          <div id="admin-live" class="sr-only" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/pages/adminDashboard.js"></script>
+</body>
+</html>
