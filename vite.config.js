@@ -28,6 +28,8 @@ const cleanUrlPlugin = () => ({
         '/exams.html': '/pages/exams.html',
         '/inspect': '/pages/inspect.html',
         '/inspect.html': '/pages/inspect.html',
+        '/sinh-hoc': '/pages/sinh-hoc.html',
+        '/sinh-hoc.html': '/pages/sinh-hoc.html',
       };
 
       if (routeMap[pathname]) {
@@ -51,6 +53,7 @@ export default defineConfig({
         otp: resolve(__dirname, 'pages/otp.html'),
         exams: resolve(__dirname, 'pages/exams.html'),
         inspect: resolve(__dirname, 'pages/inspect.html'),
+        sinhHoc: resolve(__dirname, 'pages/sinh-hoc.html'),
       }
     }
   },

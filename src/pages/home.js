@@ -4,12 +4,14 @@
  */
 
 import { setupNavbarAuth } from '../utils/authNavbar.js';
+import { setupBiologyNav } from '../utils/siteNav.js';
 import { ChatBox } from '../components/chatBox.js';
 import { getHomePageData } from '../features/progress/progressService.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Sync User state in Header & greeting
   setupNavbarAuth();
+  setupBiologyNav();
 
   // 2. Initialize BioBot Chat Assistant
   try {
