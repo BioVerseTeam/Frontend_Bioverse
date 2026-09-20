@@ -1857,6 +1857,87 @@ h1, h2, h3, h4, .font-headline {
   flex: 1;
 }
 
+/* Chemx dropzone + molecule crop preview (admin reactions) */
+.rx-chemx-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 132px;
+  padding: 18px 16px;
+  border: 2.5px dashed #2d2d2d;
+  border-radius: 16px;
+  background: #fdfbf7;
+  cursor: pointer;
+  text-align: center;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.rx-chemx-drop:hover,
+.rx-chemx-drop:focus-visible {
+  background: #fff;
+  border-color: #00864c;
+  box-shadow: 3px 3px 0 #00864c;
+  outline: none;
+}
+
+.rx-chemx-drop.is-drag {
+  background: #e8f8ef;
+  border-color: #00864c;
+  border-style: solid;
+  box-shadow: 4px 4px 0 #00864c;
+}
+
+.rx-chemx-drop.is-ready {
+  border-style: solid;
+  border-color: #00864c;
+}
+
+.rx-chemx-drop-icon {
+  font-size: 32px;
+  color: #00864c;
+}
+
+.rx-chemx-drop strong {
+  font-family: Epilogue, sans-serif;
+  font-size: 15px;
+}
+
+.rx-chemx-drop > span:not(.material-symbols-outlined):not(.rx-chemx-drop-btn) {
+  font-size: 13px;
+  color: #5b403e;
+}
+
+.rx-chemx-drop-btn {
+  margin-top: 4px;
+  pointer-events: none;
+}
+
+.rx-chemx-crop {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px dashed #2d2d2d;
+}
+
+.rx-chemx-stage {
+  touch-action: none;
+}
+
+.rx-chemx-stage canvas {
+  cursor: grab;
+}
+
+.rx-chemx-stage canvas:active {
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rx-chemx-drop {
+    transition: none;
+  }
+}
+
 /* ------------------------------------------------------------------
    Admin editor sheets — create / edit
    ------------------------------------------------------------------ */

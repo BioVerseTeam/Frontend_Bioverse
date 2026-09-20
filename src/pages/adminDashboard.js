@@ -541,6 +541,9 @@ function updateJump(raw) {
   if (q.length >= 2 && ['lab', 'viewer'].some((term) => term.includes(q) || q.includes(term))) {
     extras.push({ href: '/admin-labs.html', title: 'Mở lab', detail: 'Điểm đến khi bấm thẻ', group: 'Lối tắt' });
   }
+  if (q.length >= 2 && ['phương trình', 'phuong trinh', 'chemx', 'phản ứng', 'phan ung', 'reaction', 'hóa', 'hoa'].some((term) => term.includes(q) || q.includes(term))) {
+    extras.push({ href: '/admin-reactions.html', title: 'Mở phương trình', detail: 'Cấu hình sẵn .chemx cho học sinh', group: 'Lối tắt' });
+  }
   if (q.length >= 2 && ['tài khoản', 'tai khoan', 'user', 'học sinh', 'hoc sinh', 'người dùng', 'nguoi dung'].some((term) => term.includes(q) || q.includes(term))) {
     extras.push({ href: '/admin-users.html', title: 'Mở người dùng', detail: 'Khóa hoặc mở lại', group: 'Lối tắt' });
   }

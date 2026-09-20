@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phương trình hoá học - BioVerse Admin</title>
+  <meta name="description" content="Cấu hình sẵn phương trình hoá học (.chemx) để học sinh vào xem ngay.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin.html">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Phương trình</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-space-xs"></nav>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login.html" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-10">
+      <div class="max-w-6xl mx-auto flex flex-col gap-5">
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập ADMIN để cấu hình phương trình.</p>
+          <a id="admin-gate-login" href="/login.html?next=/admin-reactions.html" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <div id="admin-workspace" hidden>
+          <div class="relative bg-white sketch-border p-5 md:p-7">
+            <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-3">Phương trình hoá học</h1>
+            <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-[15px]">
+              Tải file <code>.chemx</code> trước giờ học. Học sinh vào
+              <a href="/phan-ung.html" class="underline decoration-wavy font-bold">Phản ứng</a>
+              sẽ thấy danh sách và phát hoạt ảnh ngay, không cần admin cấu hình trực tiếp.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5">
+            <aside class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col gap-3 min-h-[420px]">
+              <div class="admin-rail-head">
+                <div>
+                  <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider">Danh sách</p>
+                  <p id="admin-rx-count" class="font-['Space_Grotesk'] text-[11px] font-bold text-[#76716a] mt-1">Đang tải...</p>
+                </div>
+                <button type="button" id="admin-rx-new" class="neo-btn neo-btn-primary rounded-xl px-3 py-2 inline-flex items-center gap-1 text-sm">
+                  <span class="material-symbols-outlined text-[18px]">add</span>
+                  Thêm mới
+                </button>
+              </div>
+              <div id="admin-rx-list" class="flex flex-col gap-2 overflow-y-auto max-h-[640px]"></div>
+            </aside>
+
+            <form id="admin-rx-form" class="admin-editor bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl sketch-shadow" data-mode="create">
+              <input type="hidden" id="rx-field-id">
+              <input type="hidden" id="rx-field-sort" value="0">
+              <input type="checkbox" id="rx-field-active" checked hidden>
+
+              <div class="admin-mode-strip">
+                <div class="admin-mode-copy">
+                  <span id="admin-rx-badge" class="catalog-chip is-active">Thêm mới</span>
+                  <h2 id="admin-rx-title" class="font-['Epilogue'] text-xl font-bold">Thêm phương trình</h2>
+                  <p id="admin-rx-hint" class="admin-field-hint">Đặt tiêu đề rồi tải file .chemx đã xuất từ bàn dựng phản ứng.</p>
+                </div>
+                <div class="admin-mode-actions">
+                  <button type="submit" id="admin-rx-save" class="neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Lưu phương trình</button>
+                  <button type="button" id="admin-rx-hide" hidden class="neo-btn rounded-xl px-4 py-2.5 bg-[#ffdad6]">Ẩn bài</button>
+                </div>
+              </div>
+
+              <div class="admin-editor-body">
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>Nhãn hiển thị</h3>
+                    <div class="admin-status-pills" role="group" aria-label="Trạng thái">
+                      <button type="button" data-rx-active="true">Đang hiện</button>
+                      <button type="button" data-rx-active="false">Ẩn</button>
+                    </div>
+                  </div>
+                  <div class="admin-row admin-row-2">
+                    <div class="admin-field">
+                      <label for="rx-field-title">Tiêu đề trên danh sách *</label>
+                      <input id="rx-field-title" type="text" required maxlength="255" placeholder="VD: H₂ + Cl₂ → 2 HCl">
+                    </div>
+                    <div class="admin-field">
+                      <label for="rx-field-code">Mã bài</label>
+                      <input id="rx-field-code" type="text" maxlength="100" placeholder="Tự tạo từ tiêu đề nếu để trống">
+                      <p class="admin-field-hint">Ví dụ <code>h2-cl2</code>. Bài hệ thống không đổi mã được.</p>
+                    </div>
+                  </div>
+                  <div class="admin-row admin-row-2">
+                    <div class="admin-field">
+                      <label for="rx-field-subtitle">Phụ đề</label>
+                      <input id="rx-field-subtitle" type="text" maxlength="255" placeholder="Mô tả ngắn dưới tiêu đề">
+                    </div>
+                    <div class="admin-field">
+                      <label for="rx-field-grade">Khối lớp</label>
+                      <input id="rx-field-grade" type="text" maxlength="50" placeholder="VD: Lớp 8–9">
+                    </div>
+                  </div>
+                  <div class="admin-field">
+                    <label for="rx-field-name">Tên phương trình (metadata)</label>
+                    <input id="rx-field-name" type="text" maxlength="255" placeholder="Mặc định lấy tiêu đề">
+                  </div>
+                  <div class="admin-field">
+                    <label for="rx-field-desc">Mô tả</label>
+                    <textarea id="rx-field-desc" maxlength="2000" placeholder="Học sinh thấy mô tả này khi chọn bài."></textarea>
+                  </div>
+                </section>
+
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>File hoạt ảnh .chemx *</h3>
+                  </div>
+                  <div
+                    id="rx-chemx-drop"
+                    class="rx-chemx-drop"
+                    tabindex="0"
+                    role="button"
+                    aria-label="Kéo thả hoặc chọn file .chemx"
+                  >
+                    <input id="rx-field-file" type="file" accept=".chemx,.json,application/json" hidden>
+                    <span class="material-symbols-outlined rx-chemx-drop-icon" aria-hidden="true">upload_file</span>
+                    <strong>Kéo thả .chemx vào đây</strong>
+                    <span>hoặc bấm để chọn · tối đa 10MB</span>
+                    <span class="rx-chemx-drop-btn catalog-chip">Chọn file</span>
+                  </div>
+                  <p id="rx-chemx-status" class="font-['Space_Grotesk'] text-[11px] font-bold uppercase text-[#00864c] mt-2">Chưa có file</p>
+                  <p class="admin-field-hint">Xuất từ trang Phản ứng (Xuất .chemx) hoặc ChemViz3D. Khi sửa có thể giữ file cũ nếu không chọn lại.</p>
+
+                  <div id="rx-chemx-crop" class="rx-chemx-crop" hidden>
+                    <div class="admin-sheet-head">
+                      <h3>Crop khung phân tử</h3>
+                      <div class="admin-rank-stepper" role="group" aria-label="Trạng thái keyframe">
+                        <button type="button" id="rx-crop-prev" class="catalog-chip" aria-label="Keyframe trước">−</button>
+                        <span id="rx-crop-frame-label">KF 1</span>
+                        <button type="button" id="rx-crop-next" class="catalog-chip" aria-label="Keyframe sau">+</button>
+                      </div>
+                    </div>
+                    <p class="admin-field-hint mb-2">Kéo để dịch, lăn chuột hoặc thanh phóng để crop vào khung 4:3 — kiểm tra trước khi lưu.</p>
+                    <div class="admin-crop-stage rx-chemx-stage">
+                      <canvas id="rx-crop-canvas" width="720" height="540" aria-label="Xem trước phân tử đã crop"></canvas>
+                    </div>
+                    <label class="admin-crop-zoom">
+                      <span>Phóng</span>
+                      <input id="rx-crop-zoom" type="range" min="1" max="3" step="0.01" value="1">
+                    </label>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      <button type="button" id="rx-crop-fit" class="catalog-chip inline-flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]" aria-hidden="true">crop_free</span>
+                        Vừa khung
+                      </button>
+                      <button type="button" id="rx-crop-clear" class="catalog-chip">Bỏ file mới</button>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>Thứ tự danh sách</h3>
+                    <div class="admin-rank-stepper">
+                      <button type="button" id="admin-rx-rank-down" class="catalog-chip" aria-label="Xuống một bậc">−</button>
+                      <span id="admin-rx-rank-value">#1</span>
+                      <button type="button" id="admin-rx-rank-up" class="catalog-chip" aria-label="Lên một bậc">+</button>
+                    </div>
+                  </div>
+                  <p class="admin-field-hint">Thứ tự bài mẫu học sinh thấy bên trái trang Phản ứng.</p>
+                  <ol id="admin-rx-rank-queue" class="admin-rank-queue"></ol>
+                </section>
+
+                <aside class="admin-live-preview">
+                  <strong>Học sinh sẽ thấy</strong>
+                  <p id="admin-rx-live-title" class="font-['Epilogue'] text-lg font-bold">Tiêu đề phương trình</p>
+                  <p id="admin-rx-live-meta" class="font-['Space_Grotesk'] text-[11px] font-bold uppercase text-[#00864c]">phụ đề · lớp</p>
+                </aside>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="w-full border-t-[2.5px] border-[#2d2d2d] bg-[#fdfbf7] py-5">
+    <div class="w-full px-4 md:px-8 flex items-center justify-between">
+      <span class="font-['Space_Grotesk'] text-sm font-bold">BioVerse STEM Lab • Phương trình</span>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/pages/adminReactions.js"></script>
+</body>
+</html>
