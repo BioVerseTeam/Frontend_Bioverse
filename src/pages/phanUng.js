@@ -14,7 +14,9 @@ import {
   framesToChemx,
   downloadChemx,
   readChemxFile,
+  parseChemx,
 } from '../features/reactionAnim/chemx.js';
+import { listPublicReactions } from '../api/reactionApi.js';
 import {
   PALETTE_COMMON,
   PERIODIC_LAYOUT,
@@ -31,6 +33,8 @@ import {
   popIn,
   flashSaved,
   revealChips,
+  revealLessons,
+  swapRailPane,
   pulseHint,
   enterGuide,
   hopMascot,
@@ -47,6 +51,7 @@ import {
   showDropOverlay,
   hideDropOverlay,
   enterFlow,
+  setNotebookOpen,
 } from '../features/reactionAnim/uiMotion.js';
 import { markModelExplored, updateLastLesson } from '../features/progress/progressService.js';
 import {
@@ -74,11 +79,15 @@ import {
   personalLessonId,
   parsePersonalLessonId,
 } from '../features/reactionAnim/notebook.js';
+import {
+  matchEquation,
+  exampleEquations,
+} from '../features/reactionAnim/equationMatch.js';
 
 const MAX_FRAMES = 20;
 const HINTS = {
-  view: 'Kéo để xoay · Bấm Trạng thái 1–3 để xem từng lần lưu · Hoặc thả file .chemx',
-  viewEmpty: 'Chọn bài bên trái, hoặc kéo thả file .chemx vào trang này để phát.',
+  view: 'Kéo để xoay · Tab Mẫu để chọn bài · Tab Tìm để gõ phương trình',
+  viewEmpty: 'Chọn bài ở tab Mẫu, hoặc mở tab Tìm / Vở. Có thể thả file .chemx vào trang.',
   select: 'Bấm một nguyên tử rồi kéo trên lưới để dời vị trí',
   addAtom: 'Bấm xuống lưới để đặt nguyên tử đang chọn',
   addBond: 'Bấm nguyên tử thứ nhất, rồi nguyên tử thứ hai để nối liên kết',
@@ -120,7 +129,24 @@ const state = {
   extraSymbols: [],
   sampleFrames: [],
   panelOpen: { meta: false, frames: true, library: false },
+  /** null = auto (open when a personal lesson is selected); boolean = user override */
+  railNotebookOpen: null,
+  /** View-rail segmented IA: samples (default) | find | mine */
+  railTab: 'samples',
+  catalogLessons: [],
+  catalogLoaded: false,
+  eqDraft: '',
+  eqMsg: '',
+  eqMsgKind: '',
+  /** Show all equation suggestion chips (else first few + “+N”). */
+  eqChipsExpanded: false,
 };
+
+const RAIL_TABS = [
+  { id: 'samples', label: 'Mẫu', aria: 'Bài mẫu lớp' },
+  { id: 'find', label: 'Tìm', aria: 'Tìm theo phương trình' },
+  { id: 'mine', label: 'Vở', aria: 'Vở của tôi' },
+];
 
 let scene;
 let engine;
@@ -175,6 +201,175 @@ function init() {
   } catch {
     /* progress is optional */
   }
+
+  loadCatalogLessons();
+}
+
+async function loadCatalogLessons() {
+  try {
+    const items = await listPublicReactions();
+    state.catalogLessons = (items || [])
+      .map(catalogItemToLesson)
+      .filter(Boolean);
+  } catch (err) {
+    console.warn('Reaction catalog unavailable, using built-in samples', err);
+    state.catalogLessons = [];
+  }
+  state.catalogLoaded = true;
+  if (state.workspace === 'view') renderRail();
+}
+
+function catalogItemToLesson(item) {
+  if (!item?.chemx) return null;
+  try {
+    const raw = typeof item.chemx === 'string'
+      ? item.chemx
+      : JSON.stringify(item.chemx);
+    const chemx = parseChemx(raw);
+    return {
+      id: item.code || `catalog-${item.id}`,
+      title: item.title || item.name || 'Phản ứng',
+      subtitle: item.subtitle || '',
+      grade: item.gradeLabel || '',
+      name: item.name || item.title || 'Phản ứng',
+      description: item.description || '',
+      chemx,
+      fromCatalog: true,
+    };
+  } catch (err) {
+    console.warn('Skip invalid catalog reaction', item?.code, err);
+    return null;
+  }
+}
+
+/** Bài mẫu học sinh thấy: ưu tiên catalog admin, fallback bài cứng trong code. */
+function viewLessons() {
+  if (state.catalogLoaded && state.catalogLessons.length) {
+    return state.catalogLessons;
+  }
+  return REACTION_LESSONS.map((lesson) => ({
+    ...lesson,
+    chemx: lessonToChemx(lesson),
+    fromCatalog: false,
+  }));
+}
+
+function findViewLesson(id) {
+  return viewLessons().find((item) => item.id === id) || null;
+}
+
+/** Pool for equation matching: catalog → built-in samples → notebook. */
+function equationMatchPool() {
+  const seen = new Set();
+  const pool = [];
+
+  const push = (item) => {
+    if (!item?.id || seen.has(item.id)) return;
+    seen.add(item.id);
+    pool.push(item);
+  };
+
+  (state.catalogLessons || []).forEach(push);
+
+  REACTION_LESSONS.forEach((lesson) => {
+    push({
+      ...lesson,
+      chemx: lessonToChemx(lesson),
+      fromCatalog: false,
+    });
+  });
+
+  listMyReactions().forEach((item) => {
+    try {
+      push({
+        id: personalLessonId(item.id),
+        title: item.name,
+        name: item.name,
+        subtitle: '',
+        description: item.description || '',
+        chemx: framesToChemx(
+          { name: item.name, description: item.description, created: item.createdAt },
+          item.frames
+        ),
+        fromNotebook: true,
+        notebookId: item.id,
+      });
+    } catch {
+      /* skip corrupt notebook entry */
+    }
+  });
+
+  return pool;
+}
+
+function tryPlayEquation(raw) {
+  const query = String(raw || '').trim();
+  state.eqDraft = query;
+  state.railTab = 'find';
+  if (!query) {
+    state.eqMsg = 'Hãy gõ hoặc dán một phương trình, ví dụ H₂ + Cl₂ → 2 HCl.';
+    state.eqMsgKind = 'miss';
+    renderRail();
+    return;
+  }
+
+  const hit = matchEquation(query, equationMatchPool());
+  if (!hit) {
+    const samples = exampleEquations(viewLessons().length ? viewLessons() : REACTION_LESSONS, 3)
+      .join(' · ') || 'H₂ + Cl₂ → 2 HCl';
+    state.eqMsg = `Chưa có hoạt ảnh sẵn cho phương trình này. Thử: ${samples}. Hoặc mở Làm hoạt ảnh để tự dựng.`;
+    state.eqMsgKind = 'miss';
+    renderRail();
+    showToast('Chưa khớp bài nào trong thư viện.');
+    return;
+  }
+
+  const { item } = hit;
+  state.eqMsg = `Khớp: ${item.title || item.name}`;
+  state.eqMsgKind = 'ok';
+  if (item.fromNotebook) {
+    state.railNotebookOpen = true;
+    state.railTab = 'mine';
+    state.notebookId = item.notebookId || null;
+  } else {
+    state.notebookId = null;
+  }
+  loadReaction(item.chemx || lessonToChemx(item), item.id);
+  renderAll();
+  requestAnimationFrame(() => {
+    engine?.play();
+  });
+  showToast(`Đã phát: ${item.title || item.name}`);
+}
+
+function saveViewToNotebook() {
+  if (!hasLoadedReaction()) {
+    showToast('Chọn hoặc tìm một bài phản ứng trước khi cất.');
+    return;
+  }
+  try {
+    const frames = (state.chemx.keyframes || []).map((kf) => ({
+      atoms: cloneAtoms(kf.atoms),
+      bonds: cloneBonds(kf.bonds),
+    }));
+    const sourceId = parsePersonalLessonId(state.lessonId) ? null : state.lessonId;
+    const saved = saveMyReaction({
+      name: state.chemx.metadata?.name || 'Phản ứng',
+      description: state.chemx.metadata?.description || '',
+      frames,
+      sourceLessonId: sourceId,
+    });
+    state.notebookId = saved.id;
+    state.railNotebookOpen = true;
+    state.railTab = 'mine';
+    celebrate(els.celebrate);
+    showToast(isNotebookLoggedIn()
+      ? 'Đã cất vào vở của bạn. Chỉ mình bạn thấy bài này.'
+      : 'Đã cất trên máy này. Đăng nhập để giữ vở khi đổi máy.');
+    renderAll();
+  } catch (err) {
+    showToast(err.message);
+  }
 }
 
 function cacheEls() {
@@ -219,7 +414,7 @@ function bindEvents() {
         markTask('play');
       }
     } else if (!hasLoadedReaction()) {
-      showToast('Chọn một bài phản ứng bên trái trước khi phát.');
+      showToast('Chọn một bài phản ứng ở tab Mẫu hoặc Tìm trước khi phát.');
     } else {
       engine.toggle();
     }
@@ -1000,6 +1195,7 @@ function saveToNotebook() {
     });
     state.notebookId = saved.id;
     state.lessonId = personalLessonId(saved.id);
+    state.railNotebookOpen = true;
     if (state.editPath === EDIT_PATH.SAMPLE || state.editPath === EDIT_PATH.CREATE) {
       rememberGuideComplete();
     }
@@ -1016,6 +1212,8 @@ function saveToNotebook() {
 
 function playPersonal(item) {
   try {
+    state.railNotebookOpen = true;
+    state.railTab = 'mine';
     loadReaction(
       framesToChemx({ name: item.name, description: item.description, created: item.createdAt }, item.frames),
       personalLessonId(item.id)
@@ -1346,7 +1544,7 @@ function renderGuide() {
         `}
         ${step.waitFor === 'pick' ? `
           <div class="rx-gate-picks">
-            ${REACTION_LESSONS.map((lesson) => `
+            ${REACTION_LESSONS.filter((lesson) => lesson.coach).map((lesson) => `
               <button type="button" class="rx-pick is-easy" data-lesson="${lesson.id}">
                 <b>${lesson.title}</b>
                 <span>${lesson.subtitle}</span>
@@ -1487,6 +1685,254 @@ function notebookListHtml(selectedId) {
   }).join('');
 }
 
+function isRailNotebookOpen() {
+  if (typeof state.railNotebookOpen === 'boolean') return state.railNotebookOpen;
+  return Boolean(parsePersonalLessonId(state.lessonId));
+}
+
+function currentRailTab() {
+  const tab = state.railTab;
+  return RAIL_TABS.some((item) => item.id === tab) ? tab : 'samples';
+}
+
+function railTabLede(tab) {
+  if (tab === 'find') {
+    return 'Gõ hoặc dán phương trình — khớp bài sẵn thì tự phát.';
+  }
+  if (tab === 'mine') {
+    return 'Bài chỉ mình bạn thấy. Mở / xuất file .chemx ở dưới.';
+  }
+  return state.catalogLoaded && state.catalogLessons.length
+    ? 'Chọn bài mẫu lớp để phát trên sân.'
+    : 'Chọn bài mẫu, hoặc mở tab Tìm / Vở khi cần.';
+}
+
+function railTabsHtml(active, mineCount) {
+  return `
+    <div class="rx-rail-tabs" role="tablist" aria-label="Nguồn bài phản ứng">
+      ${RAIL_TABS.map((tab) => {
+        const on = tab.id === active;
+        const count = tab.id === 'mine' && mineCount
+          ? `<span class="rx-tab-count" aria-hidden="true">${mineCount}</span>`
+          : '';
+        return `
+          <button type="button" class="rx-rail-tab${on ? ' is-on' : ''}"
+            role="tab" id="rx-tab-${tab.id}" data-rail-tab="${tab.id}"
+            aria-selected="${on}" aria-controls="rx-rail-pane" tabindex="${on ? '0' : '-1'}"
+            title="${escapeAttr(tab.aria)}">
+            ${tab.label}${count}
+          </button>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function railSamplesPaneHtml(lessons) {
+  return `
+    <div class="rx-rail-primary">
+      <div class="rx-section-label">Bài mẫu lớp</div>
+      <div class="rx-lessons" id="rx-class-list">
+        ${lessons.length ? lessons.map((lesson) => `
+          <button type="button" class="rx-lesson${lesson.id === state.lessonId ? ' is-on' : ''}" data-lesson="${lesson.id}">
+            <strong>${escapeAttr(lesson.title)}</strong>
+            <small>${escapeAttr([lesson.subtitle, lesson.grade].filter(Boolean).join(' · '))}</small>
+          </button>
+        `).join('') : '<div class="rx-empty">Chưa có bài mẫu. Admin hãy thêm ở Phương trình.</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function railFindPaneHtml(eqExamples) {
+  return `
+    <section class="rx-eq-find" aria-label="Tìm theo phương trình">
+      <div class="rx-section-label">Gõ / dán phương trình</div>
+      <div class="rx-eq-row">
+        <input id="rx-eq-input" class="rx-input" type="text" autocomplete="off"
+          value="${escapeAttr(state.eqDraft)}"
+          placeholder="H₂ + Cl₂ → 2 HCl"
+          aria-label="Phương trình hoá học"
+          aria-describedby="rx-eq-hint">
+        <button type="button" class="rx-btn rx-btn-primary" id="btn-eq-find" title="Tìm bài khớp và phát">Tìm &amp; phát</button>
+      </div>
+      <p class="rx-eq-find-hint" id="rx-eq-hint">Khớp bài sẵn → tự phát · giữ hình cuối 3s</p>
+      ${equationChipsHtml(eqExamples)}
+      ${state.eqMsg ? `<p class="rx-eq-msg is-${state.eqMsgKind || 'miss'}" id="rx-eq-msg" role="status">${escapeAttr(state.eqMsg)}</p>` : '<p class="rx-eq-msg" id="rx-eq-msg" hidden role="status"></p>'}
+      ${state.eqMsgKind === 'miss' ? `
+        <button type="button" class="rx-link" id="btn-eq-open-edit">Mở Làm hoạt ảnh</button>
+      ` : ''}
+    </section>
+  `;
+}
+
+function railMinePaneHtml({ personalId, loaded, saveTitle, exportTitle }) {
+  const mine = listMyReactions();
+  return `
+    <section class="rx-mine-pane" aria-label="Vở cá nhân">
+      <p class="rx-notebook-note">
+        <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+        ${isNotebookLoggedIn()
+          ? 'Lưu theo tài khoản — không lẫn bài mẫu lớp.'
+          : 'Lưu trên máy này. Đăng nhập để đồng bộ.'}
+      </p>
+      <div class="rx-lessons" id="rx-mine-list">${notebookListHtml(personalId)}</div>
+      <div class="rx-rail-utils" role="group" aria-label="File .chemx">
+        <div class="rx-section-label">File .chemx</div>
+        <div class="rx-file-toolbar">
+          <button type="button" class="rx-btn rx-btn-ghost" id="btn-open" title="Mở bài .chemx từ máy">Mở file</button>
+          <button type="button" class="rx-btn rx-btn-ghost" id="btn-export-view" ${loaded ? '' : 'disabled'} title="${escapeAttr(exportTitle)}" aria-disabled="${loaded ? 'false' : 'true'}">Xuất</button>
+          <button type="button" class="rx-btn rx-btn-ghost" id="btn-save-view-note" ${loaded ? '' : 'disabled'} title="${escapeAttr(saveTitle)}" aria-disabled="${loaded ? 'false' : 'true'}">Cất vở</button>
+        </div>
+      </div>
+      ${!mine.length ? '<p class="rx-copy rx-mine-hint">Chưa có bài? Vào <strong>Làm hoạt ảnh</strong> rồi cất lại đây.</p>' : ''}
+    </section>
+  `;
+}
+
+function bindViewRailTabs(root) {
+  const tabs = [...root.querySelectorAll('[data-rail-tab]')];
+  tabs.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = btn.dataset.railTab;
+      if (!next || next === currentRailTab()) return;
+      state.railTab = next;
+      if (next === 'mine') state.railNotebookOpen = true;
+      renderRail();
+      swapRailPane($('rx-rail-pane'));
+      stampControl(root.querySelector(`[data-rail-tab="${next}"]`));
+      root.querySelector(`[data-rail-tab="${next}"]`)?.focus();
+    });
+  });
+  const tablist = root.querySelector('.rx-rail-tabs');
+  tablist?.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    const i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    let next = i;
+    if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+    if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+    if (e.key === 'Home') next = 0;
+    if (e.key === 'End') next = tabs.length - 1;
+    tabs[next]?.click();
+  });
+}
+
+function bindViewRailFind(eqExamples) {
+  const eqInput = $('rx-eq-input');
+  eqInput?.addEventListener('input', (e) => {
+    state.eqDraft = e.target.value;
+  });
+  eqInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      tryPlayEquation(eqInput.value);
+    }
+  });
+  $('btn-eq-find')?.addEventListener('click', () => tryPlayEquation(eqInput?.value || state.eqDraft));
+  els.rail.querySelectorAll('[data-eq-chip]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.eqDraft = btn.dataset.eqChip;
+      if (eqInput) eqInput.value = btn.dataset.eqChip;
+      tryPlayEquation(btn.dataset.eqChip);
+    });
+  });
+  $('btn-eq-more')?.addEventListener('click', () => {
+    state.eqChipsExpanded = !state.eqChipsExpanded;
+    renderRail();
+  });
+  $('btn-eq-open-edit')?.addEventListener('click', () => switchWorkspace('edit'));
+  const eqChips = els.rail.querySelector('.rx-eq-chips');
+  if (eqChips) {
+    if (state.eqChipsExpanded) eqChips.classList.add('is-expanded');
+    const chipKey = `${eqExamples.join('|')}|${state.eqChipsExpanded ? 'all' : 'few'}`;
+    if (renderRail._eqChipKey !== chipKey) {
+      revealChips(eqChips);
+      renderRail._eqChipKey = chipKey;
+    }
+  }
+}
+
+function bindViewRailFiles() {
+  $('btn-open')?.addEventListener('click', () => els.file.click());
+  $('btn-export-view')?.addEventListener('click', () => {
+    if (!hasLoadedReaction()) {
+      showToast('Chọn một bài phản ứng trước khi xuất.');
+      return;
+    }
+    const name = (state.chemx.metadata.name || 'phan-ung').replace(/\s+/g, '-');
+    downloadChemx(state.chemx, `${name}.chemx`);
+  });
+  $('btn-save-view-note')?.addEventListener('click', saveViewToNotebook);
+}
+
+const EQ_CHIP_FEATURED = 3;
+
+/** Suggestion chips for equation search — featured row + optional expand. */
+function equationChipsHtml(examples) {
+  if (!examples?.length) return '';
+  const expanded = state.eqChipsExpanded || examples.length <= EQ_CHIP_FEATURED;
+  const visible = expanded ? examples : examples.slice(0, EQ_CHIP_FEATURED);
+  const hidden = Math.max(0, examples.length - EQ_CHIP_FEATURED);
+  return `
+    <div class="rx-eq-examples">
+      <span class="rx-eq-examples-label" id="rx-eq-examples-label">Gợi ý</span>
+      <div class="rx-eq-chips" role="list" aria-labelledby="rx-eq-examples-label">
+        ${visible.map((eq) => `
+          <button type="button" class="rx-chip rx-chip-fill" data-eq-chip="${escapeAttr(eq)}" role="listitem">${escapeAttr(eq)}</button>
+        `).join('')}
+        ${!expanded && hidden ? `
+          <button type="button" class="rx-chip rx-chip-more" id="btn-eq-more" aria-expanded="false" title="Hiện thêm ${hidden} phương trình">+${hidden}</button>
+        ` : ''}
+        ${expanded && examples.length > EQ_CHIP_FEATURED ? `
+          <button type="button" class="rx-chip rx-chip-more" id="btn-eq-more" aria-expanded="true">Thu gọn</button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/** Collapsible personal notebook — used in guided CREATE path. */
+function notebookDrawerHtml({ selectedId, privacyNote = true } = {}) {
+  const mine = listMyReactions();
+  const open = isRailNotebookOpen();
+  const countLabel = mine.length ? `${mine.length} bài` : 'Trống';
+  return `
+    <section class="rx-notebook${open ? ' is-open' : ''}" data-notebook>
+      <button type="button" class="rx-notebook-toggle" id="btn-notebook-toggle" aria-expanded="${open}" aria-controls="rx-notebook-body">
+        <span class="rx-notebook-text">
+          <span class="rx-notebook-kicker">Cá nhân · ${countLabel}</span>
+          <strong>Vở của tôi</strong>
+          <small>${mine.length ? 'Chỉ mình bạn thấy' : 'Cất bài sau khi làm'}</small>
+        </span>
+        <span class="material-symbols-outlined rx-notebook-chevron" aria-hidden="true">expand_more</span>
+      </button>
+      <div class="rx-notebook-body" id="rx-notebook-body"${open ? '' : ' hidden'}>
+        ${privacyNote ? `
+          <p class="rx-notebook-note">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            ${isNotebookLoggedIn()
+              ? 'Lưu theo tài khoản — không lẫn bài mẫu lớp.'
+              : 'Lưu trên máy này. Đăng nhập để đồng bộ.'}
+          </p>
+        ` : ''}
+        <div class="rx-lessons" id="rx-mine-list">${notebookListHtml(selectedId)}</div>
+      </div>
+    </section>
+  `;
+}
+
+function bindNotebookDrawer(root) {
+  const section = root.querySelector('[data-notebook]');
+  if (!section) return;
+  $('btn-notebook-toggle')?.addEventListener('click', () => {
+    const next = !isRailNotebookOpen();
+    state.railNotebookOpen = next;
+    setNotebookOpen(section, next, { animateList: next });
+  });
+}
+
 function bindNotebookList(root, { intoEditor = false } = {}) {
   root.querySelectorAll('[data-mine]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1494,6 +1940,8 @@ function bindNotebookList(root, { intoEditor = false } = {}) {
       if (!item) return;
       if (intoEditor || state.workspace === 'edit') {
         state.editPath = EDIT_PATH.FREE;
+        state.railNotebookOpen = true;
+        state.railTab = 'mine';
         if (state.workspace !== 'edit') switchWorkspace('edit');
         loadPersonalIntoEditor(item);
         renderAll();
@@ -1511,43 +1959,64 @@ function renderRail() {
     return;
   }
   if (state.workspace === 'view') {
+    const lessons = viewLessons();
+    const personalId = parsePersonalLessonId(state.lessonId);
+    const eqExamples = exampleEquations(lessons.length ? lessons : REACTION_LESSONS, 6);
+    const loaded = hasLoadedReaction();
+    const saveTitle = loaded ? 'Cất bản sao vào vở cá nhân' : 'Chọn hoặc tìm một bài trước khi cất';
+    const exportTitle = loaded ? 'Tải file .chemx của bài đang xem' : 'Chọn hoặc tìm một bài trước khi xuất';
+    const tab = currentRailTab();
+    const mineCount = listMyReactions().length;
+    let paneHtml = '';
+    if (tab === 'find') paneHtml = railFindPaneHtml(eqExamples);
+    else if (tab === 'mine') {
+      paneHtml = railMinePaneHtml({ personalId, loaded, saveTitle, exportTitle });
+    } else {
+      paneHtml = railSamplesPaneHtml(lessons);
+    }
+
     els.rail.innerHTML = `
-      <h1 class="rx-title">Bài phản ứng</h1>
-      <p class="rx-copy">Chọn bài mẫu, mở sổ tay, hoặc kéo thả file .chemx vào trang để phát. Không bắt buộc bấm Mở file.</p>
-      <div class="rx-section-label">Bài mẫu lớp</div>
-      <div class="rx-lessons">
-        ${REACTION_LESSONS.map((lesson) => `
-          <button type="button" class="rx-lesson${lesson.id === state.lessonId ? ' is-on' : ''}" data-lesson="${lesson.id}">
-            <strong>${lesson.title}</strong>
-            <small>${lesson.subtitle} · ${lesson.grade}</small>
-          </button>
-        `).join('')}
-      </div>
-      <div class="rx-section-label">Vở của tôi</div>
-      <div class="rx-lessons" id="rx-mine-list">
-        ${notebookListHtml(parsePersonalLessonId(state.lessonId))}
-      </div>
-      <div class="rx-btn-row">
-        <button type="button" class="rx-btn rx-btn-ghost" id="btn-open">Mở file</button>
-        <button type="button" class="rx-btn rx-btn-accent" id="btn-export-view">Xuất .chemx</button>
+      <header class="rx-rail-head">
+        <h1 class="rx-title">Bài phản ứng</h1>
+        <p class="rx-copy rx-rail-lede">${railTabLede(tab)}</p>
+      </header>
+      ${railTabsHtml(tab, mineCount)}
+      <div class="rx-rail-pane" id="rx-rail-pane" role="tabpanel" aria-labelledby="rx-tab-${tab}">
+        ${paneHtml}
       </div>
     `;
-    els.rail.querySelectorAll('[data-lesson]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const lesson = REACTION_LESSONS.find((item) => item.id === btn.dataset.lesson);
-        if (lesson) loadReaction(lessonToChemx(lesson), lesson.id);
+
+    bindViewRailTabs(els.rail);
+
+    if (tab === 'samples') {
+      els.rail.querySelectorAll('[data-lesson]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const lesson = findViewLesson(btn.dataset.lesson);
+          if (!lesson) return;
+          state.eqMsg = '';
+          state.eqMsgKind = '';
+          loadReaction(lesson.chemx || lessonToChemx(lesson), lesson.id);
+          stampControl(btn);
+        });
       });
-    });
-    bindNotebookList(els.rail, { intoEditor: false });
-    $('btn-open')?.addEventListener('click', () => els.file.click());
-    $('btn-export-view')?.addEventListener('click', () => {
-      if (!hasLoadedReaction()) {
-        showToast('Chọn một bài phản ứng trước khi xuất.');
-        return;
+      const classList = $('rx-class-list');
+      const lessonsKey = lessons.map((l) => l.id).join(',');
+      if (classList && renderRail._lessonsKey !== lessonsKey) {
+        revealLessons(classList);
+        renderRail._lessonsKey = lessonsKey;
       }
-      const name = (state.chemx.metadata.name || 'phan-ung').replace(/\s+/g, '-');
-      downloadChemx(state.chemx, `${name}.chemx`);
-    });
+    } else if (tab === 'find') {
+      bindViewRailFind(eqExamples);
+    } else {
+      bindNotebookList(els.rail, { intoEditor: false });
+      bindViewRailFiles();
+      const mineList = $('rx-mine-list');
+      const mineIds = listMyReactions().map((item) => item.id).join(',');
+      if (mineList && renderRail._mineKey !== mineIds) {
+        revealLessons(mineList);
+        renderRail._mineKey = mineIds;
+      }
+    }
     return;
   }
 
@@ -1562,11 +2031,12 @@ function renderRail() {
 
   if (state.editPath === EDIT_PATH.SAMPLE) {
     const step = getCoachStep(state.editPath, state.coachStep);
+    const coached = REACTION_LESSONS.filter((lesson) => lesson.coach);
     els.rail.innerHTML = `
       <h1 class="rx-title">Bài mẫu</h1>
       <p class="rx-copy">Chọn phản ứng, rồi làm theo thanh vàng ở giữa.</p>
       <div class="rx-lessons">
-        ${REACTION_LESSONS.map((lesson) => `
+        ${coached.map((lesson) => `
           <button type="button" class="rx-lesson${lesson.id === state.lessonId && state.coachStep > 0 ? ' is-on' : ''}" data-lesson="${lesson.id}">
             <strong>${lesson.title}</strong>
             <small>3 trạng thái sẵn · ${lesson.grade}</small>
@@ -1598,11 +2068,11 @@ function renderRail() {
       <h1 class="rx-title">Phương trình của bạn</h1>
       <p class="rx-copy">Làm từng bước. Bài sẽ vào sổ tay cá nhân, không hiện cho bạn khác.</p>
       ${renderTools(step)}
-      <div class="rx-section-label">Vở của tôi</div>
-      <div class="rx-lessons" id="rx-mine-list">${notebookListHtml(state.notebookId)}</div>
+      ${notebookDrawerHtml({ selectedId: state.notebookId, privacyNote: false })}
       <button type="button" class="rx-link" id="btn-skip-guide">Bỏ hướng dẫn, tự làm</button>
     `;
     bindToolEvents();
+    bindNotebookDrawer(els.rail);
     bindNotebookList(els.rail, { intoEditor: true });
     $('btn-skip-guide')?.addEventListener('click', () => enterFreeEditor({ skipPref: true, keepFrames: true }));
     return;
@@ -1774,7 +2244,7 @@ function renderPanel() {
     if (!hasLoadedReaction()) {
       els.panel.innerHTML = `
         <h2 class="rx-title">Bắt đầu từ bài mẫu</h2>
-        <p class="rx-copy">Chọn phản ứng bên trái, hoặc kéo thả file .chemx vào trang để chạy. Sân trống cho đến khi có bài.</p>
+        <p class="rx-copy">Chọn bài ở tab <strong>Mẫu</strong>, hoặc mở tab <strong>Tìm</strong> để gõ phương trình. File .chemx nằm trong tab <strong>Vở</strong>. Sân trống cho đến khi có bài.</p>
         <div class="rx-empty">Chưa có nguyên tử trên sân. Chọn bài xong, nhãn nguyên tử chỉ hiện khi bạn chọn hoặc được gợi ý.</div>
       `;
       return;
