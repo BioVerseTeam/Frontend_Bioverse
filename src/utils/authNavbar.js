@@ -109,7 +109,7 @@ export function setupNavbarAuth() {
       gradeEl.textContent = 'Chưa đăng nhập';
     }
     if (avatarLink) {
-      avatarLink.href = '/login.html';
+      avatarLink.href = '/login';
       avatarLink.title = 'Bấm để đăng nhập';
     }
     renderHeaderStreak(null);
@@ -120,7 +120,7 @@ function insertAdminNav(user) {
   const nav = document.querySelector('header nav');
   if (!nav) return;
 
-  const existing = nav.querySelector('[data-path="admin"], a[href="/admin.html"], a[href*="admin-models"], a[href*="admin-roles"]');
+  const existing = nav.querySelector('[data-path="admin"], a[href="/admin"], a[href*="admin-models"], a[href*="admin-roles"]');
   if (!isAdmin(user)) {
     if (existing && (existing.id === 'nav-admin-home' || existing.id === 'nav-admin-models')) {
       existing.remove();
@@ -131,7 +131,7 @@ function insertAdminNav(user) {
 
   const link = document.createElement('a');
   link.id = 'nav-admin-home';
-  link.href = '/admin.html';
+  link.href = '/admin';
   link.dataset.path = 'admin';
   link.className = 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent';
   link.textContent = 'Điều hành';

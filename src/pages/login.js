@@ -44,24 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Quick Account Fill Buttons (Helper for Seeded Accounts)
-  const quickClassBtn = document.getElementById('quick-demo-btn') || 
-                        Array.from(document.querySelectorAll('button[type="button"]')).find(b => 
-                          b.textContent.includes('student@bioverse.com') || 
-                          b.textContent.includes('qr_code_scanner') ||
-                          b.textContent.includes('Mã Lớp Học')
-                        );
-  if (quickClassBtn) {
-    quickClassBtn.title = "Bấm để điền tài khoản mẫu THCS (student@bioverse.com)";
-    quickClassBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (identifierInput) identifierInput.value = 'student@bioverse.com';
-      if (passwordInput) passwordInput.value = 'Student@123456';
-      clearError();
-      showToast('Đã điền tài khoản mẫu: student@bioverse.com', 'info');
-    });
-  }
-
   // Toggle Password Visibility
   if (toggleBtn && passwordInput) {
     toggleBtn.addEventListener('click', (e) => {

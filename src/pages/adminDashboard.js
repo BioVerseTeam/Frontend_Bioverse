@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Admin navbar failed', err);
   }
   if (!requireAdmin({
-    loginNext: '/admin.html',
+    loginNext: '/admin',
     message: 'Tài khoản học sinh không vào được phòng điều hành.'
   })) return;
 
@@ -99,10 +99,10 @@ function bindDesk() {
     }
     if (typing || event.metaKey || event.ctrlKey || event.altKey) return;
     const key = event.key.toLowerCase();
-    if (key === 'm') window.location.href = '/admin-models.html';
-    if (key === 'u') window.location.href = '/admin-users.html';
-    if (key === 'r') window.location.href = '/admin-roles.html';
-    if (key === 'n') window.location.href = '/admin-models.html?create=1';
+    if (key === 'm') window.location.href = '/admin-models';
+    if (key === 'u') window.location.href = '/admin-users';
+    if (key === 'r') window.location.href = '/admin-roles';
+    if (key === 'n') window.location.href = '/admin-models?create=1';
   });
 }
 
@@ -455,28 +455,28 @@ function renderAttention() {
 
   if (incomplete.length) {
     items.push({
-      href: '/admin-models.html',
+      href: '/admin-models',
       title: `${incomplete.length} mẫu thiếu lớp hoặc loại`,
       detail: 'Học sinh sẽ khó lọc trên catalog. Mở nhãn mẫu để bổ sung.'
     });
   }
   if (hidden.length) {
     items.push({
-      href: '/admin-models.html',
+      href: '/admin-models',
       title: `${hidden.length} mẫu đang ẩn`,
       detail: 'File R2 còn, nhưng không hiện trên trang Sinh học.'
     });
   }
   if (unlabeledR2 > 0) {
     items.push({
-      href: '/admin-models.html?create=1',
+      href: '/admin-models?create=1',
       title: `${unlabeledR2} file R2 chưa gắn nhãn`,
       detail: 'Chọn file đã upload, rồi điền tên và lớp.'
     });
   }
   if (lockedCount) {
     items.push({
-      href: '/admin-users.html?status=INACTIVE',
+      href: '/admin-users?status=INACTIVE',
       title: `${lockedCount} tài khoản đang khóa`,
       detail: 'Học sinh này không đăng nhập được cho đến khi mở lại.'
     });
@@ -515,7 +515,7 @@ function updateJump(raw) {
     .filter((model) => matchesQuery(q, [model.name, model.scientificName, model.category, model.slug]))
     .slice(0, 5)
     .map((model) => ({
-      href: `/admin-models.html?id=${encodeURIComponent(model.id)}`,
+      href: `/admin-models?id=${encodeURIComponent(model.id)}`,
       title: model.name || 'Mẫu chưa đặt tên',
       detail: [model.category, model.grade ? `Lớp ${model.grade}` : null].filter(Boolean).join(' · ') || 'Mẫu vật',
       group: 'Mẫu vật'
@@ -525,7 +525,7 @@ function updateJump(raw) {
     .filter((user) => matchesQuery(q, [user.fullName, user.email, user.role]))
     .slice(0, 5)
     .map((user) => ({
-      href: `/admin-users.html?q=${encodeURIComponent(user.email || user.fullName || '')}`,
+      href: `/admin-users?q=${encodeURIComponent(user.email || user.fullName || '')}`,
       title: user.fullName || user.email,
       detail: user.email || user.role || 'Tài khoản',
       group: 'Tài khoản'
@@ -533,29 +533,29 @@ function updateJump(raw) {
 
   const extras = [];
   if (q.length >= 2 && ['nhãn', 'mau', 'mẫu', 'model'].some((term) => term.includes(q) || q.includes(term))) {
-    extras.push({ href: '/admin-models.html', title: 'Mở nhân mẫu 3D', detail: 'Gắn tên, loại, lớp', group: 'Lối tắt' });
+    extras.push({ href: '/admin-models', title: 'Mở nhân mẫu 3D', detail: 'Gắn tên, loại, lớp', group: 'Lối tắt' });
   }
   if (q.length >= 2 && ['loại', 'loai', 'category'].some((term) => term.includes(q) || q.includes(term))) {
-    extras.push({ href: '/admin-categories.html', title: 'Mở loại mẫu', detail: 'Chip lọc catalog', group: 'Lối tắt' });
+    extras.push({ href: '/admin-categories', title: 'Mở loại mẫu', detail: 'Chip lọc catalog', group: 'Lối tắt' });
   }
   if (q.length >= 2 && ['lab', 'viewer'].some((term) => term.includes(q) || q.includes(term))) {
-    extras.push({ href: '/admin-labs.html', title: 'Mở lab', detail: 'Điểm đến khi bấm thẻ', group: 'Lối tắt' });
+    extras.push({ href: '/admin-labs', title: 'Mở lab', detail: 'Điểm đến khi bấm thẻ', group: 'Lối tắt' });
   }
   if (q.length >= 2 && ['phương trình', 'phuong trinh', 'chemx', 'phản ứng', 'phan ung', 'reaction', 'hóa', 'hoa'].some((term) => term.includes(q) || q.includes(term))) {
-    extras.push({ href: '/admin-reactions.html', title: 'Mở phương trình', detail: 'Cấu hình sẵn .chemx cho học sinh', group: 'Lối tắt' });
+    extras.push({ href: '/admin-reactions', title: 'Mở phương trình', detail: 'Cấu hình sẵn .chemx cho học sinh', group: 'Lối tắt' });
   }
   if (q.length >= 2 && ['tài khoản', 'tai khoan', 'user', 'học sinh', 'hoc sinh', 'người dùng', 'nguoi dung'].some((term) => term.includes(q) || q.includes(term))) {
-    extras.push({ href: '/admin-users.html', title: 'Mở người dùng', detail: 'Khóa hoặc mở lại', group: 'Lối tắt' });
+    extras.push({ href: '/admin-users', title: 'Mở người dùng', detail: 'Khóa hoặc mở lại', group: 'Lối tắt' });
   }
   if (q.length >= 2 && ['vai trò', 'vai tro', 'role', 'quyền'].some((term) => term.includes(q) || q.includes(term))) {
-    extras.push({ href: '/admin-roles.html', title: 'Mở vai trò', detail: 'Tạo hoặc sửa role', group: 'Lối tắt' });
+    extras.push({ href: '/admin-roles', title: 'Mở vai trò', detail: 'Tạo hoặc sửa role', group: 'Lối tắt' });
   }
 
   const roles = state.roles
     .filter((role) => matchesQuery(q, [role.code, role.name, role.description]))
     .slice(0, 5)
     .map((role) => ({
-      href: `/admin-roles.html?id=${encodeURIComponent(role.id)}`,
+      href: `/admin-roles?id=${encodeURIComponent(role.id)}`,
       title: role.name || role.code,
       detail: role.code || 'Vai trò',
       group: 'Vai trò'

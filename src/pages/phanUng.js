@@ -2390,7 +2390,7 @@ function renderPanel() {
       <div class="rx-panel-foot">
         <button type="button" class="rx-btn rx-btn-primary" id="btn-save-note">Cất vào vở của mình</button>
         <button type="button" class="rx-btn rx-btn-ghost" id="btn-export">Xuất .chemx để phát</button>
-        ${!isNotebookLoggedIn() ? '<p class="rx-copy">Khách: sổ tay lưu trên máy này. <a href="/login.html" class="rx-link">Đăng nhập</a> để giữ khi đổi máy.</p>' : ''}
+        ${!isNotebookLoggedIn() ? '<p class="rx-copy">Khách: sổ tay lưu trên máy này. <a href="/login" class="rx-link">Đăng nhập</a> để giữ khi đổi máy.</p>' : ''}
       </div>
     </div>
   `;

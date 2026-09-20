@@ -30,6 +30,9 @@ async function parseApiResponse(response) {
       throw new Error('Máy chủ từ chối kết nối (403). Thường do CORS khi Vite không chạy cổng 5173 — restart backend rồi thử lại.');
     }
     if (!response.ok) {
+      if (response.status === 502 || response.status === 503 || response.status === 504) {
+        throw new Error(`Máy chủ API đang không phản hồi (${response.status}). Backend hoặc Cloudflare Tunnel /api có thể đang tắt — thử lại sau.`);
+      }
       throw new Error(`Lỗi kết nối máy chủ (${response.status})`);
     }
     return null;
@@ -340,7 +343,7 @@ export const AuthService = {
     }
 
     clearAllAuth();
-    window.location.href = '/login.html';
+    window.location.href = '/login';
   },
 
   /**
