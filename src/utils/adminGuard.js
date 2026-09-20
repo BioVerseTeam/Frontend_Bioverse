@@ -16,7 +16,8 @@ export const ADMIN_NAV = [
     items: [
       { href: '/admin-models.html', path: 'admin-models', label: 'Nhân mẫu 3D', icon: 'view_in_ar' },
       { href: '/admin-categories.html', path: 'admin-categories', label: 'Loại mẫu', icon: 'category' },
-      { href: '/admin-labs.html', path: 'admin-labs', label: 'Lab', icon: 'science' }
+      { href: '/admin-labs.html', path: 'admin-labs', label: 'Lab', icon: 'science' },
+      { href: '/admin-reactions.html', path: 'admin-reactions', label: 'Phương trình', icon: 'functions' }
     ]
   },
   {
@@ -109,6 +110,7 @@ export function currentAdminPath() {
   const path = window.location.pathname;
   if (path.includes('admin-categories')) return 'admin-categories';
   if (path.includes('admin-labs')) return 'admin-labs';
+  if (path.includes('admin-reactions')) return 'admin-reactions';
   if (path.includes('admin-models')) return 'admin-models';
   if (path.includes('admin-users')) return 'admin-users';
   if (path.includes('admin-roles')) return 'admin-roles';
@@ -288,6 +290,7 @@ function pageTitle(current) {
     'admin-models': 'Nhân mẫu 3D',
     'admin-categories': 'Loại mẫu',
     'admin-labs': 'Lab',
+    'admin-reactions': 'Phương trình',
     'admin-users': 'Người dùng',
     'admin-roles': 'Vai trò'
   };

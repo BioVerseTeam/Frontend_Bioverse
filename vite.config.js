@@ -42,6 +42,8 @@ const cleanUrlPlugin = () => ({
         '/admin-categories.html': '/pages/admin-categories.html',
         '/admin-labs': '/pages/admin-labs.html',
         '/admin-labs.html': '/pages/admin-labs.html',
+        '/admin-reactions': '/pages/admin-reactions.html',
+        '/admin-reactions.html': '/pages/admin-reactions.html',
         '/admin-users': '/pages/admin-users.html',
         '/admin-users.html': '/pages/admin-users.html',
         '/admin-roles': '/pages/admin-roles.html',
@@ -76,6 +78,7 @@ export default defineConfig({
         adminModels: resolve(__dirname, 'pages/admin-models.html'),
         adminCategories: resolve(__dirname, 'pages/admin-categories.html'),
         adminLabs: resolve(__dirname, 'pages/admin-labs.html'),
+        adminReactions: resolve(__dirname, 'pages/admin-reactions.html'),
         adminUsers: resolve(__dirname, 'pages/admin-users.html'),
         adminRoles: resolve(__dirname, 'pages/admin-roles.html'),
       }

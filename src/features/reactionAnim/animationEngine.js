@@ -1,10 +1,14 @@
 /**
  * GSAP-driven keyframe playback for molecular reactions.
  * Time is tweened; atom positions lerp between neighboring keyframes.
+ * After the last keyframe, the final pose holds briefly before looping.
  */
 
 import gsap from 'gsap';
 import { vec3 } from './chemx.js';
+
+/** Seconds to hold the final reaction pose before the timeline repeats. */
+export const FINAL_HOLD_SEC = 3;
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
@@ -29,12 +33,14 @@ export class AnimationEngine {
     this.onFrame = null;
     this.onTime = null;
     this.onPlayState = null;
+    this.holdSec = FINAL_HOLD_SEC;
   }
 
-  load(data) {
+  load(data, { holdSec = FINAL_HOLD_SEC } = {}) {
     this.dispose();
     this.data = data;
     this.proxy.time = 0;
+    this.holdSec = Math.max(0, Number(holdSec) || 0);
 
     const durationMs = Math.max(data?.duration || 0, 1);
     const durationSec = durationMs / 1000;
@@ -49,6 +55,10 @@ export class AnimationEngine {
       duration: durationSec,
       ease: 'none',
     });
+    // Keep the final keyframe on screen so students can read the product.
+    if (this.holdSec > 0) {
+      this.tl.to({}, { duration: this.holdSec });
+    }
 
     this._emit();
   }
@@ -78,6 +88,7 @@ export class AnimationEngine {
     const wasPlaying = this.playing;
     this.tl.pause();
     this.playing = wasPlaying;
+    // Map chemx time onto the playback segment only (hold sits after it).
     this.tl.time(clamped / 1000);
     this.proxy.time = clamped;
     this._emit();

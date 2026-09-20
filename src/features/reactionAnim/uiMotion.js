@@ -71,6 +71,98 @@ export function revealChips(container) {
   });
 }
 
+/** Stagger lesson catalog cards (view rail / sample pick). */
+export function revealLessons(container) {
+  if (!container?.children?.length || prefersReducedMotion()) return;
+  const items = [...container.children].slice(0, 14);
+  gsap.fromTo(items, { y: 10, autoAlpha: 0, scale: 0.97 }, {
+    y: 0,
+    autoAlpha: 1,
+    scale: 1,
+    duration: 0.28,
+    stagger: { each: 0.035, from: 'start' },
+    ease: 'power2.out',
+    overwrite: true,
+    clearProps: 'transform',
+  });
+}
+
+/** Subtle enter for rail tab panes (Mẫu / Tìm / Vở). */
+export function swapRailPane(pane) {
+  if (!pane) return;
+  gsap.killTweensOf(pane);
+  if (prefersReducedMotion()) {
+    gsap.set(pane, { clearProps: 'autoAlpha,y' });
+    return;
+  }
+  gsap.fromTo(pane, { autoAlpha: 0, y: 8 }, {
+    autoAlpha: 1,
+    y: 0,
+    duration: 0.22,
+    ease: 'power1.out',
+    overwrite: true,
+    clearProps: 'transform',
+  });
+}
+
+/**
+ * Open/close the personal notebook drawer in the view rail.
+ * Keeps class samples as the primary scan path; notebook is secondary.
+ */
+export function setNotebookOpen(root, open, { animateList = true } = {}) {
+  if (!root) return;
+  const body = root.querySelector('.rx-notebook-body');
+  const toggle = root.querySelector('.rx-notebook-toggle');
+  const list = body?.querySelector('.rx-lessons');
+  root.classList.toggle('is-open', open);
+  toggle?.setAttribute('aria-expanded', String(open));
+  if (!body) return;
+
+  gsap.killTweensOf(body);
+
+  if (!open) {
+    if (prefersReducedMotion()) {
+      body.hidden = true;
+      gsap.set(body, { clearProps: 'height,autoAlpha,overflow' });
+      return;
+    }
+    gsap.to(body, {
+      height: 0,
+      autoAlpha: 0,
+      duration: 0.26,
+      ease: 'power2.in',
+      overwrite: true,
+      onComplete: () => {
+        body.hidden = true;
+        gsap.set(body, { clearProps: 'height,autoAlpha,overflow' });
+      },
+    });
+    return;
+  }
+
+  body.hidden = false;
+  if (prefersReducedMotion()) {
+    gsap.set(body, { clearProps: 'height,autoAlpha,overflow' });
+    return;
+  }
+
+  gsap.set(body, { height: 'auto', autoAlpha: 1, overflow: 'hidden' });
+  const target = body.offsetHeight;
+  gsap.fromTo(body, { height: 0, autoAlpha: 0 }, {
+    height: target,
+    autoAlpha: 1,
+    duration: 0.32,
+    ease: 'power3.out',
+    overwrite: true,
+    onComplete: () => {
+      gsap.set(body, { clearProps: 'height,overflow' });
+    },
+  });
+  if (animateList && list?.children?.length) {
+    revealLessons(list);
+  }
+}
+
 export function pulseHint(el) {
   if (!el || prefersReducedMotion()) return;
   gsap.fromTo(el, { y: 6, autoAlpha: 0 }, {
