@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.warn('Admin navbar failed', err);
   }
   if (!requireAdmin({
-    loginNext: '/admin-users.html',
+    loginNext: '/admin-users',
     message: 'Chỉ ADMIN mới xem và chỉnh người dùng được.'
   })) return;
 

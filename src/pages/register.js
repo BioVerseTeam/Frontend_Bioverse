@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await AuthService.register(fullName, email, password, confirmPw, null, Number(selectedGrade));
         // On success, redirect to OTP page to verify email
-        window.location.href = '/otp.html';
+        window.location.href = '/otp';
       } catch (err) {
         console.error('Registration failed:', err);
         showError(err.message || 'Đăng ký không thành công. Vui lòng kiểm tra lại!');

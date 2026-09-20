@@ -8,23 +8,23 @@ export const ADMIN_NAV = [
   {
     label: 'Điều hành',
     items: [
-      { href: '/admin.html', path: 'admin', label: 'Điều hành', icon: 'space_dashboard' }
+      { href: '/admin', path: 'admin', label: 'Điều hành', icon: 'space_dashboard' }
     ]
   },
   {
     label: 'Nhân mẫu',
     items: [
-      { href: '/admin-models.html', path: 'admin-models', label: 'Nhân mẫu 3D', icon: 'view_in_ar' },
-      { href: '/admin-categories.html', path: 'admin-categories', label: 'Loại mẫu', icon: 'category' },
-      { href: '/admin-labs.html', path: 'admin-labs', label: 'Lab', icon: 'science' },
-      { href: '/admin-reactions.html', path: 'admin-reactions', label: 'Phương trình', icon: 'functions' }
+      { href: '/admin-models', path: 'admin-models', label: 'Nhân mẫu 3D', icon: 'view_in_ar' },
+      { href: '/admin-categories', path: 'admin-categories', label: 'Loại mẫu', icon: 'category' },
+      { href: '/admin-labs', path: 'admin-labs', label: 'Lab', icon: 'science' },
+      { href: '/admin-reactions', path: 'admin-reactions', label: 'Phương trình', icon: 'functions' }
     ]
   },
   {
     label: 'Tài khoản',
     items: [
-      { href: '/admin-users.html', path: 'admin-users', label: 'Người dùng', icon: 'group' },
-      { href: '/admin-roles.html', path: 'admin-roles', label: 'Vai trò', icon: 'badge' }
+      { href: '/admin-users', path: 'admin-users', label: 'Người dùng', icon: 'group' },
+      { href: '/admin-roles', path: 'admin-roles', label: 'Vai trò', icon: 'badge' }
     ]
   }
 ];
@@ -52,9 +52,9 @@ export function homeAfterLogin(user, nextParam) {
   const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : null;
   if (isAdmin(user)) {
     if (safeNext && isAdminRoute(safeNext)) return safeNext;
-    return '/admin.html';
+    return '/admin';
   }
-  return safeNext || '/index.html';
+  return safeNext || '/';
 }
 
 /**
@@ -62,7 +62,7 @@ export function homeAfterLogin(user, nextParam) {
  * @returns {boolean}
  */
 export function requireAdmin({
-  loginNext = '/admin.html',
+  loginNext = '/admin',
   gateId = 'admin-gate',
   workspaceId = 'admin-workspace',
   message = 'Đăng nhập bằng tài khoản ADMIN để vào phòng điều hành.'
@@ -72,7 +72,7 @@ export function requireAdmin({
   const loginLink = document.getElementById('admin-gate-login');
   const text = document.getElementById('admin-gate-text');
 
-  if (loginLink) loginLink.href = `/login.html?next=${encodeURIComponent(loginNext)}`;
+  if (loginLink) loginLink.href = `/login?next=${encodeURIComponent(loginNext)}`;
 
   if (!AuthService.isLoggedIn()) {
     showEl(gate, true);
@@ -128,7 +128,7 @@ function mountSidebar(current) {
   sidebar.className = 'admin-sidebar';
   sidebar.setAttribute('aria-label', 'Mục quản trị');
   sidebar.innerHTML = `
-    <a class="admin-sidebar-brand" href="/admin.html">
+    <a class="admin-sidebar-brand" href="/admin">
       <span class="admin-sidebar-mark">
         <span class="material-symbols-outlined">admin_panel_settings</span>
       </span>
@@ -146,7 +146,7 @@ function mountSidebar(current) {
       `).join('')}
     </nav>
     <div class="admin-sidebar-foot">
-      <a class="admin-sidebar-exit" href="/index.html?view=student">
+      <a class="admin-sidebar-exit" href="/?view=student">
         <span class="material-symbols-outlined">menu_book</span>
         Sổ tay học sinh
       </a>
@@ -174,7 +174,7 @@ function slimHeader(current) {
 
   const logo = header.querySelector('a[data-path="home"], a[data-path="admin"]');
   if (logo) {
-    logo.href = '/admin.html';
+    logo.href = '/admin';
     logo.dataset.path = 'admin';
     logo.classList.add('admin-topbar-brand');
     const brandWrap = logo.parentElement;

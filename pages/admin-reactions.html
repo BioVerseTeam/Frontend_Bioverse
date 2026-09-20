@@ -22,7 +22,7 @@
   <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
     <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
       <div class="flex items-center gap-space-lg">
-        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin.html">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin">
           <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
             <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
           </div>
@@ -38,7 +38,7 @@
           <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
           <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
         </div>
-        <a href="/login.html" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+        <a href="/login" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
           <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
         </a>
       </div>
@@ -52,7 +52,7 @@
           <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
           <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
           <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập ADMIN để cấu hình phương trình.</p>
-          <a id="admin-gate-login" href="/login.html?next=/admin-reactions.html" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+          <a id="admin-gate-login" href="/login?next=/admin-reactions" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
         </div>
 
         <div id="admin-workspace" hidden>
@@ -60,7 +60,7 @@
             <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-3">Phương trình hoá học</h1>
             <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-[15px]">
               Tải file <code>.chemx</code> trước giờ học. Học sinh vào
-              <a href="/phan-ung.html" class="underline decoration-wavy font-bold">Phản ứng</a>
+              <a href="/phan-ung" class="underline decoration-wavy font-bold">Phản ứng</a>
               sẽ thấy danh sách và phát hoạt ảnh ngay, không cần admin cấu hình trực tiếp.
             </p>
           </div>

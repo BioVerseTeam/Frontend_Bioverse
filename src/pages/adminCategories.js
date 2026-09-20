@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Admin navbar failed', err);
   }
   if (!requireAdmin({
-    loginNext: '/admin-categories.html',
+    loginNext: '/admin-categories',
     message: 'Chỉ ADMIN mới quản lý được loại mẫu.'
   })) return;
 

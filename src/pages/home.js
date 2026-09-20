@@ -11,7 +11,7 @@ import { AuthService } from '../features/auth/authService.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   if (AuthService.getUser()?.role === 'ADMIN' && new URLSearchParams(window.location.search).get('view') !== 'student') {
-    window.location.replace('/admin.html');
+    window.location.replace('/admin');
     return;
   }
   // 1. Sync User state in Header & greeting
@@ -158,8 +158,8 @@ export function renderHomeData() {
     }
     if (linkEl) {
       linkEl.href = (lesson.modelId === 'reaction' || lesson.modelId === 'chemistry')
-        ? '/phan-ung.html'
-        : '/sinh-hoc.html';
+        ? '/phan-ung'
+        : '/sinh-hoc';
     }
     if (btnTextEl) {
       btnTextEl.textContent = lesson.progress > 0 ? 'Học tiếp ngay' : 'Bắt đầu học ngay';

@@ -2,7 +2,7 @@
  * Homepage banner linking to the biology catalog.
  */
 
-const CATALOG_HREF = '/sinh-hoc.html';
+const CATALOG_HREF = '/sinh-hoc';
 
 export function setupBiologyNav() {
   insertHomeBanner();
@@ -17,7 +17,7 @@ function insertReactionNavLink() {
       || nav.querySelector('[data-path="home"]');
     const link = document.createElement('a');
     link.dataset.path = 'reaction-anim';
-    link.href = '/phan-ung.html';
+    link.href = '/phan-ung';
     link.textContent = 'Phân tử';
     const onPage = location.pathname.includes('phan-ung');
     link.className = onPage
@@ -38,7 +38,7 @@ function insertReactionBanner() {
 
   const banner = document.createElement('a');
   banner.id = 'home-reaction-banner';
-  banner.href = '/phan-ung.html';
+  banner.href = '/phan-ung';
   banner.className = [
     'relative flex flex-col sm:flex-row sm:items-center justify-between gap-3',
     'bg-[#f3e8ff] border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 md:p-5 sketch-shadow',

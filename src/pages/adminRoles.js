@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Admin navbar failed', err);
   }
   if (!requireAdmin({
-    loginNext: '/admin-roles.html',
+    loginNext: '/admin-roles',
     message: 'Chỉ ADMIN mới quản lý được vai trò.'
   })) return;
 
