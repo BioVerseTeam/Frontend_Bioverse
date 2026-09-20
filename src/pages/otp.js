@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (backLinkEl) {
-    backLinkEl.href = flow === 'RESET_PASSWORD' ? '/forgot-password.html' : '/register.html';
+    backLinkEl.href = flow === 'RESET_PASSWORD' ? '/forgot-password' : '/register';
     const linkSpan = backLinkEl.querySelector('span:last-child');
     if (linkSpan) {
       linkSpan.textContent = flow === 'RESET_PASSWORD' ? 'Nhập lại email quên mật khẩu' : 'Nhập lại thông tin đăng ký';
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
           await AuthService.verifyRegister(email, code);
           showToast('Kích hoạt tài khoản thành công!', 'success');
           await alertModal('Chúc mừng! Tài khoản học sinh BioVerse đã được kích hoạt thành công. Nhấn OK để bước vào Sổ tay STEM!', 'Kích hoạt thành công', 'success');
-          window.location.href = '/index.html';
+          window.location.href = '/';
         }
       } catch (err) {
         console.error('OTP verification failed:', err);
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await AuthService.resetPassword(resetToken, newPw, confirmNewPw);
         showToast('Đặt lại mật khẩu thành công!', 'success');
         await alertModal('Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới ngay bây giờ.', 'Hoàn tất', 'success');
-        window.location.href = '/login.html';
+        window.location.href = '/login';
       } catch (err) {
         console.error('Reset password failed:', err);
         showError(err.message || 'Không thể đặt lại mật khẩu. Vui lòng thử lại!');

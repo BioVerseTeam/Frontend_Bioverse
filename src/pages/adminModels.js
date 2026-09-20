@@ -62,16 +62,16 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Admin navbar failed', err);
   }
   if (!requireAdmin({
-    loginNext: '/admin-models.html',
+    loginNext: '/admin-models',
     message: 'Tài khoản hiện tại không phải ADMIN nên không gắn được nhãn mẫu vật.'
   })) return;
   const tab = new URLSearchParams(window.location.search).get('tab');
   if (tab === 'categories') {
-    window.location.replace('/admin-categories.html');
+    window.location.replace('/admin-categories');
     return;
   }
   if (tab === 'labs') {
-    window.location.replace('/admin-labs.html');
+    window.location.replace('/admin-labs');
     return;
   }
   bindControls();

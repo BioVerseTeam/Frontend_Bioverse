@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Admin navbar failed', err);
   }
   if (!requireAdmin({
-    loginNext: '/admin-labs.html',
+    loginNext: '/admin-labs',
     message: 'Chỉ ADMIN mới quản lý được lab.'
   })) return;
 

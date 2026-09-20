@@ -30,3 +30,4 @@ dist-ssr
 *.bin
 *.blend
 public/models/
+.vercel

@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await AuthService.forgotPassword(target);
         // Redirect to OTP with reset flow
-        window.location.href = '/otp.html';
+        window.location.href = '/otp';
       } catch (err) {
         console.error('Forgot password error:', err);
         showError(err.message || 'Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng kiểm tra lại địa chỉ email!');

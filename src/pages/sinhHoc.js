@@ -301,9 +301,9 @@ function pageButton(page, label, disabled, current, icon) {
 }
 
 function labHref(model) {
-  if (model?.slug) return `/mo-hinh.html?slug=${encodeURIComponent(model.slug)}`;
-  if (model?.id) return `/mo-hinh.html?id=${encodeURIComponent(model.id)}`;
-  return '/sinh-hoc.html';
+  if (model?.slug) return `/mo-hinh?slug=${encodeURIComponent(model.slug)}`;
+  if (model?.id) return `/mo-hinh?id=${encodeURIComponent(model.id)}`;
+  return '/sinh-hoc';
 }
 
 function show(el, visible) {

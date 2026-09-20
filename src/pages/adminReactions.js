@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('Admin navbar failed', err);
   }
   if (!requireAdmin({
-    loginNext: '/admin-reactions.html',
+    loginNext: '/admin-reactions',
     message: 'Chỉ ADMIN mới cấu hình được phương trình hoá học.',
   })) return;
 

@@ -1,0 +1,16 @@
+# Local build / deps — Vercel builds remotely
+node_modules
+dist
+.git
+.claude
+.idea
+.env
+.env.*
+!.env.example
+
+# 3D models hosted on R2 — do not upload to Vercel
+public/models
+*.glb
+*.gltf
+*.bin
+*.blend
