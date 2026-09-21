@@ -7,13 +7,12 @@
 import {
   getCurrentUser,
   setCurrentUser,
-  clearCurrentUser,
   getAccessToken,
   getRefreshToken,
   setTokens,
-  clearTokens,
   clearAllAuth
 } from '../../utils/storage.js';
+import { authFetch, refreshAccessToken } from '../../api/httpClient.js';
 
 const API_BASE = '/api/auth';
 
@@ -348,28 +347,13 @@ export const AuthService = {
 
   /**
    * Lấy thông tin user hiện tại từ GET /api/users/me
+   * (silent refresh qua authFetch nếu access token hết hạn)
    */
   async getProfile() {
-    const accessToken = getAccessToken();
-    if (!accessToken) return null;
+    if (!getAccessToken()) return null;
 
     try {
-      const response = await fetch('/api/users/me', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
-
-      if (response.status === 401) {
-        const refreshed = await this.refreshToken();
-        if (refreshed) {
-          return await this.getProfile();
-        } else {
-          this.logout();
-          return null;
-        }
-      }
-
+      const response = await authFetch('/api/users/me');
       const data = await parseApiResponse(response);
       if (data) {
         const user = mapAuthUser(data, getCurrentUser() || {});
@@ -383,27 +367,10 @@ export const AuthService = {
   },
 
   /**
-   * Làm mới Access Token POST /api/auth/refresh
+   * Làm mới Access Token POST /api/auth/refresh (single-flight)
    */
   async refreshToken() {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return false;
-
-    try {
-      const response = await fetch(`${API_BASE}/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken })
-      });
-      const data = await parseApiResponse(response);
-      if (data?.accessToken) {
-        setTokens(data.accessToken, data.refreshToken || refreshToken);
-        return true;
-      }
-    } catch (e) {
-      console.warn('Token refresh failed:', e);
-    }
-    return false;
+    return refreshAccessToken();
   },
 
   isLoggedIn() {
