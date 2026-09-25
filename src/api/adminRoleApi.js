@@ -2,7 +2,7 @@
  * Admin role catalog API — /api/admin/roles
  */
 
-import { AuthService } from '../features/auth/authService.js';
+import { authFetch } from './httpClient.js';
 
 const ADMIN_ROLES = '/api/admin/roles';
 
@@ -27,28 +27,8 @@ async function parseApiResponse(response) {
   return json?.data !== undefined ? json.data : json;
 }
 
-async function authFetch(url, options = {}, retried = false) {
-  const token = AuthService.getToken();
-  let response;
-  try {
-    response = await fetch(url, {
-      ...options,
-      headers: {
-        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(options.headers || {})
-      }
-    });
-  } catch {
-    throw new Error('Không thể kết nối máy chủ backend. Hãy kiểm tra dịch vụ rồi thử lại.');
-  }
-
-  if (response.status === 401 && !retried) {
-    const refreshed = await AuthService.refreshToken();
-    if (refreshed) return authFetch(url, options, true);
-  }
-
-  return parseApiResponse(response);
+async function request(url, options = {}) {
+  return parseApiResponse(await authFetch(url, options));
 }
 
 function unwrapPage(data) {
@@ -76,25 +56,25 @@ export async function listAdminRoles({ q = null, page = 0, size = 50 } = {}) {
   if (q) params.set('q', q);
   params.set('page', String(page));
   params.set('size', String(size));
-  return unwrapPage(await authFetch(`${ADMIN_ROLES}?${params.toString()}`));
+  return unwrapPage(await request(`${ADMIN_ROLES}?${params.toString()}`));
 }
 
 export async function createAdminRole(payload) {
-  return authFetch(ADMIN_ROLES, {
+  return request(ADMIN_ROLES, {
     method: 'POST',
     body: JSON.stringify(payload)
   });
 }
 
 export async function updateAdminRole(id, payload) {
-  return authFetch(`${ADMIN_ROLES}/${id}`, {
+  return request(`${ADMIN_ROLES}/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
   });
 }
 
 export async function deleteAdminRole(id) {
-  return authFetch(`${ADMIN_ROLES}/${id}`, { method: 'DELETE' });
+  return request(`${ADMIN_ROLES}/${id}`, { method: 'DELETE' });
 }
 
 export const SYSTEM_ROLE_CODES = ['ADMIN', 'STUDENT'];

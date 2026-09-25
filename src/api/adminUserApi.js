@@ -2,7 +2,7 @@
  * Admin user management API — GET /api/admin/users
  */
 
-import { AuthService } from '../features/auth/authService.js';
+import { authFetch } from './httpClient.js';
 
 const ADMIN_USERS = '/api/admin/users';
 
@@ -27,28 +27,8 @@ async function parseApiResponse(response) {
   return json?.data !== undefined ? json.data : json;
 }
 
-async function authFetch(url, options = {}, retried = false) {
-  const token = AuthService.getToken();
-  let response;
-  try {
-    response = await fetch(url, {
-      ...options,
-      headers: {
-        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(options.headers || {})
-      }
-    });
-  } catch {
-    throw new Error('Không thể kết nối máy chủ backend. Hãy kiểm tra dịch vụ rồi thử lại.');
-  }
-
-  if (response.status === 401 && !retried) {
-    const refreshed = await AuthService.refreshToken();
-    if (refreshed) return authFetch(url, options, true);
-  }
-
-  return parseApiResponse(response);
+async function request(url, options = {}) {
+  return parseApiResponse(await authFetch(url, options));
 }
 
 export async function listAdminUsers({
@@ -64,11 +44,11 @@ export async function listAdminUsers({
   if (role) params.set('role', role);
   params.set('page', String(page));
   params.set('size', String(size));
-  return unwrapPage(await authFetch(`${ADMIN_USERS}?${params.toString()}`));
+  return unwrapPage(await request(`${ADMIN_USERS}?${params.toString()}`));
 }
 
 export async function getAdminDesk() {
-  const data = await authFetch('/api/admin/desk');
+  const data = await request('/api/admin/desk');
   return {
     models: unwrapPage(data?.models),
     users: unwrapPage(data?.users),
@@ -102,7 +82,7 @@ function unwrapPage(data) {
 }
 
 export async function updateAdminUser(id, payload) {
-  return authFetch(`${ADMIN_USERS}/${id}`, {
+  return request(`${ADMIN_USERS}/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
   });

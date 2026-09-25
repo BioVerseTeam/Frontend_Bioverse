@@ -2,7 +2,7 @@
  * Admin reaction catalog API — /api/admin/reactions
  */
 
-import { AuthService } from '../features/auth/authService.js';
+import { authFetch } from './httpClient.js';
 
 const ADMIN_BASE = '/api/admin/reactions';
 
@@ -41,49 +41,29 @@ async function parseApiResponse(response) {
   return json?.data !== undefined ? json.data : json;
 }
 
-async function authFetch(url, options = {}, retried = false) {
-  const token = AuthService.getToken();
-  let response;
-  try {
-    response = await fetch(url, {
-      ...options,
-      headers: {
-        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(options.headers || {}),
-      },
-    });
-  } catch {
-    throw new Error('Không thể kết nối máy chủ backend. Hãy kiểm tra dịch vụ rồi thử lại.');
-  }
-
-  if (response.status === 401 && !retried) {
-    const refreshed = await AuthService.refreshToken();
-    if (refreshed) return authFetch(url, options, true);
-  }
-
-  return parseApiResponse(response);
+async function request(url, options = {}) {
+  return parseApiResponse(await authFetch(url, options));
 }
 
 export async function listAdminReactions() {
-  const data = await authFetch(ADMIN_BASE);
+  const data = await request(ADMIN_BASE);
   return Array.isArray(data) ? data : [];
 }
 
 export async function createAdminReaction(payload) {
-  return authFetch(ADMIN_BASE, {
+  return request(ADMIN_BASE, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
 export async function updateAdminReaction(id, payload) {
-  return authFetch(`${ADMIN_BASE}/${id}`, {
+  return request(`${ADMIN_BASE}/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   });
 }
 
 export async function deleteAdminReaction(id) {
-  return authFetch(`${ADMIN_BASE}/${id}`, { method: 'DELETE' });
+  return request(`${ADMIN_BASE}/${id}`, { method: 'DELETE' });
 }
