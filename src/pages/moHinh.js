@@ -117,6 +117,7 @@ async function loadSpecimen() {
     });
 
     viewer.load(url, {
+      slug: model.slug || slug || '',
       annotations: model.annotations,
       scale: model.defaultScale,
       rotation: model.defaultRotation,
@@ -168,6 +169,7 @@ function renderParts(parts, { animate = false } = {}) {
     <button type="button" class="specimen-part${part.id === selectedPartId ? ' is-active' : ''}" data-part-id="${escapeAttr(part.id)}">
       <span class="specimen-part-dot" style="background:${escapeAttr(part.color)}"></span>
       <span class="specimen-part-name">${escapeHtml(part.name)}</span>
+      ${part.isInternal ? '<span class="text-[10px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded border border-amber-300/50 mr-1.5 shrink-0" title="Cấu trúc giải phẫu bên trong">Bên trong</span>' : ''}
       <span class="specimen-part-vis${part.visible ? '' : ' is-off'}" data-vis="${escapeAttr(part.id)}" title="${part.visible ? 'Ẩn bộ phận' : 'Hiện bộ phận'}" role="button">
         <span class="material-symbols-outlined">${part.visible ? 'visibility' : 'visibility_off'}</span>
       </span>
@@ -181,6 +183,13 @@ function renderParts(parts, { animate = false } = {}) {
       if (!part) return;
       viewer.selectPart(part.id);
       handlePartClick(part, null);
+    });
+    row.addEventListener('mouseenter', () => {
+      const partId = row.dataset.partId;
+      viewer?.setHoveredPart?.(partId);
+    });
+    row.addEventListener('mouseleave', () => {
+      viewer?.setHoveredPart?.(null);
     });
   });
   list.querySelectorAll('[data-vis]').forEach((btn) => {
@@ -239,6 +248,11 @@ function showNote(part) {
   setText('note-loc', part.location || 'Nằm trong khối mô hình.');
   setText('note-desc', part.description || defaultDescription(part));
   setBlock('note-fn-wrap', 'note-fn', part.function);
+  setBlock('note-learn-wrap', 'note-learn', part.learningNote || part.healthNote);
+  const internalBadge = document.getElementById('note-internal-badge');
+  if (internalBadge) {
+    internalBadge.classList.toggle('hidden', !part.isInternal);
+  }
   note.hidden = false;
   copy?.classList.add('is-collapsed');
   stampNote(note);
@@ -254,7 +268,9 @@ function hideNote() {
   const note = document.getElementById('part-note');
   const copy = document.getElementById('model-copy');
   const pin = document.getElementById('specimen-pin');
+  const internalBadge = document.getElementById('note-internal-badge');
   if (note) note.hidden = true;
+  if (internalBadge) internalBadge.classList.add('hidden');
   copy?.classList.remove('is-collapsed');
   pin?.classList.add('hidden');
   cancelAnimationFrame(pinFrame);

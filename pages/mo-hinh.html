@@ -92,6 +92,10 @@
             <button type="button" id="note-close" class="specimen-note-close" aria-label="Bỏ chọn bộ phận">&times;</button>
           </div>
           <span id="note-latin" class="latin"></span>
+          <div id="note-internal-badge" class="hidden inline-flex items-center gap-1 px-2.5 py-1 mt-1 mb-2 text-xs font-medium text-amber-900 bg-amber-50 border border-amber-200/80 rounded-md">
+            <span class="material-symbols-outlined text-[15px] text-amber-700">info</span>
+            <span>Cấu trúc bên trong (Vị trí học tập tương đối)</span>
+          </div>
           <dl>
             <div id="note-loc-wrap">
               <dt>Vị trí</dt>
@@ -104,6 +108,10 @@
             <div id="note-fn-wrap" hidden>
               <dt>Chức năng</dt>
               <dd id="note-fn"></dd>
+            </div>
+            <div id="note-learn-wrap" hidden>
+              <dt>Ghi nhớ / Bệnh lý</dt>
+              <dd id="note-learn"></dd>
             </div>
           </dl>
         </section>

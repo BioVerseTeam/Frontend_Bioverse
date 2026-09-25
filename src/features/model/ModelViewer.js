@@ -7,6 +7,8 @@ import gsap from 'gsap';
 import { describePartPlacement, looksScientific, looksVietnamese, preferVietnamese, sideFromKey, vietnamesePartName } from './partNames.js';
 import { identifyRegionByMeshName } from '../skull/skullData.js';
 import { identifyParameciumRegion } from '../paramecium/parameciumData.js';
+import { lookupAnatomyInfo } from './anatomyData.js';
+import { getAnatomyStructuresForModel } from './anatomyStructures.js';
 
 const PART_COLORS = [
   '#48bb78', '#db3237', '#2e5ea2', '#ed8936', '#9f7aea',
@@ -52,6 +54,16 @@ export class ModelViewer {
     this._cameraHome = null;
     this._targetHome = null;
 
+    this.anatomyGroup = null;
+    this._mainMesh = null;
+    this._occlusionRaycaster = new THREE.Raycaster();
+    this._hotspots = [];
+    this._hotspotRaycastMeshes = [];
+    this._slug = '';
+    this._currentUrl = '';
+    this._modelScale = 1;
+    this._modelSize = new THREE.Vector3(1, 1, 1);
+
     this.onPartClick = options.onPartClick || null;
     this.onHover = options.onHover || null;
     this.onLoadProgress = options.onLoadProgress || null;
@@ -73,11 +85,21 @@ export class ModelViewer {
       this._downPos = { x: e.clientX, y: e.clientY };
     };
     this._onMouseUp = this._handleMouseUp.bind(this);
+    this._onMouseLeave = () => {
+      if (!this.isActive) return;
+      if (this.hoveredPartId) {
+        this.hoveredPartId = null;
+        this.renderer.domElement.style.cursor = 'grab';
+        this._applyHighlight();
+      }
+      this.onHover?.(null, null);
+    };
     this._onResize = this._handleResize.bind(this);
 
     this.container.addEventListener('pointermove', this._onMouseMove);
     this.container.addEventListener('pointerdown', this._onMouseDown);
     this.container.addEventListener('pointerup', this._onMouseUp);
+    this.container.addEventListener('pointerleave', this._onMouseLeave);
     window.addEventListener('resize', this._onResize);
 
     this._animate();
@@ -190,6 +212,9 @@ export class ModelViewer {
 
     this._disposeModel();
     this.isLoaded = false;
+    this._slug = settings.slug || '';
+    this._currentUrl = url || '';
+    this._settings = settings;
 
     const loader = new GLTFLoader();
     const draco = new DRACOLoader();
@@ -220,7 +245,7 @@ export class ModelViewer {
     this.scene.add(this.modelGroup);
 
     this._fitAndCenter(settings);
-    this._buildParts(settings.annotations);
+    this._buildParts(settings.annotations, settings);
     this._applyDefaultPose(settings);
     this._storeCameraHome();
 
@@ -237,15 +262,25 @@ export class ModelViewer {
     box.getSize(size);
     box.getCenter(center);
 
+    // Center children inside modelGroup so (0,0,0) in modelGroup is the visual model center
+    this.modelGroup.children.forEach((child) => {
+      child.position.sub(center);
+    });
+
+    const centeredBox = new THREE.Box3().setFromObject(this.modelGroup);
+    centeredBox.getSize(size);
+
     const maxDim = Math.max(size.x, size.y, size.z) || 1;
     const extra = Number(settings.scale);
     const scale = (3.05 / maxDim) * (Number.isFinite(extra) && extra > 0 ? extra : 1);
 
     this.modelGroup.scale.setScalar(scale);
-    this.modelGroup.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    this.modelGroup.position.set(0, 0, 0);
     this.modelGroup.updateMatrixWorld(true);
 
-    this._explodeDistance = Math.max(0.7, maxDim * scale * 0.42);
+    this._modelSize = size.clone();
+    this._modelScale = scale;
+    this._explodeDistance = Math.max(0.7, 3.05 * 0.42);
     this._placeGround();
   }
 
@@ -298,22 +333,144 @@ export class ModelViewer {
     }
   }
 
-  _buildParts(annotationsRaw) {
+  _buildParts(annotationsRaw, settings = {}) {
     this.parts = [];
     this.partById.clear();
+    this._disposeHotspots();
 
+    if (this.anatomyGroup) {
+      this.modelGroup?.remove(this.anatomyGroup);
+      this.anatomyGroup = null;
+    }
+    this.anatomyGroup = new THREE.Group();
+    this.anatomyGroup.name = 'anatomyHotspotsGroup';
+    this.modelGroup.add(this.anatomyGroup);
+
+    const allMeshes = [];
     const buckets = new Map();
     this.modelGroup.traverse((obj) => {
-      if (!obj.isMesh || !obj.geometry || obj.userData?.isOutline) return;
+      if (!obj.isMesh || !obj.geometry || obj.userData?.isOutline || obj.userData?.isHotspot) return;
       obj.material = cloneMaterials(obj.material, this._maxAnisotropy);
       obj.castShadow = true;
       obj.receiveShadow = true;
+      allMeshes.push(obj);
       const key = partKeyFor(obj);
       if (!buckets.has(key)) buckets.set(key, []);
       buckets.get(key).push(obj);
     });
 
+    this._mainMesh = allMeshes[0] || null;
+
+    const slug = settings?.slug || this._slug || this._currentUrl || '';
+    const predefined = getAnatomyStructuresForModel(slug);
     const notes = normalizeAnnotations(annotationsRaw);
+    const hasPositionNotes = notes.length > 1 && notes.some((n) => n.position);
+
+    // Check if this model should use data-driven anatomical structures (Hybrid mode)
+    const useAnatomy = Boolean(predefined && predefined.length > 0) || (buckets.size <= 2 && hasPositionNotes);
+
+    if (useAnatomy) {
+      const structures = (predefined && predefined.length > 0) ? predefined : notes;
+      this._buildAnatomyParts(structures, allMeshes);
+    } else {
+      this._buildMeshBucketsParts(buckets, notes);
+    }
+  }
+
+  _buildAnatomyParts(structures, allMeshes) {
+    const mainMesh = allMeshes[0] || null;
+    this._mainMesh = mainMesh;
+    const size = this._modelSize || new THREE.Vector3(1, 1, 1);
+
+    structures.forEach((item, index) => {
+      const id = slugify(item.id) || `part-${index + 1}`;
+      const color = item.color || PART_COLORS[index % PART_COLORS.length];
+      const isInternal = Boolean(item.isInternal);
+      const group = new THREE.Group();
+      group.name = `part:${id}`;
+
+      // Calculate local position for hotspot in authoritative model-local coordinates
+      let posX = 0;
+      let posY = 0;
+      let posZ = 0;
+      if (item.position) {
+        if (Math.abs(item.position.y) <= 1.0 && Math.abs(item.position.x) <= 1.0 && item.position.y >= 0 && item.position.y <= 1.0 && size.y > 5.0) {
+          // Normalized relative coordinate (e.g. Digestive System where size.y ~ 67.7)
+          posX = (Number(item.position.x) || 0) * size.x;
+          posY = ((Number(item.position.y) || 0.5) - 0.5) * size.y;
+          posZ = (Number(item.position.z) || 0) * size.z;
+        } else {
+          // Absolute model-local coordinate (e.g. Heart ~0.25m, Lungs ~0.37m)
+          posX = Number(item.position.x) || 0;
+          posY = Number(item.position.y) || 0;
+          posZ = Number(item.position.z) || 0;
+        }
+      }
+      const localPos = new THREE.Vector3(posX, posY, posZ);
+      group.position.copy(localPos);
+
+      // Keep hotspot group as child of anatomyGroup (which lives inside modelGroup)
+      if (this.anatomyGroup) {
+        this.anatomyGroup.add(group);
+      } else {
+        this.modelGroup.add(group);
+      }
+
+      // Check if this structure maps to specific meshes (mesh grouping)
+      const matchedMeshes = [];
+      if (item.meshNames && Array.isArray(item.meshNames)) {
+        allMeshes.forEach((m) => {
+          if (item.meshNames.some((name) => m.name.toLowerCase().includes(name.toLowerCase()))) {
+            matchedMeshes.push(m);
+          }
+        });
+      }
+      const meshes = matchedMeshes.length > 0 ? matchedMeshes : allMeshes;
+
+      // Create 3D Hotspot pin marker with distinct styling for internal vs external structures
+      const hotspot = this._createHotspotMarker(id, item, color, index);
+      group.add(hotspot);
+
+      // Robust bounded surface snapping for external structures only (valves stay at internal plane)
+      if (mainMesh) {
+        this._snapHotspotToSurface(group, mainMesh, localPos, isInternal);
+      }
+
+      const origin = group.position.clone();
+      const dir = origin.clone();
+      if (dir.lengthSq() < 1e-6) dir.set(0, 1, 0);
+      dir.normalize();
+
+      const part = {
+        id,
+        name: item.name,
+        latin: item.latin || item.scientificName || '',
+        description: item.description || item.structure || '',
+        function: item.function || '',
+        location: item.location || describePartPlacement(origin),
+        learningNote: item.learningNote || item.healthNote || '',
+        sourceName: item.id,
+        color,
+        isInternal,
+        meshes,
+        group,
+        hotspot,
+        origin,
+        explodeDir: dir,
+        cameraPosition: item.cameraPosition || null,
+        cameraTarget: item.cameraTarget || null,
+        hoverRadius: item.hoverRadius || 0.04,
+        hoverRadiusWorld: (item.hoverRadius || 0.04) * (this._modelScale || 1),
+        visible: true,
+        outlines: []
+      };
+
+      this.parts.push(part);
+      this.partById.set(id, part);
+    });
+  }
+
+  _buildMeshBucketsParts(buckets, notes) {
     let index = 0;
     buckets.forEach((meshes, key) => {
       const note = matchAnnotation(key, meshes, notes);
@@ -350,6 +507,7 @@ export class ModelViewer {
         description: preferVietnamese(note?.description, labeled.description),
         function: preferVietnamese(note?.function, labeled.function),
         location: preferVietnamese(note?.location, labeled.location) || describePartPlacement(origin),
+        learningNote: note?.learningNote || note?.healthNote || '',
         sourceName: key,
         color,
         meshes,
@@ -366,6 +524,126 @@ export class ModelViewer {
     });
   }
 
+  _createHotspotMarker(partId, item, color, index) {
+    const group = new THREE.Group();
+    group.name = `hotspot:${partId}`;
+    const isInternal = Boolean(item.isInternal);
+    group.userData = { partId, index, isHotspot: true, isInternal };
+
+    // Small, intentional marker radius in model-local coordinates (~2.5cm world radius)
+    const localR = Math.max(0.002, 0.024 / (this._modelScale || 1));
+
+    // 1. Core Sphere (translucent & softer for internal valve structure)
+    const coreGeo = new THREE.SphereGeometry(localR, 16, 16);
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: color,
+      emissive: color,
+      emissiveIntensity: isInternal ? 0.45 : 0.85,
+      roughness: isInternal ? 0.55 : 0.25,
+      metalness: isInternal ? 0.1 : 0.4,
+      transparent: true,
+      opacity: isInternal ? 0.55 : 0.95
+    });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    coreMesh.userData = { partId, isCore: true, isInternal };
+    coreMesh.renderOrder = 3;
+    group.add(coreMesh);
+
+    // 2. Outer Ring
+    const ringInner = localR * (isInternal ? 1.4 : 1.35);
+    const ringOuter = localR * (isInternal ? 2.1 : 1.85);
+    const ringGeo = new THREE.RingGeometry(ringInner, ringOuter, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: color,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: isInternal ? 0.6 : 0.8,
+      depthWrite: false
+    });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    ringMesh.userData = { isRing: true, partId, isInternal };
+    ringMesh.renderOrder = 4;
+    group.add(ringMesh);
+
+    // If internal structure (Valves), add inner dashed indicator ring
+    if (isInternal) {
+      const innerRingGeo = new THREE.RingGeometry(localR * 0.65, localR * 0.95, 24);
+      const innerRingMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.65,
+        depthWrite: false
+      });
+      const innerRingMesh = new THREE.Mesh(innerRingGeo, innerRingMat);
+      innerRingMesh.userData = { isRing: true, isInnerValveRing: true };
+      innerRingMesh.renderOrder = 5;
+      group.add(innerRingMesh);
+    }
+
+    // 3. Generous invisible Hitbox for easy clicking
+    const hitGeo = new THREE.SphereGeometry(localR * 3.5, 8, 8);
+    const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+    const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+    hitMesh.userData = { partId, isHitbox: true };
+    group.add(hitMesh);
+
+    this._hotspotRaycastMeshes.push(hitMesh);
+    this._hotspots.push({ group, ring: ringMesh, core: coreMesh, userData: group.userData });
+
+    return group;
+  }
+
+  _snapHotspotToSurface(group, mainMesh, localPos, isInternal = false) {
+    if (isInternal || !mainMesh) return;
+    try {
+      // Cast ray in world space from outside anterior surface towards the local anchor
+      const spanZ = Math.max(0.04, (this._modelSize?.z || 0.15) * 0.75);
+      const localRayStart = localPos.clone().add(new THREE.Vector3(0, 0, spanZ));
+      const worldRayStart = this.modelGroup.localToWorld(localRayStart.clone());
+      const worldTarget = this.modelGroup.localToWorld(localPos.clone());
+      const worldDir = worldTarget.clone().sub(worldRayStart).normalize();
+
+      const ray = new THREE.Raycaster(worldRayStart, worldDir);
+      const hits = ray.intersectObject(mainMesh, false);
+
+      if (hits.length > 0) {
+        // Convert world hit point back into authoritative modelGroup local space
+        const localHit = this.modelGroup.worldToLocal(hits[0].point.clone());
+        const maxDist = Math.max(0.035, (this._modelSize?.z || 0.15) * 0.45);
+        if (localHit.distanceTo(localPos) <= maxDist) {
+          const offsetLocal = Math.max(0.002, 0.012 / (this._modelScale || 1));
+          if (hits[0].face?.normal) {
+            const normal = hits[0].face.normal.clone();
+            localHit.add(normal.multiplyScalar(offsetLocal));
+          } else {
+            localHit.z += offsetLocal;
+          }
+          group.position.copy(localHit);
+        }
+      }
+    } catch (_) {}
+  }
+
+  _disposeHotspots() {
+    this._hotspots.forEach((h) => {
+      if (h.core) {
+        h.core.geometry?.dispose();
+        h.core.material?.dispose();
+      }
+      if (h.ring) {
+        h.ring.geometry?.dispose();
+        h.ring.material?.dispose();
+      }
+    });
+    this._hotspotRaycastMeshes.forEach((m) => {
+      m.geometry?.dispose();
+      m.material?.dispose();
+    });
+    this._hotspots = [];
+    this._hotspotRaycastMeshes = [];
+  }
+
   getParts() {
     return this.parts.map((part) => ({
       id: part.id,
@@ -374,7 +652,9 @@ export class ModelViewer {
       description: part.description,
       function: part.function,
       location: part.location,
+      learningNote: part.learningNote || '',
       color: part.color,
+      isInternal: Boolean(part.isInternal),
       meshCount: part.meshes.length,
       visible: part.visible,
       sourceName: part.sourceName
@@ -384,8 +664,12 @@ export class ModelViewer {
   getPartScreenPosition(id) {
     const part = this.partById.get(id);
     if (!part || !this.width || !this.height) return null;
-    const box = new THREE.Box3().setFromObject(part.group);
-    box.getCenter(this._screenVec);
+    if (part.hotspot) {
+      part.hotspot.getWorldPosition(this._screenVec);
+    } else {
+      const box = new THREE.Box3().setFromObject(part.group);
+      box.getCenter(this._screenVec);
+    }
     this._screenVec.project(this.camera);
     return {
       x: (this._screenVec.x * 0.5 + 0.5) * this.width,
@@ -406,6 +690,13 @@ export class ModelViewer {
     this._applyHighlight();
     if (id && changed) this._pulsePart(id);
     if (id && focus) this.focusPart(id);
+  }
+
+  setHoveredPart(id) {
+    if (this.hoveredPartId !== id) {
+      this.hoveredPartId = id || null;
+      this._applyHighlight();
+    }
   }
 
   setPartVisible(id, visible) {
@@ -432,6 +723,24 @@ export class ModelViewer {
   focusPart(id) {
     const part = this.partById.get(id);
     if (!part) return;
+    if (part.cameraPosition && part.cameraTarget) {
+      const camPos = new THREE.Vector3(part.cameraPosition.x, part.cameraPosition.y, part.cameraPosition.z);
+      const camTarget = new THREE.Vector3(part.cameraTarget.x, part.cameraTarget.y, part.cameraTarget.z);
+      if (camPos.length() < 2.0) {
+        camPos.multiplyScalar(this._modelScale || 1);
+        camTarget.multiplyScalar(this._modelScale || 1);
+      }
+      this._animateCamera(camPos, camTarget);
+      return;
+    }
+
+    if (part.hotspot) {
+      const worldPos = new THREE.Vector3();
+      part.hotspot.getWorldPosition(worldPos);
+      this._animateTarget(worldPos);
+      return;
+    }
+
     const box = new THREE.Box3().setFromObject(part.group);
     const center = box.getCenter(new THREE.Vector3());
     this._animateTarget(center);
@@ -475,18 +784,56 @@ export class ModelViewer {
     this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
+    const screen = { x: event.clientX - rect.left, y: event.clientY - rect.top };
 
+    // 1. Raycast directly against hotspot hitboxes
+    if (this._hotspotRaycastMeshes.length > 0) {
+      const hitHotspots = this.raycaster.intersectObjects(this._hotspotRaycastMeshes, false);
+      if (hitHotspots.length > 0) {
+        const partId = hitHotspots[0].object.userData.partId;
+        const part = this.partById.get(partId);
+        if (part && part.visible) {
+          return { part: this.getPart(part.id), mesh: hitHotspots[0].object, screen };
+        }
+      }
+    }
+
+    // 2. Raycast against visible model meshes
     const meshes = this.parts.flatMap((part) => (part.visible ? part.meshes : []));
-    const hits = this.raycaster.intersectObjects(meshes, false);
+    const uniqueMeshes = Array.from(new Set(meshes));
+    const hits = this.raycaster.intersectObjects(uniqueMeshes, false);
     if (!hits.length) return null;
 
-    const mesh = hits[0].object;
-    const part = this.partById.get(mesh.userData.partId);
+    const hitPoint = hits[0].point;
+    const hitMesh = hits[0].object;
+
+    // 3. If model has hotspots, find the closest hotspot to the clicked surface point
+    if (this._hotspots.length > 0) {
+      let closestPart = null;
+      let minDistance = Infinity;
+      this.parts.forEach((part) => {
+        if (!part.visible || !part.hotspot) return;
+        const worldPos = new THREE.Vector3();
+        part.hotspot.getWorldPosition(worldPos);
+        const dist = worldPos.distanceTo(hitPoint);
+        const maxRadius = part.hoverRadiusWorld || 0.75;
+        if (dist < maxRadius && dist < minDistance) {
+          minDistance = dist;
+          closestPart = part;
+        }
+      });
+      if (closestPart) {
+        return { part: this.getPart(closestPart.id), mesh: hitMesh, screen };
+      }
+    }
+
+    // 4. Default: fallback to mesh userData
+    const part = this.partById.get(hitMesh.userData.partId);
     if (!part) return null;
     return {
       part: this.getPart(part.id),
-      mesh,
-      screen: { x: event.clientX - rect.left, y: event.clientY - rect.top }
+      mesh: hitMesh,
+      screen
     };
   }
 
@@ -522,18 +869,66 @@ export class ModelViewer {
 
   _applyHighlight() {
     const selected = this.highlightedPartId;
+    const hovered = this.hoveredPartId;
+
     this.parts.forEach((part) => {
       const isSelected = part.id === selected;
-      const isHovered = part.id === this.hoveredPartId && !isSelected;
+      const isHovered = part.id === hovered && !isSelected;
       const ghost = Boolean(selected) && !isSelected;
-      const ghostOpacity = this.isolateMode ? 0.07 : 0.18;
+      const ghostOpacity = this.isolateMode ? 0.07 : 0.22;
+
+      // Update hotspot visuals
+      if (part.hotspot) {
+        const targetScale = isSelected ? 1.45 : (isHovered ? 1.25 : 1.0);
+        gsap.to(part.hotspot.scale, {
+          x: targetScale,
+          y: targetScale,
+          z: targetScale,
+          duration: 0.24,
+          ease: 'power2.out',
+          overwrite: 'auto'
+        });
+        const ring = part.hotspot.getObjectByProperty('isRing', true);
+        if (ring?.material) {
+          ring.material.opacity = isSelected ? 1.0 : (isHovered ? 0.9 : (ghost ? 0.25 : 0.75));
+        }
+      }
 
       part.outlines?.forEach((line) => {
         const mode = line.userData.mode;
         line.visible = (mode === 'select' && isSelected) || (mode === 'hover' && isHovered);
       });
 
+      // Mesh emissive highlight
       part.meshes.forEach((mesh) => {
+        if (this._hotspots.length > 0 && this.parts.length > 2) {
+          // Single-mesh or shared-mesh model: highlight selected part's color on mesh gently
+          if (isSelected) {
+            eachMaterial(mesh.material, (mat) => {
+              if (mat.emissive) {
+                mat.emissive.set(part.color || '#48bb78');
+                mat.emissiveIntensity = 0.28;
+                mat.needsUpdate = true;
+              }
+            });
+          } else if (!selected && isHovered) {
+            eachMaterial(mesh.material, (mat) => {
+              if (mat.emissive) {
+                mat.emissive.setHex(0x2e5ea2);
+                mat.emissiveIntensity = 0.16;
+                mat.needsUpdate = true;
+              }
+            });
+          } else if (!selected && !hovered) {
+            eachMaterial(mesh.material, (mat) => {
+              restoreMaterialLook(mat);
+              mat.needsUpdate = true;
+            });
+          }
+          return;
+        }
+
+        // Multi-mesh model: per-mesh ghosting and outline
         mesh.renderOrder = isSelected ? 4 : 0;
         mesh.castShadow = !ghost;
         eachMaterial(mesh.material, (mat) => {
@@ -635,6 +1030,53 @@ export class ModelViewer {
       this._explodeAmount += (this._explodeTarget - this._explodeAmount) * 0.12;
       this._applyExplode(this._explodeAmount);
     }
+
+    if (this._hotspots.length > 0) {
+      const now = performance.now() * 0.003;
+      const camPos = this.camera.position;
+      const mainMesh = this._mainMesh;
+
+      this._hotspots.forEach((h) => {
+        if (h.ring) {
+          h.ring.quaternion.copy(this.camera.quaternion);
+        }
+
+        const isSelected = h.userData?.partId === this.highlightedPartId;
+        const isHovered = h.userData?.partId === this.hoveredPartId;
+        const isInternal = Boolean(h.userData?.isInternal);
+
+        // Raycast from camera to hotspot world position to check anatomical occlusion
+        let isOccluded = false;
+        if (mainMesh && !isSelected) {
+          const worldPos = new THREE.Vector3();
+          h.group.getWorldPosition(worldPos);
+          const dir = worldPos.clone().sub(camPos);
+          const dist = dir.length();
+          if (dist > 0.1) {
+            dir.normalize();
+            this._occlusionRaycaster.set(camPos, dir);
+            this._occlusionRaycaster.far = Math.max(0.01, dist - 0.02);
+            const occHits = this._occlusionRaycaster.intersectObject(mainMesh, false);
+            if (occHits.length > 0) {
+              isOccluded = true;
+            }
+          }
+        }
+
+        const pulse = 0.8 + Math.sin(now * 3.0 + (h.userData?.index || 0)) * 0.2;
+        const baseRingOpacity = isSelected ? 1.0 : (isHovered ? 0.95 : (isInternal ? 0.6 : 0.8));
+        const finalRingOpacity = (isOccluded ? 0.15 : baseRingOpacity) * pulse;
+
+        if (h.ring?.material) {
+          h.ring.material.opacity = finalRingOpacity;
+        }
+        if (h.core?.material) {
+          const baseCoreOpacity = isSelected ? 1.0 : (isInternal ? 0.55 : 0.95);
+          h.core.material.opacity = isOccluded ? 0.18 : baseCoreOpacity;
+        }
+      });
+    }
+
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
@@ -655,6 +1097,12 @@ export class ModelViewer {
       this._ground.material.dispose();
       this._ground = null;
     }
+    this._disposeHotspots();
+    if (this.anatomyGroup) {
+      this.modelGroup?.remove(this.anatomyGroup);
+      this.anatomyGroup = null;
+    }
+    this._mainMesh = null;
     if (!this.modelGroup) return;
     this.parts.forEach((part) => {
       gsap.killTweensOf(part.group?.scale);
@@ -664,7 +1112,7 @@ export class ModelViewer {
     });
     this.scene.remove(this.modelGroup);
     this.modelGroup.traverse((obj) => {
-      if (obj.geometry && !obj.userData?.isOutline) obj.geometry.dispose();
+      if (obj.geometry && !obj.userData?.isOutline && !obj.userData?.isHotspot) obj.geometry.dispose();
       eachMaterial(obj.material, (mat) => {
         if (mat.userData?.sharedOutline) return;
         mat.dispose?.();
@@ -683,6 +1131,7 @@ export class ModelViewer {
     this.container.removeEventListener('pointermove', this._onMouseMove);
     this.container.removeEventListener('pointerdown', this._onMouseDown);
     this.container.removeEventListener('pointerup', this._onMouseUp);
+    this.container.removeEventListener('pointerleave', this._onMouseLeave);
     window.removeEventListener('resize', this._onResize);
     this._disposeModel();
     this.controls?.dispose();
@@ -738,6 +1187,8 @@ function knownAnatomy(key) {
   if (/paramecium|macronucleus|micronucleus|vacuole|pellicle/.test(token)) {
     return identifyParameciumRegion(key);
   }
+  const anatomy = lookupAnatomyInfo(key);
+  if (anatomy) return anatomy;
   return null;
 }
 
