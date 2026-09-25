@@ -21,6 +21,13 @@ export const ADMIN_NAV = [
     ]
   },
   {
+    label: 'Khảo thí',
+    items: [
+      { href: '/admin-exams', path: 'admin-exams', label: 'Đề thi & Câu hỏi', icon: 'quiz' },
+      { href: '/admin-academic', path: 'admin-academic', label: 'Học kỳ & Môn học', icon: 'account_tree' }
+    ]
+  },
+  {
     label: 'Tài khoản',
     items: [
       { href: '/admin-users', path: 'admin-users', label: 'Người dùng', icon: 'group' },
@@ -112,6 +119,8 @@ export function currentAdminPath() {
   if (path.includes('admin-labs')) return 'admin-labs';
   if (path.includes('admin-reactions')) return 'admin-reactions';
   if (path.includes('admin-models')) return 'admin-models';
+  if (path.includes('admin-exams')) return 'admin-exams';
+  if (path.includes('admin-academic')) return 'admin-academic';
   if (path.includes('admin-users')) return 'admin-users';
   if (path.includes('admin-roles')) return 'admin-roles';
   return 'admin';
@@ -291,6 +300,8 @@ function pageTitle(current) {
     'admin-categories': 'Loại mẫu',
     'admin-labs': 'Lab',
     'admin-reactions': 'Phương trình',
+    'admin-exams': 'Đề thi & Câu hỏi',
+    'admin-academic': 'Học kỳ & Môn học',
     'admin-users': 'Người dùng',
     'admin-roles': 'Vai trò'
   };

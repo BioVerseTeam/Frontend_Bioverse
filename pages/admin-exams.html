@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đề thi & Câu hỏi - BioVerse Admin</title>
+  <meta name="description" content="Quản lý ngân hàng đề thi, biên soạn câu hỏi, đáp án và hình ảnh minh họa trắc nghiệm STEM.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+    [hidden] { display: none !important; }
+    .exam-accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .exam-accordion-body.is-open { max-height: 2500px; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Đề thi & Câu hỏi</span>
+          </div>
+        </a>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Quản trị viên</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-12">
+      <div class="max-w-7xl mx-auto flex flex-col gap-6">
+        
+        <!-- Gate kiểm tra quyền Admin -->
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập tài khoản ADMIN để biên soạn đề thi và câu hỏi.</p>
+          <a id="admin-gate-login" href="/login?next=/admin-exams" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <!-- Workspace chính -->
+        <div id="admin-workspace" hidden class="flex flex-col gap-6">
+          
+          <!-- Banner tiêu đề -->
+          <div class="relative bg-white sketch-border p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#fef3c7] border border-[#d97706] text-[#b45309] text-xs font-['Space_Grotesk'] font-bold uppercase mb-2">
+                <span class="material-symbols-outlined text-[14px]">quiz</span>
+                Ngân hàng đề thi & Khảo thí STEM
+              </div>
+              <h1 class="font-['Epilogue'] text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-[#2d2d2d]">
+                Quản Trị Đề Thi & Biên Soạn Câu Hỏi
+              </h1>
+              <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-sm mt-1.5">
+                Tạo đề kiểm tra, soạn thảo câu hỏi trắc nghiệm, thiết lập đáp án đúng và đính kèm hình ảnh minh họa.
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <a href="/admin-academic" class="neo-btn neo-btn-secondary rounded-xl px-4 py-2.5 text-sm inline-flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">account_tree</span>
+                Khối & Môn học
+              </a>
+              <button type="button" id="btn-create-exam" class="neo-btn neo-btn-primary rounded-xl px-4 py-2.5 text-sm inline-flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Tạo đề thi mới
+              </button>
+            </div>
+          </div>
+
+          <!-- VIEW 1: DANH SÁCH ĐỀ THI (EXAM LIST) -->
+          <div id="view-exam-list" class="flex flex-col gap-4">
+            
+            <!-- Thanh lọc & Tìm kiếm -->
+            <div class="flex flex-col sm:flex-row items-center gap-3 bg-white border-2 border-[#2d2d2d] rounded-2xl p-3 sketch-shadow-sm">
+              <div class="relative flex-1 w-full">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
+                <input type="search" id="exam-search-input" placeholder="Tìm theo mã đề, tiêu đề, môn học..." class="w-full pl-9 pr-3 py-2 text-sm border border-[#dcd5cb] rounded-xl focus:border-[#2d2d2d] outline-none">
+              </div>
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <select id="exam-filter-subject" class="w-full sm:w-48 py-2 px-3 text-sm border border-[#dcd5cb] rounded-xl bg-white font-medium outline-none">
+                  <option value="">Tất cả môn học</option>
+                </select>
+                <button type="button" id="btn-refresh-exams" class="neo-btn neo-btn-secondary rounded-xl px-3 py-2 text-sm flex items-center gap-1" title="Làm mới danh sách">
+                  <span class="material-symbols-outlined text-[18px]">refresh</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Lưới danh sách đề thi -->
+            <div id="exam-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div class="col-span-full py-12 text-center text-sm text-[#76716a]">
+                Đang tải danh sách đề thi...
+              </div>
+            </div>
+
+          </div>
+
+          <!-- VIEW 2: TRÌNH BIÊN SOẠN CÂU HỎI TRONG ĐỀ THI (EXAM BUILDER) -->
+          <div id="view-exam-builder" hidden style="display: none;" class="flex flex-col gap-5">
+            
+            <!-- Thanh quay lại & Thông tin đề đang biên soạn -->
+            <div class="bg-white border-2 border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <button type="button" id="btn-back-to-exams" class="neo-btn neo-btn-secondary rounded-xl p-2" title="Quay lại danh sách đề">
+                  <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+                </button>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span id="builder-exam-code" class="px-2 py-0.5 rounded bg-[#fff9c4] border border-[#2d2d2d] font-['Space_Grotesk'] font-bold text-xs">MÃ ĐỀ</span>
+                    <span id="builder-exam-subject" class="px-2 py-0.5 rounded bg-[#e0f2fe] text-[#0369a1] border border-[#0284c7] text-xs font-semibold">Môn</span>
+                    <span id="builder-exam-type" class="px-2 py-0.5 rounded bg-gray-100 border text-xs font-semibold">DEFAULT</span>
+                  </div>
+                  <h2 id="builder-exam-name" class="font-['Epilogue'] text-lg md:text-xl font-bold mt-1 text-[#1b1c1c]">Tên đề kiểm tra</h2>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Thống kê điểm số & câu hỏi -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#2d2d2d] bg-[#fdfbf7] text-xs font-['Space_Grotesk']">
+                  <span id="builder-stat-questions" class="font-bold text-[#2d2d2d]">0 câu hỏi</span>
+                  <span class="text-gray-300">|</span>
+                  <span id="builder-stat-points" class="font-bold text-[#b71422]">0.0 / 10.0 điểm</span>
+                </div>
+                <button type="button" id="btn-balance-points" class="neo-btn neo-btn-secondary rounded-xl px-3 py-2 text-xs inline-flex items-center gap-1 font-bold" title="Tự động chia đều 10 điểm cho các câu hỏi hiện có">
+                  <span class="material-symbols-outlined text-[16px]">balance</span>
+                  Chia đều 10đ
+                </button>
+                <button type="button" id="btn-open-bank" class="neo-btn neo-btn-secondary rounded-xl px-3 py-2 text-xs inline-flex items-center gap-1 font-bold" title="Lấy câu hỏi có sẵn từ Ngân hàng đề thi">
+                  <span class="material-symbols-outlined text-[16px]">library_books</span>
+                  Từ ngân hàng
+                </button>
+                <button type="button" id="btn-add-question" class="neo-btn neo-btn-primary rounded-xl px-4 py-2 text-xs inline-flex items-center gap-1.5 font-bold">
+                  <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                  Thêm câu hỏi mới
+                </button>
+              </div>
+            </div>
+
+            <!-- Danh sách câu hỏi trong đề -->
+            <div id="builder-question-list" class="flex flex-col gap-4">
+              <div class="py-8 text-center text-sm text-[#76716a]">
+                Đang tải các câu hỏi trong đề...
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL 1: TẠO / SỬA ĐỀ THI -->
+  <dialog id="modal-exam" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-lg w-full">
+    <form id="form-exam" method="dialog" class="p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-exam-title" class="font-['Epilogue'] text-lg font-bold">Tạo Đề Thi Mới</h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <div id="exam-form-error" hidden class="p-3 bg-[#ffdad6] border border-[#b71422] rounded-xl text-xs text-[#b71422] font-semibold leading-relaxed"></div>
+      <input type="hidden" id="exam-id">
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="exam-code">Mã đề thi *</label>
+        <input type="text" id="exam-code" required maxlength="255" placeholder="Ví dụ: EXAM_KHTN6_GK1_01" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm uppercase font-mono font-bold">
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="exam-name">Tiêu đề đề thi *</label>
+        <input type="text" id="exam-name" required maxlength="255" placeholder="Ví dụ: Kiểm tra Giữa kỳ 1 Khoa học tự nhiên 6" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="exam-subject-name">Tên môn học *</label>
+          <input type="text" id="exam-subject-name" list="subject-name-datalist" required placeholder="Ví dụ: Khoa học Tự nhiên" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-semibold bg-white outline-none">
+          <datalist id="subject-name-datalist"></datalist>
+        </div>
+        <div>
+          <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="exam-type">Loại đề</label>
+          <select id="exam-type" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm bg-white font-medium">
+            <option value="DEFAULT">Mặc định (DEFAULT)</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="exam-desc">Mô tả / Thời lượng làm bài</label>
+        <textarea id="exam-desc" rows="2" placeholder="Ví dụ: Thời lượng 45 phút, gồm 20 câu hỏi trắc nghiệm khách quan..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Lưu đề thi</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 1B: NHÂN BẢN ĐỀ THI (DUPLICATE EXAM) -->
+  <dialog id="modal-duplicate-exam" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-md w-full">
+    <form id="form-duplicate-exam" method="dialog" class="p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-['Epilogue'] text-lg font-bold flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">content_copy</span>
+          Nhân Bản Đề Thi
+        </h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <div id="duplicate-form-error" hidden class="p-3 bg-[#ffdad6] border border-[#b71422] rounded-xl text-xs text-[#b71422] font-semibold leading-relaxed"></div>
+      <input type="hidden" id="duplicate-source-id">
+      <p class="text-xs text-[#5b403e]">
+        Tạo một bản sao mới hoàn chỉnh từ đề thi gốc, tự động sao chép toàn bộ danh sách câu hỏi và cơ cấu điểm số.
+      </p>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="duplicate-new-code">Mã đề mới *</label>
+        <input type="text" id="duplicate-new-code" required maxlength="255" placeholder="Ví dụ: EXAM_KHTN6_GK1_02" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm uppercase font-mono font-bold">
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="duplicate-new-title">Tiêu đề đề thi mới *</label>
+        <input type="text" id="duplicate-new-title" required maxlength="255" placeholder="Ví dụ: Đề thi Giữa kỳ 1 KHTN 6 - Đề số 2" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Xác nhận nhân bản</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 2: TẠO / SỬA CÂU HỎI (KÈM BẢNG ĐÁP ÁN NGUYÊN KHỐI) -->
+  <dialog id="modal-question" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-3xl w-full">
+    <form id="form-question" method="dialog" class="p-6 flex flex-col gap-4 max-h-[88vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3 sticky top-0 bg-white z-10">
+        <h3 id="modal-question-title" class="font-['Epilogue'] text-lg font-bold">Thêm Câu Hỏi Mới</h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <div id="question-form-error" hidden class="p-3 bg-[#ffdad6] border border-[#b71422] rounded-xl text-xs text-[#b71422] font-semibold leading-relaxed"></div>
+      <input type="hidden" id="question-id">
+      <input type="hidden" id="question-exam-question-id">
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="question-type">Loại câu hỏi *</label>
+          <select id="question-type" required class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm bg-white font-medium">
+            <option value="SINGLE_CHOICE">Một đáp án đúng (Single)</option>
+            <option value="MULTIPLE_CHOICE">Nhiều đáp án đúng (Multiple)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="question-point">Thang điểm (Point) *</label>
+          <input type="number" step="0.05" min="0" value="0.25" id="question-point" required class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-semibold">
+        </div>
+        <div>
+          <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="question-order">Thứ tự câu *</label>
+          <input type="number" min="1" value="1" id="question-order" required class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-semibold">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="question-content">Nội dung câu hỏi *</label>
+        <textarea id="question-content" required rows="3" placeholder="Nhập câu hỏi tại đây... (Ví dụ: Cơ quan nào sau đây ở người thực hiện chức năng lọc máu và bài tiết nước tiểu?)" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-medium"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="question-explanation">Lời giải thích chi tiết</label>
+        <textarea id="question-explanation" rows="2" placeholder="Giải thích khoa học để học sinh xem lại sau khi nộp bài..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="question-desc">Chủ đề / Mức độ nhận thức</label>
+          <input type="text" id="question-desc" placeholder="Ví dụ: Nhận biết, Thông hiểu, Hệ bài tiết..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="question-img-url-quick">Ảnh minh họa (Tùy chọn URL)</label>
+          <input type="url" id="question-img-url-quick" placeholder="https://... hoặc tải ở mục Ảnh" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-mono text-xs">
+        </div>
+      </div>
+
+      <!-- Khu vực 4 đáp án nhanh khi tạo câu hỏi mới -->
+      <div id="section-quick-answers" class="border-2 border-dashed border-[#2d2d2d] rounded-xl p-4 bg-[#fdfbf7] flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-['Space_Grotesk'] font-bold uppercase text-[#2d2d2d]">Các phương án trả lời (A, B, C, D)</span>
+          <span class="text-[11px] text-gray-500">Tích chọn nút tròn/ô vuông để chỉ định đáp án đúng</span>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Đáp án A -->
+          <div class="p-2.5 rounded-xl border border-[#2d2d2d] bg-white flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded bg-gray-100 font-['Space_Grotesk'] font-bold text-xs">A</span>
+              <label class="inline-flex items-center gap-1.5 text-xs font-bold text-[#00864c] cursor-pointer">
+                <input type="radio" name="quick-correct-answer" value="0" checked class="accent-[#00864c]">
+                Đúng
+              </label>
+            </div>
+            <input type="text" id="quick-ans-0" placeholder="Phương án A" class="w-full border rounded-lg p-1.5 text-xs font-medium">
+          </div>
+
+          <!-- Đáp án B -->
+          <div class="p-2.5 rounded-xl border border-[#2d2d2d] bg-white flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded bg-gray-100 font-['Space_Grotesk'] font-bold text-xs">B</span>
+              <label class="inline-flex items-center gap-1.5 text-xs font-bold text-[#00864c] cursor-pointer">
+                <input type="radio" name="quick-correct-answer" value="1" class="accent-[#00864c]">
+                Đúng
+              </label>
+            </div>
+            <input type="text" id="quick-ans-1" placeholder="Phương án B" class="w-full border rounded-lg p-1.5 text-xs font-medium">
+          </div>
+
+          <!-- Đáp án C -->
+          <div class="p-2.5 rounded-xl border border-[#2d2d2d] bg-white flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded bg-gray-100 font-['Space_Grotesk'] font-bold text-xs">C</span>
+              <label class="inline-flex items-center gap-1.5 text-xs font-bold text-[#00864c] cursor-pointer">
+                <input type="radio" name="quick-correct-answer" value="2" class="accent-[#00864c]">
+                Đúng
+              </label>
+            </div>
+            <input type="text" id="quick-ans-2" placeholder="Phương án C" class="w-full border rounded-lg p-1.5 text-xs font-medium">
+          </div>
+
+          <!-- Đáp án D -->
+          <div class="p-2.5 rounded-xl border border-[#2d2d2d] bg-white flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded bg-gray-100 font-['Space_Grotesk'] font-bold text-xs">D</span>
+              <label class="inline-flex items-center gap-1.5 text-xs font-bold text-[#00864c] cursor-pointer">
+                <input type="radio" name="quick-correct-answer" value="3" class="accent-[#00864c]">
+                Đúng
+              </label>
+            </div>
+            <input type="text" id="quick-ans-3" placeholder="Phương án D" class="w-full border rounded-lg p-1.5 text-xs font-medium">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-3 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Lưu câu hỏi</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 3: TẠO / SỬA ĐÁP ÁN (ANSWER) -->
+  <dialog id="modal-answer" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-md w-full">
+    <form id="form-answer" method="dialog" class="p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-answer-title" class="font-['Epilogue'] text-lg font-bold">Thêm Đáp Án Mới</h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <div id="answer-form-error" hidden class="p-3 bg-[#ffdad6] border border-[#b71422] rounded-xl text-xs text-[#b71422] font-semibold leading-relaxed"></div>
+      <input type="hidden" id="answer-id">
+      <input type="hidden" id="answer-question-id">
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="answer-type">Loại đáp án</label>
+        <select id="answer-type" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm bg-white font-medium">
+          <option value="TEXT">Dạng Văn Bản (TEXT)</option>
+          <option value="IMAGE">Dạng Hình Ảnh (IMAGE)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="answer-content">Nội dung phương án *</label>
+        <textarea id="answer-content" required rows="2" placeholder="Ví dụ: Tim, Phổi, Dạ dày..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-medium"></textarea>
+      </div>
+
+      <div class="p-3 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl flex items-center gap-3">
+        <input type="checkbox" id="answer-is-correct" class="w-5 h-5 accent-[#00864c] cursor-pointer">
+        <label for="answer-is-correct" class="text-sm font-bold text-[#1b1c1c] cursor-pointer">
+          Đây là đáp án ĐÚNG (Correct Answer)
+        </label>
+      </div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="answer-explanation">Giải thích cho phương án này</label>
+        <input type="text" id="answer-explanation" placeholder="Ví dụ: Đúng vì tim đóng vai trò như một máy bơm tống máu..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Lưu đáp án</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 4: QUẢN LÝ ẢNH CÂU HỎI HOẶC ĐÁP ÁN (KÈM UPLOAD TRỰC TIẾP LÊN CLOUD) -->
+  <dialog id="modal-image" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-md w-full">
+    <form id="form-image" method="dialog" class="p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-image-title" class="font-['Epilogue'] text-lg font-bold">Thêm Hình Ảnh Minh Họa</h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <div id="image-form-error" hidden class="p-3 bg-[#ffdad6] border border-[#b71422] rounded-xl text-xs text-[#b71422] font-semibold leading-relaxed"></div>
+      <input type="hidden" id="image-id">
+      <input type="hidden" id="image-parent-id">
+      <input type="hidden" id="image-target-type" value="QUESTION"> <!-- QUESTION hoặc ANSWER -->
+
+      <!-- Upload file trực tiếp -->
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1">Tải tệp ảnh từ máy tính (Max 5MB)</label>
+        <div class="flex items-center gap-2">
+          <input type="file" id="image-file-input" accept="image/png, image/jpeg, image/webp" class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-xl file:border-2 file:border-[#2d2d2d] file:text-xs file:font-bold file:bg-[#fdfbf7] file:cursor-pointer hover:file:bg-[#f6f3f2]">
+          <span id="image-uploading-spinner" hidden class="text-xs text-[#0284c7] font-bold animate-pulse whitespace-nowrap">Đang tải...</span>
+        </div>
+      </div>
+
+      <div class="relative flex py-1 items-center">
+        <div class="flex-grow border-t border-gray-200"></div>
+        <span class="flex-shrink mx-2 text-[11px] text-gray-400 font-bold uppercase">Hoặc dán link URL</span>
+        <div class="flex-grow border-t border-gray-200"></div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="image-url">Đường dẫn ảnh (URL) *</label>
+        <input type="url" id="image-url" required placeholder="https://... hoặc đường dẫn Cloud Storage" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-mono">
+      </div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="image-name">Tên / Chú thích ảnh</label>
+        <input type="text" id="image-name" placeholder="Ví dụ: Sơ đồ cấu tạo tim người" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+      </div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="image-order">Thứ tự hiển thị (Bắt đầu từ 1)</label>
+        <input type="number" min="1" value="1" id="image-order" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm font-semibold">
+      </div>
+
+      <!-- Preview ảnh -->
+      <div id="image-preview-box" class="w-full h-36 bg-[#f6f3f2] border-2 border-dashed border-[#dcd5cb] rounded-xl flex items-center justify-center overflow-hidden">
+        <span class="text-xs text-gray-400">Xem trước ảnh sẽ hiển thị ở đây</span>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Lưu hình ảnh</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL 5: CHỌN CÂU HỎI TỪ NGÂN HÀNG (QUESTION BANK PICKER) -->
+  <dialog id="modal-bank" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-2xl w-full">
+    <div class="p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3 sticky top-0 bg-white z-10">
+        <h3 class="font-['Epilogue'] text-lg font-bold flex items-center gap-2">
+          <span class="material-symbols-outlined text-tertiary">library_books</span>
+          Ngân Hàng Câu Hỏi Dùng Chung
+        </h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <div id="bank-form-error" hidden class="p-3 bg-[#ffdad6] border border-[#b71422] rounded-xl text-xs text-[#b71422] font-semibold leading-relaxed"></div>
+      
+      <!-- Bộ lọc ngân hàng -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
+          <input type="search" id="bank-search-input" placeholder="Tìm theo nội dung câu hỏi..." class="w-full pl-9 pr-3 py-2 text-xs border-2 border-[#2d2d2d] rounded-xl outline-none">
+        </div>
+        <select id="bank-type-select" class="py-2 px-3 text-xs border-2 border-[#2d2d2d] rounded-xl bg-white font-medium outline-none">
+          <option value="">Tất cả loại câu</option>
+          <option value="SINGLE_CHOICE">Một đáp án (Single)</option>
+          <option value="MULTIPLE_CHOICE">Nhiều đáp án (Multiple)</option>
+        </select>
+        <button type="button" id="btn-bank-search" class="neo-btn neo-btn-secondary rounded-xl px-3 py-2 text-xs font-bold">Lọc</button>
+      </div>
+
+      <!-- Danh sách câu hỏi trong ngân hàng -->
+      <div id="bank-question-container" class="flex flex-col gap-2 min-h-[200px] max-h-[360px] overflow-y-auto pr-1">
+        <div class="py-8 text-center text-xs text-gray-500">Đang tải ngân hàng câu hỏi...</div>
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t">
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-['Space_Grotesk'] font-bold uppercase" for="bank-default-point">Điểm mỗi câu:</label>
+          <input type="number" step="0.05" min="0" value="0.25" id="bank-default-point" class="w-20 border-2 border-[#2d2d2d] rounded-lg p-1.5 text-xs font-bold text-center">
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-xs font-bold">Hủy</button>
+          <button type="button" id="btn-confirm-pick-bank" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-xs font-bold">
+            Gán vào đề này (<span id="bank-selected-count">0</span>)
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="/src/pages/adminExams.js"></script>
+</body>
+</html>
