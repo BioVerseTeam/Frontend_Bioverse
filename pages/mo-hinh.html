@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xem mô hình 3D - BioVerse</title>
+  <meta name="description" content="Xoay mô hình sinh học 3D và tương tác từng bộ phận.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="stylesheet" href="/src/styles/modelViewer.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+    .sketch-paper { background-color: #fdfbf7; background-image: radial-gradient(#dcd5cb 1.5px, transparent 1.5px); background-size: 24px 24px; }
+    .sketch-shadow-sm { box-shadow: 2px 2px 0 #2d2d2d; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="specimen-page sketch-paper font-body-md text-on-surface">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-4 md:px-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4 min-w-0">
+        <a class="flex items-center gap-2 group shrink-0" href="/">
+          <div class="w-10 h-10 rounded-lg bg-[#db3237] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-white text-[24px]">biotech</span>
+          </div>
+          <div class="hidden sm:flex flex-col">
+            <span class="font-['Epilogue'] text-[22px] font-bold tracking-tight text-[#b71422] uppercase">BioVerse</span>
+            <span class="font-['Space_Grotesk'] text-[12px] text-[#5b403e] tracking-wide">Sổ tay STEM THCS</span>
+          </div>
+        </a>
+        <a href="/sinh-hoc" class="inline-flex items-center gap-1 px-3 py-1.5 bg-white border-2 border-[#2d2d2d] rounded-lg font-['Space_Grotesk'] text-xs font-bold hover:bg-[#e8f5e9]">
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          Kho mô hình
+        </a>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-1 px-3 py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm">
+          <span class="material-symbols-outlined text-[#ed8936] text-[18px]">award_star</span>
+          <span id="header-user-xp" class="font-['Space_Grotesk'] text-xs font-bold">0 XP</span>
+        </div>
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-['Space_Grotesk'] text-sm font-bold">Khách thăm</span>
+          <span id="header-user-grade" class="font-['Space_Grotesk'] text-[11px] text-[#00864c] font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="w-8 h-8 rounded-full bg-[#b71422] flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-white text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="specimen-stage">
+    <div id="canvas-container" aria-label="Khung nhìn mô hình 3D"></div>
+    <div id="specimen-hover-tag" class="specimen-hover-tag hidden"></div>
+    <div id="specimen-pin" class="specimen-pin hidden" aria-hidden="true">
+      <span id="pin-label"></span>
+    </div>
+
+    <div class="specimen-overlay">
+      <div class="specimen-toolbar">
+        <button type="button" id="btn-reset" class="specimen-tool-btn">
+          <span class="material-symbols-outlined">restart_alt</span> Đặt lại
+        </button>
+        <button type="button" id="btn-explode" class="specimen-tool-btn" aria-pressed="false">
+          <span class="material-symbols-outlined">animation</span> Tách bộ phận
+        </button>
+        <button type="button" id="btn-isolate" class="specimen-tool-btn" aria-pressed="false">
+          <span class="material-symbols-outlined">filter_center_focus</span> Mờ mạnh hơn
+        </button>
+        <button type="button" id="btn-front" class="specimen-tool-btn">Trước</button>
+        <button type="button" id="btn-side" class="specimen-tool-btn">Bên</button>
+        <button type="button" id="btn-top" class="specimen-tool-btn">Trên</button>
+      </div>
+
+      <p class="specimen-hint">Kéo để xoay · Cuộn để phóng to · Bấm một bộ phận: phần đó nổi viền, phần còn lại mờ đi</p>
+
+      <aside class="specimen-sidebar" aria-label="Thông tin mô hình">
+        <div class="specimen-sidebar-head">
+          <p class="specimen-kicker" id="model-category">Sinh học</p>
+          <h1 class="specimen-title" id="model-name">Đang tải mô hình…</h1>
+          <span class="specimen-latin" id="model-latin"></span>
+          <div class="specimen-meta" id="model-meta"></div>
+        </div>
+        <div class="specimen-copy" id="model-copy"></div>
+        <section id="part-note" class="specimen-note" hidden aria-live="polite">
+          <div class="specimen-note-head">
+            <span id="note-dot" class="specimen-note-dot"></span>
+            <h2 id="note-name"></h2>
+            <button type="button" id="note-close" class="specimen-note-close" aria-label="Bỏ chọn bộ phận">&times;</button>
+          </div>
+          <span id="note-latin" class="latin"></span>
+          <div id="note-internal-badge" class="hidden inline-flex items-center gap-1 px-2.5 py-1 mt-1 mb-2 text-xs font-medium text-amber-900 bg-amber-50 border border-amber-200/80 rounded-md">
+            <span class="material-symbols-outlined text-[15px] text-amber-700">info</span>
+            <span>Cấu trúc bên trong (Vị trí học tập tương đối)</span>
+          </div>
+          <dl>
+            <div id="note-loc-wrap">
+              <dt>Vị trí</dt>
+              <dd id="note-loc"></dd>
+            </div>
+            <div id="note-desc-wrap">
+              <dt>Mô tả</dt>
+              <dd id="note-desc"></dd>
+            </div>
+            <div id="note-fn-wrap" hidden>
+              <dt>Chức năng</dt>
+              <dd id="note-fn"></dd>
+            </div>
+            <div id="note-learn-wrap" hidden>
+              <dt>Ghi nhớ / Bệnh lý</dt>
+              <dd id="note-learn"></dd>
+            </div>
+          </dl>
+        </section>
+        <div class="specimen-parts-head">
+          <span>Bộ phận</span>
+          <span id="parts-count">0</span>
+        </div>
+        <div id="parts-list" class="specimen-parts"></div>
+      </aside>
+    </div>
+
+    <div id="specimen-loading" class="specimen-status">
+      <div class="specimen-status-card">
+        <h2 id="loading-title">Đang tải mô hình 3D</h2>
+        <p id="loading-text">Lấy chi tiết mẫu vật và file GLB…</p>
+        <div class="specimen-progress"><span id="loading-bar"></span></div>
+      </div>
+    </div>
+
+    <div id="specimen-error" class="specimen-status" hidden>
+      <div class="specimen-status-card">
+        <h2 id="error-title">Không mở được mô hình</h2>
+        <p id="error-text">Kiểm tra kết nối rồi thử lại.</p>
+        <a href="/sinh-hoc" class="neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Về kho mô hình</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/pages/moHinh.js"></script>
+</body>
+</html>

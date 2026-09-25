@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 // State
 let exams = [];
@@ -62,8 +62,8 @@ async function fetchExams() {
   try {
     const res = await fetch(`${API_BASE_URL}/exams`);
     const data = await res.json();
-    if (res.ok && data.payload) {
-      exams = data.payload || [];
+    if (res.ok && data.data) {
+      exams = data.data || [];
       renderExams(exams);
     } else {
       console.error("API trả về lỗi hoặc không có payload:", data);
@@ -130,9 +130,9 @@ async function handleExamClick(exam) {
     const res = await fetch(`${API_BASE_URL}/questions/exam/${currentExam.id}`);
     const data = await res.json();
 
-    if (res.ok && data.payload) {
-      console.log("Dữ liệu câu hỏi tải về từ API:", data.payload);
-      currentQuestions = data.payload || [];
+    if (res.ok && data.data) {
+      console.log("Dữ liệu câu hỏi tải về từ API:", data.data);
+      currentQuestions = data.data || [];
       userAnswers = {};
       isReviewMode = false;
 
@@ -338,7 +338,7 @@ elems.btnFinishExam.addEventListener('click', () => {
 
 // Back to 3D
 elems.btnBackTo3D.addEventListener('click', () => {
-  window.location.href = '/index.html';
+  window.location.href = '/sinh-hoc';
 });
 
 // Initialization

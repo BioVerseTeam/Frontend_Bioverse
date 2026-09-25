@@ -1,332 +1,635 @@
-/* ChatBox container and floating button */
+/* ============================================================
+   BIOVERSE AI CHATBOX SYSTEM - NATIVE BIOVERSE NOTEBOOK DESIGN
+   ============================================================ */
+
+/* 1. Main Wrapper & Launcher */
 .bv-chatbox-wrapper {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 9999;
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  pointer-events: none;
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 999999 !important;
+  font-family: 'Be Vietnam Pro', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  pointer-events: none !important;
 }
 
-/* Floating button */
+/* Floating Launcher FAB Button */
 .bv-chatbox-toggle-btn {
-  pointer-events: auto;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-pink) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(168, 85, 247, 0.3);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-smooth);
-  color: var(--text-primary);
-  font-size: 24px;
+  pointer-events: auto !important;
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 50% !important;
+  background: #db3237 !important;
+  border: 2.5px solid #2d2d2d !important;
+  box-shadow: 4px 4px 0 #2d2d2d !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+  color: #ffffff !important;
+  position: relative !important;
 }
 
 .bv-chatbox-toggle-btn:hover {
-  transform: scale(1.05) translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(168, 85, 247, 0.45);
-  border-color: rgba(255, 255, 255, 0.4);
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0 #2d2d2d !important;
+  background: #e03a3f !important;
 }
 
 .bv-chatbox-toggle-btn:active {
-  transform: scale(0.95);
+  transform: translate(1px, 1px) !important;
+  box-shadow: 2px 2px 0 #2d2d2d !important;
 }
 
-/* Chat Panel */
+.bv-chatbox-fab-status-dot {
+  position: absolute !important;
+  top: 2px !important;
+  right: 2px !important;
+  width: 12px !important;
+  height: 12px !important;
+  background: #48bb78 !important;
+  border: 2px solid #2d2d2d !important;
+  border-radius: 50% !important;
+}
+
+/* 2. Main Chat Panel (Bioverse Card Frame) */
 .bv-chatbox-panel {
-  pointer-events: none;
-  visibility: hidden;
-  width: 380px;
-  height: 520px;
-  margin-bottom: 16px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-radius: 16px;
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
-  transform-origin: bottom right;
-  opacity: 0;
-  transform: scale(0.85) translateY(20px);
+  pointer-events: none !important;
+  visibility: hidden !important;
+  width: 440px !important;
+  height: 610px !important;
+  max-height: calc(100vh - 110px) !important;
+  margin-bottom: 16px !important;
+  background: #fdfbf7 !important;
+  background-image: radial-gradient(#e5ded3 1.2px, transparent 1.2px) !important;
+  background-size: 16px 16px !important;
+  border: 2.5px solid #2d2d2d !important;
+  border-radius: 18px !important;
+  box-shadow: 5px 5px 0 #2d2d2d !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s !important;
+  transform-origin: bottom right !important;
+  opacity: 0 !important;
+  transform: scale(0.92) translateY(18px) !important;
+  position: relative !important;
+  color: #2d2d2d !important;
 }
 
 .bv-chatbox-panel.active {
-  pointer-events: auto;
-  visibility: visible;
-  opacity: 1;
-  transform: scale(1) translateY(0);
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
 }
 
-/* Header */
+.bv-chatbox-panel.drawer-open {
+  width: 700px !important;
+}
+
+.bv-chatbox-main-body {
+  display: flex !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* 3. Header Section */
 .bv-chatbox-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.02);
+  padding: 12px 16px !important;
+  border-bottom: 2.5px solid #2d2d2d !important;
+  background: #f8f4ed !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  user-select: none !important;
 }
 
-.bv-chatbox-title-container {
-  display: flex;
-  flex-direction: column;
+.bv-chatbox-header-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.bv-chatbox-header-title-box {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
 }
 
 .bv-chatbox-header-title {
-  font-size: 16px;
-  font-weight: 700;
-  background: linear-gradient(to right, #fff, var(--accent-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #2d2d2d !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  letter-spacing: -0.2px !important;
+}
+
+.bv-chatbox-bot-icon {
+  font-size: 16px !important;
+  line-height: 1 !important;
 }
 
 .bv-chatbox-badge {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--accent-pink);
-  border: 1px solid rgba(236, 72, 153, 0.3);
-  background: rgba(236, 72, 153, 0.1);
-  padding: 1px 4px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  color: #db3237 !important;
+  border: 1.5px solid #2d2d2d !important;
+  background: #fff8f0 !important;
+  padding: 1px 6px !important;
+  border-radius: 10px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
 }
 
 .bv-chatbox-header-subtitle {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 2px;
+  font-size: 11.5px !important;
+  color: #666666 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-weight: 500 !important;
+}
+
+.bv-chatbox-status-dot {
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  background: #48bb78 !important;
+  border: 1px solid #2d2d2d !important;
+  display: inline-block !important;
+  animation: bv-pulse-dot 2s infinite ease-in-out !important;
+}
+
+@keyframes bv-pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.85); opacity: 0.7; }
 }
 
 .bv-chatbox-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.bv-chatbox-history-toggle-btn,
+.bv-chatbox-new-btn {
+  background: #ffffff !important;
+  border: 1.5px solid #2d2d2d !important;
+  color: #2d2d2d !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 4px 12px !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d !important;
+}
+
+.bv-chatbox-history-toggle-btn:hover {
+  background: #f5efe6 !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d !important;
 }
 
 .bv-chatbox-new-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  font-size: 11px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  color: #db3237 !important;
 }
 
 .bv-chatbox-new-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: #ffebee !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d !important;
 }
 
 .bv-chatbox-close-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 20px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #ffffff !important;
+  border: 1.5px solid #2d2d2d !important;
+  color: #2d2d2d !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d !important;
 }
 
 .bv-chatbox-close-btn:hover {
-  color: var(--text-primary);
+  color: #db3237 !important;
+  background: #fee2e2 !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d !important;
 }
 
-/* Messages area */
+/* 4. History Drawer (Collapsible Navigation Sidebar) */
+.bv-chatbox-drawer {
+  width: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  background: #f6f2ea !important;
+  border-right: 2.5px solid #2d2d2d !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, visibility 0.25s ease !important;
+  overflow: hidden !important;
+}
+
+.bv-chatbox-panel.drawer-open .bv-chatbox-drawer {
+  width: 250px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.bv-chatbox-drawer-header {
+  padding: 12px 14px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  color: #2d2d2d !important;
+  border-bottom: 1.5px solid #2d2d2d !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #ece6da !important;
+}
+
+.bv-chatbox-drawer-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 10px 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.bv-chatbox-drawer-content::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.bv-chatbox-drawer-content::-webkit-scrollbar-thumb {
+  background: #c5bdae !important;
+  border-radius: 3px !important;
+}
+
+.bv-chatbox-drawer-new-btn {
+  background: #ffffff !important;
+  border: 1.5px solid #2d2d2d !important;
+  color: #db3237 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d !important;
+  margin-bottom: 4px !important;
+}
+
+.bv-chatbox-drawer-new-btn:hover {
+  background: #ffebee !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d !important;
+}
+
+.bv-chatbox-history-group-title {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #888888 !important;
+  padding: 8px 8px 3px 8px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+}
+
+.bv-chatbox-history-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  font-size: 12.5px !important;
+  color: #2d2d2d !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  gap: 6px !important;
+  border: 1.5px solid transparent !important;
+  background: transparent !important;
+  min-height: 44px !important;
+}
+
+.bv-chatbox-history-item:hover {
+  background: #eae4d8 !important;
+  border-color: rgba(45, 45, 45, 0.15) !important;
+}
+
+.bv-chatbox-history-item.active {
+  background: #ffebee !important;
+  border-color: rgba(219, 50, 55, 0.4) !important;
+  border-left: 3.5px solid #db3237 !important;
+  color: #db3237 !important;
+  font-weight: 700 !important;
+}
+
+.bv-chatbox-history-title-text {
+  flex: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.bv-chatbox-history-delete-btn {
+  background: none !important;
+  border: none !important;
+  color: #999999 !important;
+  cursor: pointer !important;
+  padding: 3px 5px !important;
+  border-radius: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0 !important;
+  transition: all 0.15s ease !important;
+}
+
+.bv-chatbox-history-item:hover .bv-chatbox-history-delete-btn {
+  opacity: 1 !important;
+}
+
+.bv-chatbox-history-delete-btn:hover {
+  color: #db3237 !important;
+  background: #fee2e2 !important;
+}
+
+/* Empty History State */
+.bv-chatbox-history-empty {
+  font-size: 12px !important;
+  color: #666666 !important;
+  text-align: center !important;
+  padding: 24px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.bv-chatbox-empty-icon {
+  font-size: 24px !important;
+  margin-bottom: 2px !important;
+}
+
+.bv-chatbox-empty-title {
+  font-weight: 700 !important;
+  color: #2d2d2d !important;
+  font-size: 13px !important;
+}
+
+.bv-chatbox-empty-desc {
+  font-size: 11.5px !important;
+  color: #777777 !important;
+  line-height: 1.4 !important;
+}
+
+/* 5. Main Messages Workspace */
+.bv-chatbox-content-panel {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background: transparent !important;
+}
+
 .bv-chatbox-messages {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  scroll-behavior: smooth;
+  flex: 1 !important;
+  padding: 16px !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  scroll-behavior: smooth !important;
 }
 
 .bv-chatbox-messages::-webkit-scrollbar {
-  width: 6px;
+  width: 6px !important;
 }
 
 .bv-chatbox-messages::-webkit-scrollbar-track {
-  background: transparent;
+  background: transparent !important;
 }
 
 .bv-chatbox-messages::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background: #c5bdae !important;
+  border-radius: 3px !important;
 }
 
-.bv-chatbox-messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* Individual message styling */
+/* Message Bubbles */
 .bv-chatbox-message {
-  max-width: 85%;
-  display: flex;
-  flex-direction: column;
+  max-width: 84% !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
 }
 
 .bv-chatbox-message.user {
-  align-self: flex-end;
+  align-self: flex-end !important;
+  flex-direction: row-reverse !important;
 }
 
 .bv-chatbox-message.assistant {
-  align-self: flex-start;
+  align-self: flex-start !important;
+}
+
+/* Assistant Avatar Badge */
+.bv-chatbox-avatar {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 1.8px solid #2d2d2d !important;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  margin-top: 2px !important;
 }
 
 .bv-chatbox-bubble {
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 13.5px;
-  line-height: 1.5;
-  word-break: break-word;
-  white-space: pre-wrap;
+  padding: 10px 14px !important;
+  border-radius: 14px !important;
+  font-size: 13.5px !important;
+  line-height: 1.55 !important;
+  word-break: break-word !important;
+  white-space: pre-wrap !important;
 }
 
 .bv-chatbox-message.user .bv-chatbox-bubble {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-bottom-right-radius: 4px;
-  color: var(--text-primary);
+  background: #db3237 !important;
+  border: 1.8px solid #2d2d2d !important;
+  border-bottom-right-radius: 4px !important;
+  color: #ffffff !important;
+  box-shadow: 2px 2px 0 #2d2d2d !important;
+  font-weight: 500 !important;
 }
 
 .bv-chatbox-message.assistant .bv-chatbox-bubble {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom-left-radius: 4px;
-  color: var(--text-primary);
+  background: #ffffff !important;
+  border: 1.8px solid #2d2d2d !important;
+  border-bottom-left-radius: 4px !important;
+  color: #2d2d2d !important;
+  box-shadow: 2px 2px 0 rgba(45, 45, 45, 0.12) !important;
 }
 
-/* System/Error message */
+/* System Message */
+.bv-chatbox-message.system {
+  align-self: center !important;
+  max-width: 95% !important;
+}
+
 .bv-chatbox-message.system .bv-chatbox-bubble {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #f87171;
-  text-align: center;
-  align-self: center;
-  max-width: 100%;
+  background: #fff8f0 !important;
+  border: 1.5px solid #db3237 !important;
+  color: #db3237 !important;
+  text-align: center !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d !important;
 }
 
-/* Loading/typing indicator */
+/* Loading / Thinking Indicator */
 .bv-chatbox-loading-bubble {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 16px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 14px !important;
+}
+
+.bv-chatbox-loading-label {
+  font-size: 12.5px !important;
+  color: #666666 !important;
+  font-style: italic !important;
+  font-weight: 500 !important;
+}
+
+.bv-chatbox-dots-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
 }
 
 .bv-chatbox-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--text-secondary);
-  border-radius: 50%;
-  animation: bv-dot-pulse 1.4s infinite ease-in-out both;
+  width: 6px !important;
+  height: 6px !important;
+  background: #db3237 !important;
+  border-radius: 50% !important;
+  animation: bv-dot-pulse 1.4s infinite ease-in-out both !important;
 }
 
-.bv-chatbox-dot:nth-child(1) {
-  animation-delay: -0.32s;
-}
-
-.bv-chatbox-dot:nth-child(2) {
-  animation-delay: -0.16s;
-}
+.bv-chatbox-dot:nth-child(1) { animation-delay: -0.32s !important; }
+.bv-chatbox-dot:nth-child(2) { animation-delay: -0.16s !important; }
 
 @keyframes bv-dot-pulse {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1.0); }
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+  40% { transform: scale(1.1); opacity: 1; background: #48bb78; }
 }
 
-/* Input Area */
+/* 6. Input Area (Composer) */
 .bv-chatbox-input-container {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.01);
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
+  padding: 12px 14px !important;
+  border-top: 2.5px solid #2d2d2d !important;
+  background: #f8f4ed !important;
+  display: flex !important;
+  gap: 8px !important;
+  align-items: flex-end !important;
 }
 
 .bv-chatbox-textarea {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 13.5px;
-  padding: 8px 12px;
-  resize: none;
-  max-height: 100px;
-  min-height: 38px;
-  outline: none;
-  transition: var(--transition-smooth);
+  flex: 1 !important;
+  background: #ffffff !important;
+  border: 1.8px solid #2d2d2d !important;
+  border-radius: 12px !important;
+  color: #2d2d2d !important;
+  font-family: inherit !important;
+  font-size: 13.5px !important;
+  padding: 9px 12px !important;
+  resize: none !important;
+  max-height: 110px !important;
+  min-height: 40px !important;
+  outline: none !important;
+  box-shadow: 2px 2px 0 #2d2d2d !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.bv-chatbox-textarea::placeholder {
+  color: #888888 !important;
 }
 
 .bv-chatbox-textarea:focus {
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+  border-color: #db3237 !important;
+  box-shadow: 2px 2px 0 #db3237 !important;
 }
 
 .bv-chatbox-textarea:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: 0.5 !important;
+  background: #f0ebe1 !important;
+  cursor: not-allowed !important;
 }
 
 .bv-chatbox-send-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  background: var(--accent-purple);
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-smooth);
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background: #db3237 !important;
+  border: 1.8px solid #2d2d2d !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 2px 2px 0 #2d2d2d !important;
+  transition: all 0.15s ease !important;
 }
 
 .bv-chatbox-send-btn:hover:not(:disabled) {
-  background: var(--accent-pink);
-  transform: translateY(-1px);
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 3px 3px 0 #2d2d2d !important;
+  background: #e03a3f !important;
+}
+
+.bv-chatbox-send-btn:active:not(:disabled) {
+  transform: translate(1px, 1px) !important;
+  box-shadow: 1px 1px 0 #2d2d2d !important;
 }
 
 .bv-chatbox-send-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
-/* Typewriter cursor and animation */
+/* Typewriter Cursor */
 .bv-chatbox-message-typing::after {
-  content: "▍";
-  animation: bv-chatbox-blink 1s infinite;
-  color: var(--accent-purple);
-  margin-left: 2px;
+  content: "▍" !important;
+  animation: bv-chatbox-blink 1s infinite !important;
+  color: #db3237 !important;
+  margin-left: 2px !important;
 }
 
 @keyframes bv-chatbox-blink {
@@ -334,23 +637,38 @@
   50% { opacity: 1; }
 }
 
-/* Responsive adjustments */
-@media (max-width: 480px) {
+/* 7. Responsive Behavior */
+@media (max-width: 640px) {
   .bv-chatbox-wrapper {
-    bottom: 12px;
-    right: 12px;
-    left: 12px;
-    align-items: stretch;
+    bottom: 12px !important;
+    right: 12px !important;
+    left: 12px !important;
+    align-items: stretch !important;
   }
   
   .bv-chatbox-toggle-btn {
-    align-self: flex-end;
+    align-self: flex-end !important;
   }
   
   .bv-chatbox-panel {
-    width: 100%;
-    height: 480px;
-    margin-bottom: 8px;
-    right: 0;
+    width: 100% !important;
+    height: calc(100vh - 95px) !important;
+    max-height: 580px !important;
+    margin-bottom: 8px !important;
+    right: 0 !important;
+  }
+
+  .bv-chatbox-drawer {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 10 !important;
+    width: 0 !important;
+    box-shadow: 6px 0 20px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .bv-chatbox-panel.drawer-open .bv-chatbox-drawer {
+    width: 85% !important;
   }
 }

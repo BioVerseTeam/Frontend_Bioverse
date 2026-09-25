@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nhân mẫu - BioVerse Admin</title>
+  <meta name="description" content="Gắn tên, mô tả, loại và lớp cho mô hình 3D đã tải lên Cloudflare R2.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+    .sketch-paper { background-color: #fdfbf7; background-image: radial-gradient(#dcd5cb 1.5px, transparent 1.5px); background-size: 24px 24px; }
+    .sketch-border { border: 2.5px solid #2d2d2d; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; box-shadow: 4px 4px 0 #2d2d2d; }
+    .sketch-shadow { box-shadow: 4px 4px 0 #2d2d2d; }
+    .sketch-shadow-sm { box-shadow: 2px 2px 0 #2d2d2d; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","surface-container-low":"#f6f3f2","on-surface":"#1b1c1c","on-background":"#1b1c1c","error-container":"#ffdad6","tertiary-container":"#00864c","on-tertiary":"#ffffff","on-primary-fixed-variant":"#930014","on-error-container":"#93000a","surface-container-high":"#eae7e7","primary-fixed-dim":"#ffb3ae","primary-fixed":"#ffdad7","surface-container":"#f0eded","surface-variant":"#e4e2e1","background":"#fcf9f8","inverse-on-surface":"#f3f0f0","on-tertiary-fixed":"#00210f","secondary-fixed-dim":"#a9c7ff","primary-container":"#db3237","surface-bright":"#fcf9f8","on-primary-fixed":"#410004","on-secondary-fixed-variant":"#0a4689","surface-dim":"#dcd9d9","inverse-primary":"#ffb3ae","outline-variant":"#e4beba","tertiary":"#006a3b","on-error":"#ffffff","on-primary-container":"#fffbff","tertiary-fixed-dim":"#6bdc96","primary":"#b71422","on-tertiary-container":"#f6fff4","secondary":"#2e5ea2","on-surface-variant":"#5b403e","surface":"#fcf9f8","on-tertiary-fixed-variant":"#00522c","error":"#ba1a1a","surface-container-lowest":"#ffffff","on-secondary":"#ffffff","surface-tint":"#ba1724","on-secondary-container":"#064487","outline":"#8f6f6d","secondary-fixed":"#d6e3ff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-mobile":"1rem","space-xl":"3rem","margin":"2rem","space-lg":"2rem","space-sm":"0.75rem","space-md":"1.25rem","gutter":"1.5rem","gutter-mobile":"1rem","space-xs":"0.375rem"},"fontFamily":{"headline-sm":["Epilogue"],"body-sm":["Be Vietnam Pro"],"body-md":["Be Vietnam Pro"],"headline-lg":["Epilogue"],"label-md":["Space Grotesk"],"headline-md":["Epilogue"],"label-sm":["Space Grotesk"],"body-lg":["Be Vietnam Pro"],"title-md":["Epilogue"],"headline-xl":["Epilogue"],"label-lg":["Space Grotesk"],"headline-lg-mobile":["Epilogue"],"headline-xl-mobile":["Epilogue"]},"fontSize":{"headline-sm":["22px",{"lineHeight":"30px","fontWeight":"700"}],"body-sm":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","fontWeight":"700"}],"label-md":["14px",{"lineHeight":"18px","fontWeight":"700"}],"headline-md":["28px",{"lineHeight":"36px","fontWeight":"700"}],"label-sm":["12px",{"lineHeight":"16px","fontWeight":"600"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"title-md":["20px",{"lineHeight":"28px","fontWeight":"600"}],"headline-xl":["44px",{"lineHeight":"52px","fontWeight":"800"}],"label-lg":["16px",{"lineHeight":"20px","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"headline-xl-mobile":["32px",{"lineHeight":"40px","fontWeight":"800"}]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Nhân mẫu</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-space-xs"></nav>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-10">
+      <div class="max-w-6xl mx-auto flex flex-col gap-5">
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập bằng tài khoản ADMIN để gắn nhãn cho mô hình trên R2.</p>
+          <a id="admin-gate-login" href="/login?next=/admin-models" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <div id="admin-workspace" hidden>
+          <div class="relative bg-white sketch-border p-5 md:p-7">
+            <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-3">Nhân mẫu 3D</h1>
+            <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-[15px]">
+              Gắn nhãn file R2 thành thẻ catalog. Loại mẫu và lab nằm mục riêng trên thanh trái.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-5">
+            <aside class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col gap-3 min-h-[420px]">
+              <div class="admin-rail-head">
+                <div>
+                  <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider">Danh sách</p>
+                  <p id="admin-list-count" class="font-['Space_Grotesk'] text-[11px] font-bold text-[#76716a] mt-1">Đang tải...</p>
+                </div>
+                <button type="button" id="admin-new-btn" class="neo-btn neo-btn-primary rounded-xl px-3 py-2 inline-flex items-center gap-1 text-sm">
+                  <span class="material-symbols-outlined text-[18px]">add</span>
+                  Thêm mới
+                </button>
+              </div>
+              <form id="admin-search-form" class="flex flex-col gap-2">
+                <label for="admin-search" class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider">Tìm mẫu</label>
+                <input id="admin-search" type="search" placeholder="Tên, mô tả..."
+                  class="w-full px-3 py-2 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-lg font-['Be_Vietnam_Pro'] text-sm focus:outline-none focus:bg-white focus:shadow-[3px_3px_0px_#2d5da1]">
+              </form>
+              <div class="flex flex-wrap gap-2" role="group" aria-label="Lọc trạng thái">
+                <button type="button" data-active-filter="" class="catalog-chip is-active">Tất cả</button>
+                <button type="button" data-active-filter="true" class="catalog-chip">Đang hiện</button>
+                <button type="button" data-active-filter="false" class="catalog-chip">Đang ẩn</button>
+              </div>
+              <div id="admin-list" class="flex flex-col gap-2 overflow-y-auto max-h-[640px] pr-1"></div>
+              <p id="admin-list-empty" hidden class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-xl p-3">
+                Chưa có nhãn. Bấm Thêm mới rồi chọn file 3D.
+              </p>
+            </aside>
+
+            <form id="admin-form" class="admin-editor bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl sketch-shadow" data-mode="create">
+                <input type="hidden" id="field-id">
+                <input type="checkbox" id="field-isActive" checked hidden>
+                <input type="checkbox" id="field-isFeatured" hidden>
+
+                <div class="admin-mode-strip">
+                  <div class="admin-mode-copy">
+                    <span id="admin-mode-badge" class="catalog-chip is-active">Thêm mới</span>
+                    <h2 id="admin-form-title" class="font-['Epilogue'] text-xl font-bold">Gắn nhãn mới</h2>
+                    <p id="admin-form-hint" class="admin-field-hint">Chọn file 3D, đặt tên, rồi lưu. Học sinh chỉ thấy thẻ catalog.</p>
+                  </div>
+                  <div class="admin-mode-actions">
+                    <button type="submit" id="admin-save-btn" class="neo-btn neo-btn-primary rounded-xl px-5 py-2.5 inline-flex items-center gap-2">
+                      <span class="material-symbols-outlined text-[18px]">save</span>
+                      Lưu nhãn
+                    </button>
+                    <button type="button" id="admin-delete-btn" hidden class="neo-btn rounded-xl px-4 py-2.5 inline-flex items-center gap-2 bg-[#ffdad6]">
+                      <span class="material-symbols-outlined text-[18px]">visibility_off</span>
+                      Ẩn
+                    </button>
+                  </div>
+                </div>
+
+                <div class="admin-editor-body">
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>Mô hình</h3>
+                  </div>
+
+                <div class="admin-field">
+                  <label for="field-r2">File 3D trên kho R2</label>
+                  <p class="admin-field-hint">Chỉ hiện file chưa gắn nhãn. Học sinh không thấy đường dẫn.</p>
+                  <select id="field-r2">
+                    <option value="">Chọn file 3D chưa gắn...</option>
+                  </select>
+                  <p id="admin-model-file-meta" class="admin-field-hint" hidden></p>
+                  <input type="hidden" id="field-modelUrl">
+                </div>
+                <div class="admin-row admin-row-2">
+                  <div class="admin-field">
+                    <label for="field-name">Tên hiển thị *</label>
+                    <input id="field-name" type="text" required maxlength="255" placeholder="VD: Hộp sọ người">
+                  </div>
+                  <div class="admin-field">
+                    <label for="field-scientificName">Tên khoa học</label>
+                    <input id="field-scientificName" type="text" maxlength="255" placeholder="VD: Cranium">
+                  </div>
+                </div>
+                <div class="admin-field">
+                  <label for="field-description">Mô tả trên thẻ</label>
+                  <textarea id="field-description" maxlength="2000" placeholder="Câu ngắn học sinh đọc trước khi mở lab."></textarea>
+                </div>
+                </section>
+
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>Phân loại</h3>
+                  </div>
+                  <div>
+                    <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider mb-2">Loại mẫu</p>
+                    <p class="admin-field-hint mb-2">
+                      Chọn chip, hoặc gõ tên mới rồi thêm.
+                      <a href="/admin-categories" class="underline decoration-wavy font-bold">Quản lý loại mẫu</a>
+                    </p>
+                    <div id="admin-category-chips" class="flex flex-wrap gap-2 mb-2"></div>
+                    <div class="admin-inline-add">
+                      <input id="field-category" type="text" maxlength="100" placeholder="VD: Hệ thần kinh" list="admin-category-list">
+                      <datalist id="admin-category-list"></datalist>
+                      <button type="button" id="admin-category-add" class="catalog-chip">Thêm loại</button>
+                    </div>
+                  </div>
+                  <div class="admin-row admin-row-2">
+                    <div>
+                      <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider mb-2">Khối lớp</p>
+                      <div class="flex flex-wrap gap-2" role="group" aria-label="Chọn lớp">
+                        <button type="button" data-grade="" class="catalog-chip is-active">Chưa gắn</button>
+                        <button type="button" data-grade="6" class="catalog-chip">Lớp 6</button>
+                        <button type="button" data-grade="7" class="catalog-chip">Lớp 7</button>
+                        <button type="button" data-grade="8" class="catalog-chip">Lớp 8</button>
+                        <button type="button" data-grade="9" class="catalog-chip">Lớp 9</button>
+                      </div>
+                    </div>
+                    <div class="admin-field">
+                      <label for="field-subject">Môn</label>
+                      <select id="field-subject">
+                        <option value="BIOLOGY">Sinh học</option>
+                        <option value="CHEMISTRY">Hóa học</option>
+                        <option value="PHYSICS">Vật lý</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider mb-2">Lab khi bấm thẻ</p>
+                    <p class="admin-field-hint mb-2">
+                      Lab hệ thống đã có viewer. Lab tự tạo chưa có viewer sẽ mở hộp sọ.
+                      <a href="/admin-labs" class="underline decoration-wavy font-bold">Quản lý lab</a>
+                    </p>
+                    <div id="admin-lab-chips" class="flex flex-wrap gap-2 mb-2"></div>
+                    <div class="admin-inline-add">
+                      <input id="field-lab-name" type="text" maxlength="100" placeholder="Tên lab mới, VD: Tế bào máu">
+                      <button type="button" id="admin-lab-add" class="catalog-chip">Thêm lab</button>
+                    </div>
+                    <input type="hidden" id="field-targetMode">
+                  </div>
+                </section>
+
+                <section class="admin-sheet">
+                  <div class="admin-sheet-head">
+                    <h3>Thẻ học sinh thấy</h3>
+                    <div class="flex flex-wrap gap-2">
+                      <div class="admin-status-pills" role="group" aria-label="Hiện trên catalog">
+                        <button type="button" data-catalog-active="true">Hiện catalog</button>
+                        <button type="button" data-catalog-active="false">Ẩn</button>
+                      </div>
+                      <div class="admin-status-pills" role="group" aria-label="Nổi bật trang chủ">
+                        <button type="button" data-featured="false">Thường</button>
+                        <button type="button" data-featured="true">Nổi bật</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="admin-card-split">
+                    <div class="flex flex-col gap-3">
+                      <div>
+                        <div class="flex items-start justify-between gap-3 flex-wrap">
+                          <p id="admin-rank-hint" class="admin-field-hint">Thứ tự trong kho Sinh học.</p>
+                          <div class="admin-rank-stepper">
+                            <button type="button" id="admin-rank-down" class="catalog-chip" aria-label="Xuống một bậc">−</button>
+                            <span id="admin-rank-value">#1</span>
+                            <button type="button" id="admin-rank-up" class="catalog-chip" aria-label="Lên một bậc">+</button>
+                          </div>
+                        </div>
+                        <ol id="admin-rank-queue" class="admin-rank-queue"></ol>
+                        <input type="hidden" id="field-sortOrder" value="1">
+                      </div>
+                      <div class="admin-row admin-row-2">
+                        <div class="admin-field">
+                          <label for="field-badgeText">Huy hiệu góc thẻ</label>
+                          <input id="field-badgeText" type="text" maxlength="100" placeholder="VD: 3D · KHTN 8">
+                        </div>
+                        <div class="admin-field">
+                          <label for="field-actionText">Chữ nút</label>
+                          <input id="field-actionText" type="text" maxlength="100" placeholder="Khám phá ngay">
+                        </div>
+                      </div>
+                      <div>
+                        <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider mb-2">Ảnh thẻ</p>
+                        <p class="admin-field-hint mb-3">Tải ảnh, crop 4:3. Không dán link.</p>
+                        <div class="admin-thumb-row">
+                          <div id="admin-thumb-preview" class="admin-thumb-preview" aria-live="polite">
+                            <span class="material-symbols-outlined text-[40px] text-[#00864c]">image</span>
+                            <span>Chưa có ảnh</span>
+                          </div>
+                          <div class="flex flex-col gap-2">
+                            <label class="neo-btn neo-btn-primary rounded-xl px-4 py-2 inline-flex items-center gap-2 cursor-pointer">
+                              <span class="material-symbols-outlined text-[18px]">upload</span>
+                              Chọn ảnh
+                              <input id="field-thumb-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+                            </label>
+                            <button type="button" id="admin-thumb-clear" class="catalog-chip" hidden>Xóa ảnh</button>
+                          </div>
+                        </div>
+                        <input type="hidden" id="field-thumbnailUrl">
+                      </div>
+                    </div>
+                    <aside id="admin-preview" class="admin-live-preview">
+                      <strong>Học sinh sẽ thấy</strong>
+                      <div id="admin-preview-card"></div>
+                    </aside>
+                  </div>
+                </section>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="admin-crop-modal" class="admin-crop-modal" hidden>
+    <div class="admin-crop-card">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h2 class="font-['Epilogue'] text-xl font-bold">Crop ảnh thẻ</h2>
+          <p class="admin-field-hint">Kéo để dịch, lăn chuột hoặc thanh trượt để phóng. Khung cố định 4:3.</p>
+        </div>
+        <button type="button" id="admin-crop-cancel" class="catalog-chip">Hủy</button>
+      </div>
+      <div class="admin-crop-stage">
+        <canvas id="admin-crop-canvas" width="720" height="540"></canvas>
+      </div>
+      <label class="admin-crop-zoom">
+        <span>Phóng</span>
+        <input id="admin-crop-zoom" type="range" min="1" max="3" step="0.01" value="1">
+      </label>
+      <div class="flex justify-end gap-2 mt-3">
+        <button type="button" id="admin-crop-apply" class="neo-btn neo-btn-primary rounded-xl px-5 py-2.5 inline-flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">crop</span>
+          Dùng ảnh này
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="w-full border-t-[2.5px] border-[#2d2d2d] bg-[#fdfbf7] py-5">
+    <div class="w-full px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
+      <span class="font-['Space_Grotesk'] text-sm font-bold">BioVerse STEM Lab • Nhân mẫu</span>
+      <a href="/sinh-hoc" class="font-['Space_Grotesk'] text-xs font-bold underline decoration-wavy">Về kho Sinh học</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/pages/adminModels.js"></script>
+</body>
+</html>

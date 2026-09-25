@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kho Mô Hình Sinh Học - BioVerse</title>
+  <meta name="description" content="Danh mục mô hình 3D sinh học cho học sinh THCS: lọc theo lớp, thể loại rồi xoay và xem từng bộ phận.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+    .sketch-paper { background-color: #fdfbf7; background-image: radial-gradient(#dcd5cb 1.5px, transparent 1.5px); background-size: 24px 24px; }
+    .sketch-border { border: 2.5px solid #2d2d2d; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; box-shadow: 4px 4px 0 #2d2d2d; }
+    .sketch-shadow { box-shadow: 4px 4px 0 #2d2d2d; }
+    .sketch-shadow-sm { box-shadow: 2px 2px 0 #2d2d2d; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","surface-container-low":"#f6f3f2","on-surface":"#1b1c1c","on-background":"#1b1c1c","error-container":"#ffdad6","tertiary-container":"#00864c","on-tertiary":"#ffffff","on-primary-fixed-variant":"#930014","on-error-container":"#93000a","surface-container-high":"#eae7e7","primary-fixed-dim":"#ffb3ae","primary-fixed":"#ffdad7","surface-container":"#f0eded","surface-variant":"#e4e2e1","background":"#fcf9f8","inverse-on-surface":"#f3f0f0","on-tertiary-fixed":"#00210f","secondary-fixed-dim":"#a9c7ff","primary-container":"#db3237","surface-bright":"#fcf9f8","on-primary-fixed":"#410004","on-secondary-fixed-variant":"#0a4689","surface-dim":"#dcd9d9","inverse-primary":"#ffb3ae","outline-variant":"#e4beba","tertiary":"#006a3b","on-error":"#ffffff","on-primary-container":"#fffbff","tertiary-fixed-dim":"#6bdc96","primary":"#b71422","on-tertiary-container":"#f6fff4","secondary":"#2e5ea2","on-surface-variant":"#5b403e","surface":"#fcf9f8","on-tertiary-fixed-variant":"#00522c","error":"#ba1a1a","surface-container-lowest":"#ffffff","on-secondary":"#ffffff","surface-tint":"#ba1724","on-secondary-fixed":"#001b3d","inverse-surface":"#303030","tertiary-fixed":"#88f9b0","secondary-container":"#89b4fe","surface-container-highest":"#e4e2e1","on-secondary-container":"#064487","outline":"#8f6f6d","secondary-fixed":"#d6e3ff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-mobile":"1rem","space-xl":"3rem","margin":"2rem","space-lg":"2rem","space-sm":"0.75rem","space-md":"1.25rem","gutter":"1.5rem","gutter-mobile":"1rem","space-xs":"0.375rem"},"fontFamily":{"headline-sm":["Epilogue"],"body-sm":["Be Vietnam Pro"],"body-md":["Be Vietnam Pro"],"headline-lg":["Epilogue"],"label-md":["Space Grotesk"],"headline-md":["Epilogue"],"label-sm":["Space Grotesk"],"body-lg":["Be Vietnam Pro"],"title-md":["Epilogue"],"headline-xl":["Epilogue"],"label-lg":["Space Grotesk"],"headline-lg-mobile":["Epilogue"],"headline-xl-mobile":["Epilogue"]},"fontSize":{"headline-sm":["22px",{"lineHeight":"30px","fontWeight":"700"}],"body-sm":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","fontWeight":"700"}],"label-md":["14px",{"lineHeight":"18px","fontWeight":"700"}],"headline-md":["28px",{"lineHeight":"36px","fontWeight":"700"}],"label-sm":["12px",{"lineHeight":"16px","fontWeight":"600"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"title-md":["20px",{"lineHeight":"28px","fontWeight":"600"}],"headline-xl":["44px",{"lineHeight":"52px","fontWeight":"800"}],"label-lg":["16px",{"lineHeight":"20px","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"headline-xl-mobile":["32px",{"lineHeight":"40px","fontWeight":"800"}]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="home" href="/">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">biotech</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Sổ tay STEM THCS</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]">
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="home" href="/">Khám Phá</a>
+          <a aria-current="page" class="px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]" data-path="lessons-3d" href="/sinh-hoc">Sinh Học</a>
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="study-corner" title="Luyện đề trắc nghiệm" href="/exams">Góc Học Tập</a>
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="stem-qa" href="/">Hỏi Đáp STEM</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-space-md">
+        <div class="hidden md:flex items-center gap-space-xs px-space-md py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm transform rotate-1">
+          <span class="material-symbols-outlined text-[#ed8936] text-[18px]">award_star</span>
+          <span id="header-user-xp" class="font-label-sm text-label-sm text-on-surface">0 XP</span>
+        </div>
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-10">
+      <div class="max-w-7xl mx-auto flex flex-col gap-6">
+        <div class="relative bg-white sketch-border p-5 md:p-7 overflow-visible">
+          <div class="absolute -top-3 left-8 w-28 h-6 bg-[#f0e6d2]/80 border border-dashed border-[#2d2d2d] -rotate-2 pointer-events-none z-10 flex items-center justify-center">
+            <span class="text-[10px] font-['Space_Grotesk'] text-[#76716a] tracking-widest uppercase">SPECIMEN LOG</span>
+          </div>
+          <div class="absolute -top-3 right-10 hidden md:flex flex-col items-center pointer-events-none">
+            <div class="w-4 h-4 rounded-full bg-[#ff4d4d] border-2 border-[#2d2d2d]"></div>
+            <div class="w-0.5 h-2 bg-[#2d2d2d] -mt-0.5"></div>
+          </div>
+
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+            <div class="max-w-2xl">
+              <p class="font-['Space_Grotesk'] text-xs font-bold text-[#00864c] mb-2">
+                <a href="/" class="hover:underline">Trang chủ</a>
+                <span class="text-[#76716a]"> / </span>
+                Sinh học 3D
+              </p>
+              <h1 class="font-['Epilogue'] text-[32px] md:text-[40px] font-extrabold tracking-tight leading-none mb-3">Kho mô hình sinh học</h1>
+              <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-[15px] md:text-base">
+                Chọn mẫu vật, lọc theo lớp hoặc thể loại, rồi mở mô hình 3D để xoay và bấm từng bộ phận.
+              </p>
+            </div>
+            <form id="catalog-search-form" class="w-full lg:w-[340px] flex flex-col gap-1.5">
+              <label for="catalog-search" class="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-wider">Tìm mô hình</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#76716a] text-[20px]">search</span>
+                <input id="catalog-search" type="search" placeholder="VD: phổi, nguyên phân, hộp sọ"
+                  class="w-full pl-10 pr-4 py-2.5 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-lg font-['Be_Vietnam_Pro'] text-sm placeholder:text-[#76716a] focus:outline-none focus:bg-white focus:shadow-[3px_3px_0px_#2d5da1]">
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo khối lớp">
+            <button type="button" data-grade="" aria-pressed="true" class="catalog-chip is-active">Tất cả lớp</button>
+            <button type="button" data-grade="6" aria-pressed="false" class="catalog-chip">Lớp 6</button>
+            <button type="button" data-grade="7" aria-pressed="false" class="catalog-chip">Lớp 7</button>
+            <button type="button" data-grade="8" aria-pressed="false" class="catalog-chip">Lớp 8</button>
+            <button type="button" data-grade="9" aria-pressed="false" class="catalog-chip">Lớp 9</button>
+          </div>
+          <div id="catalog-categories" class="flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo thể loại"></div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-b-2 border-dashed border-[#2d2d2d] pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-8 bg-[#48bb78] rounded-sm border border-[#2d2d2d]"></span>
+            <h2 class="font-['Epilogue'] text-xl md:text-2xl font-bold tracking-tight">Mẫu vật đang mở</h2>
+          </div>
+          <span id="catalog-count" class="font-['Space_Grotesk'] text-xs font-bold bg-[#e8f5e9] border border-[#2d2d2d] px-2.5 py-1 rounded-lg">Đang tải...</span>
+        </div>
+
+        <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+        <div id="catalog-empty" hidden class="bg-[#fff9c4] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#00864c] mb-2">biotech</span>
+          <p class="font-['Epilogue'] text-xl font-bold mb-2">Chưa có mô hình khớp bộ lọc</p>
+          <p class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Xóa lọc hoặc thử từ khóa khác để xem lại kho mẫu vật.</p>
+          <button type="button" id="catalog-clear-filters" class="neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Xóa bộ lọc</button>
+        </div>
+
+        <div id="catalog-error" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">wifi_off</span>
+          <p class="font-['Epilogue'] text-xl font-bold mb-2">Không tải được kho mô hình</p>
+          <p id="catalog-error-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Kiểm tra kết nối backend rồi thử lại.</p>
+          <button type="button" id="catalog-retry" class="neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Thử lại</button>
+        </div>
+
+        <div id="catalog-pagination" class="flex flex-wrap items-center justify-center gap-2 pt-2" aria-label="Phân trang"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="w-full border-t-[2.5px] border-[#2d2d2d] bg-[#fdfbf7] py-5">
+    <div class="w-full px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#006a3b] border border-[#2d2d2d]"></span>
+        <span class="font-['Space_Grotesk'] text-sm font-bold">BioVerse STEM Lab</span>
+        <span class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e]">• Kho mô hình sinh học THCS</span>
+      </div>
+      <a href="/" class="font-['Space_Grotesk'] text-xs font-bold underline decoration-wavy">Về trang chủ</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/pages/sinhHoc.js"></script>
+</body>
+</html>

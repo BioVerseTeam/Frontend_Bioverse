@@ -731,6 +731,7 @@ input:checked + .slider-switch:before {
   cursor: pointer;
   transition: var(--transition-smooth);
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .mode-btn:hover {
@@ -1110,104 +1111,6 @@ input:checked + .slider-switch:before {
 }
 
 /* ===========================
-   TRIPO3D AI PANEL STYLES
-   =========================== */
-.tripo-section {
-  border-top: 1px solid var(--panel-border);
-  padding-top: 16px;
-  margin-top: 12px;
-}
-
-.tripo-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.tripo-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tripo-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  letter-spacing: 0.5px;
-}
-
-.tripo-input {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--panel-border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 13px;
-  outline: none;
-  transition: var(--transition-smooth);
-  width: 100%;
-}
-
-.tripo-input:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
-}
-
-textarea.tripo-input {
-  resize: none;
-}
-
-.tripo-file-upload {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.tripo-file-name {
-  font-size: 11px;
-  color: var(--text-muted);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tripo-status {
-  background: rgba(34, 197, 94, 0.05);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-top: 10px;
-}
-
-.tripo-status-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 500;
-  color: #86efac;
-  margin-bottom: 6px;
-}
-
-.tripo-progress-bar {
-  background: rgba(255, 255, 255, 0.05);
-  height: 4px;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.tripo-progress-fill {
-  background: #22c55e;
-  height: 100%;
-  width: 0%;
-  transition: width 0.3s ease;
-  box-shadow: 0 0 6px #22c55e;
-}
-
-/* ===========================
    RESPONSIVE
    =========================== */
 
@@ -1257,1020 +1160,274 @@ textarea.tripo-input {
   }
 }
 
-/* ============================================================
-   CHEMISTRY LAB MODE (STITCH & ALMANAC STYLE DESIGN)
-   ============================================================ */
-
-/* Almanac Selector Screen */
-.chem-almanac-overlay {
+/* ====================================================================
+   ORGANS 3D HUD FLOATING LABELS & BADGES (GDPT 2018)
+   ==================================================================== */
+.organs-floating-labels {
   position: absolute;
-  top: 80px;
+  top: 0;
   left: 0;
   width: 100%;
-  height: calc(100vh - 80px);
-  z-index: 45;
-  background: radial-gradient(circle at center, rgba(10, 8, 20, 0.96) 0%, rgba(5, 4, 10, 0.99) 100%);
-  padding: 24px;
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  grid-template-rows: 1fr auto;
-  gap: 24px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
   overflow: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.chem-almanac-overlay.hidden {
-  display: none !important;
+.organ-hud-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+  white-space: nowrap;
+  user-select: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  will-change: transform, opacity, left, top;
+}
+
+.organ-hud-badge .badge-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.72rem;
+  color: #ffffff;
+  background: var(--badge-color, #ef4444);
+  box-shadow: 0 0 10px var(--badge-color, #ef4444);
+  flex-shrink: 0;
+}
+
+.organ-hud-badge .badge-text {
+  max-width: 0;
+  overflow: hidden;
   opacity: 0;
-  visibility: hidden;
+  letter-spacing: -0.01em;
+  transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, padding 0.2s ease;
 }
 
-.chem-almanac-left {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 100%;
-  overflow: hidden;
-}
-
-.chem-almanac-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.chem-almanac-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.5px;
-  background: linear-gradient(to right, #ffffff, var(--accent-blue));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.chem-tabs-bar {
-  display: flex;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  align-self: flex-start;
-}
-
-.chem-tab-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  padding: 6px 16px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.chem-tab-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.chem-tab-btn.active {
-  background: var(--accent-blue);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
-}
-
-.chem-grid-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-
-.chem-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 16px;
-}
-
-/* PvZ Almanac Inspired Cards */
-.chem-card {
-  aspect-ratio: 5/7;
-  background: #fdf6e3; /* Màu giấy cổ PvZ */
-  border: 2.5px solid #5d4037; /* Viền nâu */
-  border-radius: 10px;
-  padding: 5px;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
-
-.chem-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-  border-color: var(--accent-blue);
-}
-
-.chem-card.selected {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
-}
-
-.chem-card.selected::before {
-  content: "✓";
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 18px;
-  height: 18px;
-  background: var(--accent-blue);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: bold;
+/* Tự động mở rộng tên khi hover hoặc selected */
+.organ-hud-badge:hover,
+.organ-hud-badge.is-hovered,
+.organ-hud-badge.is-selected {
+  border-color: var(--badge-color, #ef4444);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6), 0 0 12px var(--badge-color, #ef4444);
+  background: rgba(15, 23, 42, 0.95);
   z-index: 10;
-  border: 1px solid #fff;
 }
 
-.chem-card-body {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 6px;
-  border: 1px solid #dcd3be;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.chem-card-symbol {
-  font-size: 24px;
-  font-weight: 700;
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.5px;
-}
-
-.chem-card-cost {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: #fcfcfc;
-  border-top: 1.5px solid #5d4037;
-  border-left: 1.5px solid #5d4037;
-  padding: 0 5px;
-  min-width: 32px;
-  text-align: center;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: bold;
-  color: #3f2618;
-  border-bottom-right-radius: 5px;
-}
-
-.chem-card-cost.liters {
-  color: #005dac;
-}
-
-.chem-card-footer {
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding-top: 3px;
-}
-
-.chem-card-footer span {
-  font-size: 10px;
-  font-weight: 600;
-  color: #3f2618;
-  text-transform: uppercase;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Almanac Detail Panel (Right) */
-.chem-almanac-right {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.chem-detail-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 24px;
-  background: rgba(11, 9, 23, 0.9);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-}
-
-.chem-detail-preview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.chem-detail-circle {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  border: 3px dashed rgba(59, 130, 246, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  box-shadow: inset 0 0 16px rgba(59, 130, 246, 0.1);
-  animation: float 4s ease-in-out infinite;
-}
-
-.chem-detail-symbol-large {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--accent-blue);
-  text-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-}
-
-.chem-detail-name {
-  font-size: 22px;
-  font-weight: 600;
-  color: #fff;
-  margin-top: 12px;
-  text-align: center;
-}
-
-.chem-detail-latin {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-style: italic;
-  margin-top: 2px;
-}
-
-.chem-detail-type {
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 2px 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 99px;
-  color: var(--text-secondary);
-  margin-top: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.chem-detail-scroll {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.organ-hud-badge:hover .badge-text,
+.organ-hud-badge.is-hovered .badge-text,
+.organ-hud-badge.is-selected .badge-text {
+  max-width: 170px;
+  opacity: 1;
   padding-right: 4px;
 }
 
-.chem-detail-section {
-  display: flex;
-  flex-direction: column;
+.organ-hud-badge.is-selected {
+  transform: translate(-50%, -50%) scale(1.12);
+  border-width: 1.5px;
+}
+
+.organ-hud-badge.is-occluded {
+  opacity: 0.15 !important;
+  pointer-events: none !important;
+  transform: translate(-50%, -50%) scale(0.85);
+}
+
+/* Badge biểu thị cấu trúc bên trong */
+.internal-structure-badge {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
-}
-
-.chem-detail-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-.chem-detail-text {
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
-.chem-detail-text.bold {
-  font-weight: bold;
-  color: var(--accent-blue);
-}
-
-.chem-hazard-badge {
-  display: inline-block;
-  font-size: 11px;
+  font-size: 0.72rem;
   font-weight: 600;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
   padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  margin-right: 6px;
+  border-radius: 999px;
   margin-top: 4px;
 }
 
-.chem-action-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  font-family: inherit;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
+/* Sidebar hover & active synchronization */
+#organs-part-list .skull-bone-item {
+  transition: all 0.2s ease;
 }
 
-.chem-action-btn.primary {
-  background: linear-gradient(135deg, var(--accent-blue) 0%, #1e40af 100%);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+#organs-part-list .skull-bone-item.is-hovered:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateX(4px);
 }
 
-.chem-action-btn.primary:hover {
-  opacity: 0.95;
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.5);
+#organs-part-list .skull-bone-item.active {
+  background: rgba(244, 63, 94, 0.15);
+  border-color: var(--accent-pink);
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.3);
+  transform: translateX(6px);
 }
 
-.chem-action-btn.remove {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.chem-action-btn.remove:hover {
-  background: rgba(239, 68, 68, 0.25);
-}
-
-/* Almanac Bottom Cart Dock */
-.chem-almanac-bottom {
-  grid-column: 1 / -1;
-  height: 80px;
-  background: rgba(11, 9, 23, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.chem-cart-summary {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.chem-cart-btn-trigger {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--accent-blue);
-  border: none;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-  transition: transform 0.2s;
-}
-
-.chem-cart-btn-trigger:hover {
-  transform: scale(1.05);
-}
-
-.chem-cart-btn-trigger svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-}
-
-.chem-cart-counter {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: var(--accent-teal);
-  color: #fff;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 11px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #000;
-}
-
-.chem-cart-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.chem-cart-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-}
-
-.chem-cart-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  margin-top: 2px;
-}
-
-.chem-cart-items-preview {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  max-width: 50%;
-  padding: 4px 0;
-}
-
-.chem-cart-item-dot {
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: bold;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.chem-cart-item-dot-del {
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.chem-cart-item-dot-del:hover {
-  color: #ef4444;
-}
-
-.chem-initialize-btn {
-  padding: 12px 28px;
-  border-radius: 24px;
-  border: none;
-  background: linear-gradient(135deg, var(--accent-teal) 0%, #0d9488 100%);
-  color: #fff;
-  font-family: inherit;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(20, 184, 166, 0.3);
-  transition: var(--transition-smooth);
-}
-
-.chem-initialize-btn:hover {
-  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.5);
-  transform: translateY(-1px);
-}
-
-.chem-initialize-btn:disabled {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: var(--text-muted) !important;
-  box-shadow: none !important;
-  cursor: not-allowed;
-}
-
-/* ==========================================
-   3D WORKBENCH LAB MODE OVERLAYS
-   ========================================== */
-
-/* HUD Telemetry Panel (Right) */
-.chem-hud-telemetry {
-  position: absolute;
-  right: 24px;
-  top: 120px;
-  width: 320px;
-  height: calc(100vh - 280px);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  pointer-events: auto;
-}
-
-.chem-telemetry-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  gap: 20px;
-}
-
-.chem-telemetry-section {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.chem-telemetry-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.chem-telemetry-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: bold;
-  letter-spacing: 0.5px;
-}
-
-.chem-telemetry-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--accent-blue);
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.chem-telemetry-bar {
-  height: 6px;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.chem-telemetry-bar-fill {
-  height: 100%;
-  background: var(--accent-blue);
-  transition: width 0.5s ease-out;
-}
-
-.chem-telemetry-graph-box {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100px;
-}
-
-.chem-telemetry-graph-box svg {
-  width: 100%;
-  height: 100%;
-}
-
-.chem-telemetry-graph-label {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  font-size: 9px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-}
-
-/* Bottom Inventory Dock */
-.chem-hud-bottom-dock {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  pointer-events: auto;
-}
-
-.chem-dock-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  border-radius: 20px;
-  background: rgba(11, 9, 23, 0.85);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-.chem-dock-grid {
-  display: flex;
-  gap: 8px;
-}
-
-.chem-dock-item {
-  width: 58px;
-  height: 58px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.chem-dock-item:hover {
-  border-color: var(--accent-blue);
-  background: rgba(59, 130, 246, 0.08);
-  transform: translateY(-2px);
-}
-
-.chem-dock-item.active {
-  border-color: var(--accent-blue);
-  background: rgba(59, 130, 246, 0.15);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-}
-
-.chem-dock-item-sym {
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
-}
-
-.chem-dock-item-name {
-  font-size: 8.5px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  margin-top: 2px;
-  max-width: 90%;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.chem-dock-item.add-btn {
-  border: 1.5px dashed rgba(255, 255, 255, 0.2);
-  color: var(--text-secondary);
-}
-
-.chem-dock-item.add-btn:hover {
-  border-color: var(--accent-teal);
-  color: #fff;
-  background: rgba(20, 184, 166, 0.08);
-}
-
-.chem-dock-divider {
-  width: 1px;
-  height: 38px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 0 4px;
-}
-
-.chem-dock-action {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0 10px;
-  transition: var(--transition-smooth);
-}
-
-.chem-dock-action:hover {
-  color: #fff;
-}
-
-.chem-dock-action svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-}
-
-.chem-dock-action span {
-  font-size: 9px;
-  font-weight: bold;
-  text-transform: uppercase;
-  margin-top: 4px;
-}
-
-/* Sidebar Specifics */
-.chem-list-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 180px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.chem-list-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Educational disclaimer note for internal structure */
+.organs-info-edu-note {
+  margin-top: 6px;
+  margin-bottom: 12px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 8px;
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 0.8rem;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #fde047;
+  line-height: 1.45;
 }
 
-.chem-list-item.active {
-  border-color: var(--accent-blue);
-  background: rgba(59, 130, 246, 0.05);
-}
+/* ====================================================================
+ * MULTI-ORGAN SUB-NAVIGATION DOCK & STATUS TOAST (KHTN 8)
+ * ==================================================================== */
 
-.chem-list-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 8px;
-  display: inline-block;
-}
-
-.chem-list-name {
-  flex: 1;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.chem-list-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--accent-teal);
-}
-
-.chem-reaction-alert {
-  padding: 12px 14px;
-  background: rgba(20, 184, 166, 0.05);
-  border: 1px solid rgba(20, 184, 166, 0.2);
-  border-radius: 8px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #a7f3d0;
+.organs-subdock {
+  position: absolute;
+  bottom: 136px;
+  left: calc((100% - 424px) / 2 + 24px);
+  transform: translateX(-50%);
   display: flex;
+  align-items: center;
   gap: 8px;
-  align-items: flex-start;
-  animation: pulseReaction 2s infinite alternate;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(11, 15, 29, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  z-index: 20;
+  pointer-events: auto;
+  max-width: calc(100vw - 480px);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.chem-reaction-alert.hidden {
+.organs-subdock::-webkit-scrollbar {
   display: none;
 }
 
-.chem-reaction-alert svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: var(--accent-teal);
-}
-
-@keyframes pulseReaction {
-  0% { box-shadow: 0 0 4px rgba(20, 184, 166, 0.1); border-color: rgba(20, 184, 166, 0.2); }
-  100% { box-shadow: 0 0 12px rgba(20, 184, 166, 0.3); border-color: rgba(20, 184, 166, 0.5); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-/* ============================================================
-   COLLAPSIBLE SIDEBAR & TOGGLE BUTTON STYLES
-   ============================================================ */
-
-.sidebar-card.collapsed {
-  transform: translateX(calc(100% + 48px));
-  box-shadow: none;
-}
-
-.sidebar-toggle-btn {
-  position: absolute;
-  left: -32px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 64px;
-  background: rgba(15, 12, 30, 0.85); /* Tương thích kính mờ của panel */
-  border: 1px solid var(--panel-border);
-  border-right: none;
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-radius: 12px 0 0 12px;
+.organ-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: var(--transition-smooth);
-  box-shadow: -8px 0 20px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-}
-
-.sidebar-toggle-btn:hover {
-  color: var(--text-primary);
-  background: rgba(25, 20, 50, 0.95);
-  box-shadow: -10px 0 24px rgba(0, 0, 0, 0.4);
-}
-
-.sidebar-toggle-btn svg {
-  transition: transform 0.3s ease;
-}
-
-/* Hiệu ứng xung nhịp nhẹ khi người dùng rê chuột qua */
-.sidebar-toggle-btn:hover svg {
-  transform: scale(1.15);
-}
-
-/* ============================================================
-   VESSEL PICKER MODAL
-   ============================================================ */
-.vessel-picker-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 200;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.25s ease;
-}
-
-.vessel-picker-overlay.hidden {
-  display: none !important;
-  opacity: 0;
-}
-
-.vessel-picker-card {
-  background: linear-gradient(145deg, #1a1530, #12101f);
-  border: 1px solid rgba(100, 120, 255, 0.2);
-  border-radius: 16px;
-  padding: 28px 32px;
-  min-width: 380px;
-  max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(80, 100, 255, 0.08);
-}
-
-.vessel-picker-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.vessel-picker-header h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
-}
-
-.vessel-picker-close-btn {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 24px;
-  cursor: pointer;
-  padding: 4px 8px;
-  line-height: 1;
-  transition: color 0.2s;
-}
-
-.vessel-picker-close-btn:hover {
-  color: #fff;
-}
-
-.vessel-picker-subtitle {
-  font-size: 14px;
-  color: var(--accent-blue);
-  margin: 0 0 20px 0;
+  font-size: 0.82rem;
   font-weight: 500;
-}
-
-.vessel-picker-options {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.vessel-picker-option {
-  background: rgba(255, 255, 255, 0.04);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px 12px;
-  text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  white-space: nowrap;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
 }
 
-.vessel-picker-option:hover {
-  background: rgba(100, 120, 255, 0.1);
-  border-color: rgba(100, 120, 255, 0.4);
-  transform: translateY(-2px);
-}
-
-.vessel-picker-option.selected {
-  background: rgba(100, 120, 255, 0.15);
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 12px rgba(100, 120, 255, 0.2);
-}
-
-.vessel-picker-option.in-cart {
-  border-color: var(--accent-green);
-  background: rgba(16, 185, 129, 0.08);
-}
-
-.vessel-picker-option-icon {
-  font-size: 28px;
-  margin-bottom: 6px;
-}
-
-.vessel-picker-option-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #ddd;
-}
-
-.vessel-picker-option-sub {
-  font-size: 11px;
-  color: #888;
-  margin-top: 2px;
-}
-
-.vessel-picker-hint {
-  font-size: 12px;
-  color: #666;
-  margin: 0;
-  text-align: center;
-}
-
-.vessel-picker-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.vessel-picker-confirm-btn {
-  flex: 1;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: var(--accent-blue);
+.organ-dock-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
-}
-
-.vessel-picker-confirm-btn:hover {
-  background: #5b7fff;
   transform: translateY(-1px);
 }
 
-.vessel-picker-confirm-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.vessel-picker-cancel-btn {
-  padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: transparent;
-  color: #aaa;
-}
-
-.vessel-picker-cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+.organ-dock-btn.active {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.4), rgba(225, 29, 72, 0.55));
+  border-color: rgba(244, 63, 94, 0.85);
   color: #fff;
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.4);
+  font-weight: 600;
 }
+
+.organ-dock-btn[aria-disabled="true"] {
+  opacity: 0.7;
+  cursor: pointer; /* Cho phép click để hiện status toast thông báo */
+}
+
+.organ-dock-btn[aria-disabled="true"]:hover {
+  opacity: 0.95;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.organ-dock-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.organ-dock-badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.organs-status-toast {
+  position: absolute;
+  bottom: 188px;
+  left: calc((100% - 424px) / 2 + 24px);
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #e0f2fe;
+  font-size: 0.82rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 30;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.organs-status-toast.hidden {
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .organs-subdock {
+    left: 50%;
+    bottom: calc(100px + 24px);
+    max-width: calc(100vw - 48px);
+  }
+  .organs-status-toast {
+    left: 50%;
+    bottom: calc(100px + 72px);
+    max-width: calc(100vw - 48px);
+    white-space: normal;
+    text-align: center;
+  }
+}
+
 

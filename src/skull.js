@@ -28,6 +28,7 @@ export class SkullViewer {
     this.highlightedRegion = null;
     this.hoveredRegion = null;
     this.isLoaded = false;
+    this.isActive = false;
 
     this.onRegionClick = null; // callback(region, screenPos)
     this.onHover = null; // callback(region | null, screenPos)
@@ -44,7 +45,10 @@ export class SkullViewer {
     this._downPos = null; // để phân biệt click vs kéo xoay
 
     this._onMouseMove = this._handleMouseMove.bind(this);
-    this._onMouseDown = (e) => { this._downPos = { x: e.clientX, y: e.clientY }; };
+    this._onMouseDown = (e) => {
+      if (!this.isActive) return;
+      this._downPos = { x: e.clientX, y: e.clientY };
+    };
     this._onMouseUp = this._handleMouseUp.bind(this);
     this._onResize = this._handleResize.bind(this);
 
@@ -240,6 +244,8 @@ export class SkullViewer {
   }
 
   _handleMouseMove(event) {
+    if (!this.isActive) return;
+
     const result = this._pick(event);
     const region = result?.region || null;
 
@@ -255,6 +261,8 @@ export class SkullViewer {
   }
 
   _handleMouseUp(event) {
+    if (!this.isActive) return;
+
     // Bỏ qua nếu người dùng đang kéo để xoay (di chuyển > ngưỡng)
     if (this._downPos) {
       const dx = event.clientX - this._downPos.x;
@@ -336,6 +344,8 @@ export class SkullViewer {
 
   _animate() {
     this._animFrameId = requestAnimationFrame(this._animate.bind(this));
+    if (!this.isActive) return;
+
     try {
       // Hiệu ứng nhấp nháy nhẹ cho vùng đang chọn
       if (this.highlightedRegion) {
@@ -393,15 +403,37 @@ export class SkullViewer {
     step();
   }
 
+  activate() {
+    this.isActive = true;
+    if (this.renderer?.domElement) {
+      this.renderer.domElement.style.display = 'block';
+    }
+    this._handleResize();
+  }
+
+  deactivate() {
+    this.isActive = false;
+    if (this.renderer?.domElement) {
+      this.renderer.domElement.style.display = 'none';
+      this.renderer.domElement.style.cursor = 'default';
+    }
+    this.hoveredRegion = null;
+    this.clearHighlight();
+    if (this.onHover) {
+      this.onHover(null, null);
+    }
+  }
+
   show() {
-    this.renderer.domElement.style.display = 'block';
+    this.activate();
   }
 
   hide() {
-    this.renderer.domElement.style.display = 'none';
+    this.deactivate();
   }
 
   destroy() {
+    this.deactivate();
     cancelAnimationFrame(this._animFrameId);
     this.container.removeEventListener('mousemove', this._onMouseMove);
     this.container.removeEventListener('mousedown', this._onMouseDown);
