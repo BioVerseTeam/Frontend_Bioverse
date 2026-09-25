@@ -1,114 +1,482 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trắc nghiệm Sinh học - Bioverse</title>
-  <meta name="description" content="Làm bài kiểm tra và thi trắc nghiệm môn Sinh học.">
+  <title>Khảo Thí & Trắc Nghiệm KHTN - BioVerse</title>
+  <meta name="description" content="Làm bài kiểm tra, ôn luyện trắc nghiệm môn Khoa học Tự nhiên THCS chuẩn SGK kết hợp mô hình 3D trực quan.">
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="stylesheet" href="/src/styles/exams.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  <link rel="stylesheet" href="/src/style.css">
-  <link rel="stylesheet" href="/src/styles/exams.css">
-  <link rel="stylesheet" href="/src/sketchbook.css">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+    [hidden] { display: none !important; }
+    .sketch-paper { background-color: #fdfbf7; background-image: radial-gradient(#dcd5cb 1.5px, transparent 1.5px); background-size: 24px 24px; }
+    .sketch-shadow-sm { box-shadow: 2px 2px 0 #2d2d2d; }
+    .sketch-shadow { box-shadow: 4px 4px 0 #2d2d2d; }
+    .sketch-shadow-lg { box-shadow: 6px 6px 0 #2d2d2d; }
+
+    /* Custom radio styling for exam options */
+    .answer-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .answer-card:hover:not(.disabled) {
+      transform: translateY(-2px);
+      box-shadow: 2px 2px 0 #2d2d2d;
+    }
+    .answer-card.is-selected {
+      background-color: #e0f2fe !important;
+      border-color: #0284c7 !important;
+      box-shadow: 3px 3px 0 #0284c7 !important;
+    }
+    .answer-card.is-correct {
+      background-color: #e8f5e9 !important;
+      border-color: #00864c !important;
+      box-shadow: 3px 3px 0 #00864c !important;
+    }
+    .answer-card.is-wrong {
+      background-color: #ffebee !important;
+      border-color: #d32f2f !important;
+      box-shadow: 3px 3px 0 #d32f2f !important;
+    }
+
+    /* Palette button animations */
+    .palette-btn {
+      transition: all 0.15s ease;
+    }
+    .palette-btn:hover {
+      transform: scale(1.08);
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#b71422",
+            "primary-container": "#db3237",
+            "on-primary": "#ffffff",
+            "tertiary": "#006a3b",
+            "sketch-border": "#2d2d2d"
+          },
+          fontFamily: {
+            "headline": ["Epilogue", "sans-serif"],
+            "body": ["Be Vietnam Pro", "sans-serif"],
+            "mono": ["Space Grotesk", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
 </head>
 
-<body class="sketch-paper">
-  <div id="app" class="exam-app">
-    <!-- UI Interaction Overlay -->
-    <div class="ui-overlay sketch-lab-overlay" style="pointer-events: auto;">
+<body class="sketch-paper font-body text-[#1b1c1c] min-h-screen flex flex-col">
 
-      <!-- Header -->
-      <header class="glass-card header-card">
-        <div class="brand" style="display: flex; align-items: center; gap: 10px;">
-          <a href="/" title="Về Trang Chủ BioVerse" style="display: inline-flex; align-items: center; gap: 6px; background: #ff4d4d; color: white; border: 2px solid #2d2d2d; border-radius: 8px; padding: 4px 8px; font-family: 'Space Grotesk', monospace; font-size: 11px; font-weight: bold; text-decoration: none; box-shadow: 2px 2px 0px #2d2d2d;">
-            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_back</span>
-            <span>Trang Chủ</span>
-          </a>
-          <div class="brand-icon" aria-hidden="true"></div>
-          <h1 id="app-title">HỆ THỐNG TRẮC NGHIỆM</h1>
-        </div>
-        <!-- Mode Switcher -->
-        <div class="mode-switcher">
-          <button id="back-to-3d" class="mode-btn" title="Về kho mô hình 3D">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-            </svg>
-            Kho mô hình 3D
-          </button>
-        </div>
-      </header>
-
-      <div class="exam-container">
-        <!-- View 1: Exam List -->
-        <div id="view-exam-list" class="exam-view active">
-          <div class="glass-card exam-main-card">
-            <h2>Danh sách Đề thi</h2>
-            <div class="search-bar">
-              <input type="text" id="search-exam-input" placeholder="Tìm kiếm tên đề, mã đề, hoặc môn học...">
-            </div>
-            <div id="loading-exams" class="loading-spinner hidden">Đang tải dữ liệu...</div>
-            <div id="exams-grid" class="exams-grid">
-              <!-- Exams will be rendered here -->
-            </div>
+  <!-- =========================================================================
+       HEADER TOÀN TRANG
+       ========================================================================= -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d] backdrop-blur-sm">
+    <div class="h-20 w-full px-4 md:px-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4 min-w-0">
+        <a class="flex items-center gap-2 group shrink-0" href="/">
+          <div class="w-10 h-10 rounded-lg bg-[#b71422] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-white text-[24px]">quiz</span>
           </div>
-        </div>
+          <div class="flex flex-col">
+            <span class="font-headline text-[20px] md:text-[22px] font-extrabold tracking-tight text-[#b71422] uppercase leading-tight">BioVerse</span>
+            <span class="font-mono text-[11px] md:text-[12px] text-[#5b403e] font-bold tracking-wide">Khảo Thí STEM THCS</span>
+          </div>
+        </a>
 
-        <!-- View 2: Exam Details -->
-        <div id="view-exam-details" class="exam-view hidden">
-          <div class="glass-card exam-main-card">
-            <button class="btn btn-secondary back-btn" id="btn-back-to-list">← Quay lại danh sách</button>
-            <div class="exam-details-header">
-              <h2 id="detail-exam-name">Tên đề thi</h2>
-              <div class="exam-badges">
-                <span id="detail-exam-subject" class="badge">Môn học</span>
-                <span id="detail-exam-type" class="badge">Loại</span>
-                <span id="detail-exam-code" class="badge badge-code">Mã đề</span>
+        <div class="hidden sm:flex items-center gap-2">
+          <a href="/" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-[#2d2d2d] rounded-xl font-mono text-xs font-bold hover:bg-[#f6f3f2] sketch-shadow-sm transition-transform active:translate-y-0.5">
+            <span class="material-symbols-outlined text-[16px]">home</span>
+            Trang Chủ
+          </a>
+          <a href="/sinh-hoc" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-[#2d2d2d] rounded-xl font-mono text-xs font-bold hover:bg-[#e8f5e9] sketch-shadow-sm transition-transform active:translate-y-0.5">
+            <span class="material-symbols-outlined text-[16px]">view_in_ar</span>
+            Kho mô hình 3D
+          </a>
+        </div>
+      </div>
+
+      <!-- Cụm thông tin người dùng / XP -->
+      <div id="header-user-cluster" class="flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm">
+          <span class="material-symbols-outlined text-[#d97706] text-[18px]">workspace_premium</span>
+          <span id="header-user-xp" class="font-mono text-xs font-bold text-[#2d2d2d]">0 XP</span>
+        </div>
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-mono text-xs md:text-sm font-bold text-[#1b1c1c]">Học sinh BioVerse</span>
+          <span id="header-user-grade" class="font-mono text-[11px] text-[#006a3b] font-bold">KHTN 6 - 9</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="w-9 h-9 rounded-full bg-[#b71422] flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm hover:opacity-90">
+          <span class="material-symbols-outlined text-white text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       NỘI DUNG CHÍNH (3 MÀN HÌNH CHUYỂN ĐỔI)
+       ========================================================================= -->
+  <main class="w-full pt-24 pb-16 flex-1">
+    <div class="max-w-7xl mx-auto px-4 md:px-8">
+
+      <!-- =====================================================================
+           VIEW 1: DANH SÁCH ĐỀ THI (STUDENT EXAM CATALOG)
+           ===================================================================== -->
+      <section id="view-exam-list" class="flex flex-col gap-6">
+
+        <!-- Banner Chào Mừng & Giới Thiệu -->
+        <div class="relative bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 md:p-8 sketch-shadow overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] border border-[#d97706] text-[#b45309] font-mono text-xs font-bold uppercase mb-3">
+              <span class="material-symbols-outlined text-[16px]">school</span>
+              Hệ thống khảo thí & ôn tập trực tuyến
+            </div>
+            <h1 class="font-headline text-2xl md:text-4xl font-extrabold text-[#1b1c1c] leading-tight">
+              Luyện Thi Khoa Học Tự Nhiên
+            </h1>
+            <p class="font-body text-sm md:text-base text-[#5b403e] mt-2 leading-relaxed">
+              Ngân hàng đề thi trắc nghiệm chuẩn chương trình SGK mới (Kết nối tri thức, Chân trời sáng tạo, Cánh diều). Có chấm điểm tự động, lời giải thích chi tiết và tích hợp mô hình 3D sinh động.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap sm:flex-col gap-3 shrink-0">
+            <div class="flex items-center gap-2.5 px-4 py-2 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm">
+              <span class="material-symbols-outlined text-[#006a3b] text-[24px]">verified</span>
+              <div>
+                <span class="block font-mono text-xs font-bold text-[#1b1c1c]">100% Chuẩn SGK</span>
+                <span class="block text-[11px] text-[#76716a]">Chấm điểm chuẩn xác</span>
               </div>
             </div>
-            <p id="detail-exam-desc" class="exam-desc">Mô tả đề thi</p>
-
-            <div class="exam-actions">
-              <button id="btn-start-exam" class="btn btn-primary btn-large">Bắt đầu làm bài</button>
+            <div class="flex items-center gap-2.5 px-4 py-2 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm">
+              <span class="material-symbols-outlined text-[#b71422] text-[24px]">auto_stories</span>
+              <div>
+                <span class="block font-mono text-xs font-bold text-[#1b1c1c]">Có Lời Giải Chi Tiết</span>
+                <span class="block text-[11px] text-[#76716a]">Ôn bài sau khi nộp</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- View 3: Taking Exam -->
-        <div id="view-take-exam" class="exam-view hidden">
-          <div class="glass-card exam-main-card taking-exam-card">
-            <div class="taking-exam-header">
-              <h2 id="taking-exam-title">Đang làm bài: </h2>
+        <!-- Thanh Tìm Kiếm & Bộ Lọc Môn Học / Khối Lớp -->
+        <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <!-- Ô tìm kiếm từ khóa -->
+          <div class="relative flex-1">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
+            <input type="search" id="search-exam-input" placeholder="Tìm theo tên đề thi, mã đề (Ví dụ: Giữa kì 1, Đề số 1...)" class="w-full pl-10 pr-4 py-2.5 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-sm font-medium outline-none focus:bg-white transition-colors">
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Dropdown Môn Học (Chỉ lấy Tên môn học thuần túy) -->
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-gray-500 text-[20px]">menu_book</span>
+              <select id="filter-exam-subject" class="py-2.5 px-3 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-sm font-mono font-bold outline-none cursor-pointer">
+                <option value="">Tất cả môn học</option>
+              </select>
             </div>
 
-            <div id="questions-container" class="questions-container">
-              <!-- Questions will be rendered here -->
-            </div>
+            <!-- Nút Lịch sử thi -->
+            <button type="button" id="btn-open-history" class="px-3.5 py-2.5 bg-[#fdfbf7] hover:bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-mono text-xs font-bold flex items-center gap-1.5 transition-transform active:translate-y-0.5" title="Xem lịch sử làm bài thi">
+              <span class="material-symbols-outlined text-[18px] text-[#0284c7]">history</span>
+              <span class="hidden sm:inline">Lịch sử làm bài</span>
+            </button>
 
-            <div class="exam-actions sticky-actions">
-              <button id="btn-submit-exam" class="btn btn-primary btn-large">Nộp Bài</button>
-            </div>
+            <!-- Nút làm mới danh sách -->
+            <button type="button" id="btn-reload-exams" class="p-2.5 bg-[#fdfbf7] hover:bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-bold flex items-center justify-center transition-transform active:translate-y-0.5" title="Làm mới danh sách">
+              <span class="material-symbols-outlined text-[20px]">refresh</span>
+            </button>
           </div>
         </div>
 
-        <!-- View 4: Exam Results -->
-        <div id="view-exam-results" class="exam-view hidden">
-          <div class="glass-card exam-main-card results-card">
-            <h2>Kết Quả Làm Bài</h2>
-            <div class="score-display">
-              <span id="result-score" class="score-number">0</span>
-              <span class="score-divider">/</span>
-              <span id="result-total" class="score-total">0</span>
-            </div>
-            <p id="result-message" class="result-message">Tuyệt vời!</p>
+        <!-- Lưới Danh Sách Đề Thi -->
+        <div id="loading-exams" class="py-12 text-center text-sm font-mono font-bold text-[#76716a]">
+          <span class="material-symbols-outlined text-[32px] animate-spin text-[#b71422] mb-2">progress_activity</span>
+          <p>Đang tải ngân hàng đề thi...</p>
+        </div>
 
-            <div class="exam-actions">
-              <button id="btn-review-exam" class="btn btn-secondary">Xem lại bài làm</button>
-              <button id="btn-finish-exam" class="btn btn-primary">Hoàn tất</button>
+        <div id="exams-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Các thẻ đề thi sẽ được render tại đây -->
+        </div>
+
+      </section>
+
+      <!-- =====================================================================
+           VIEW 2: MÀN HÌNH LÀM BÀI THI (EXAM TAKING STUDIO)
+           ===================================================================== -->
+      <section id="view-take-exam" hidden style="display: none;" class="flex flex-col gap-6">
+
+        <!-- Top Sticky Control Bar -->
+        <div class="sticky top-20 z-40 bg-[#fdfbf7] border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <button type="button" id="btn-abort-exam" class="p-2 bg-white hover:bg-red-50 text-red-600 border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm transition-transform active:translate-y-0.5" title="Thoát khỏi bài thi">
+              <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="taking-exam-code" class="px-2 py-0.5 rounded bg-[#fff9c4] border border-[#2d2d2d] font-mono font-bold text-xs text-[#2d2d2d]">MÃ ĐỀ</span>
+                <span id="taking-exam-subject" class="px-2 py-0.5 rounded bg-[#e8f5e9] border border-[#48bb78] text-[#006a3b] font-mono font-semibold text-xs">Môn học</span>
+              </div>
+              <h2 id="taking-exam-title" class="font-headline text-base md:text-lg font-bold text-[#1b1c1c] line-clamp-1 mt-0.5">Tên đề thi</h2>
             </div>
+          </div>
+
+          <div class="flex items-center justify-between sm:justify-end gap-4">
+            <!-- Đồng hồ đếm ngược -->
+            <div id="exam-timer-box" class="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-mono font-bold text-base text-[#1b1c1c]">
+              <span class="material-symbols-outlined text-[#b71422] text-[20px] animate-pulse">timer</span>
+              <span id="exam-countdown">45:00</span>
+            </div>
+
+            <!-- Nút Nộp Bài -->
+            <button type="button" id="btn-submit-exam" class="px-5 py-2.5 bg-[#b71422] hover:bg-[#db3237] text-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-headline text-sm font-bold inline-flex items-center gap-1.5 transition-transform active:translate-y-0.5">
+              <span class="material-symbols-outlined text-[18px]">send</span>
+              Nộp Bài Thi
+            </button>
+          </div>
+        </div>
+
+        <!-- Layout 2 cột: Cột câu hỏi bên trái (70%) & Bảng câu hỏi bên phải (30%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- Cột chính: Danh sách câu hỏi -->
+          <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Thanh trạng thái tiến độ -->
+            <div class="bg-white border-2 border-[#2d2d2d] rounded-2xl p-4 sketch-shadow-sm flex flex-col gap-2">
+              <div class="flex items-center justify-between text-xs font-mono font-bold">
+                <span class="text-[#1b1c1c]">Tiến độ bài làm:</span>
+                <span id="taking-progress-text" class="text-[#006a3b]">0 / 40 câu (0%)</span>
+              </div>
+              <div class="w-full h-3 bg-gray-100 border border-[#2d2d2d] rounded-full overflow-hidden">
+                <div id="taking-progress-bar" class="h-full bg-[#00864c] transition-all duration-300" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Khung chứa các câu hỏi -->
+            <div id="questions-container" class="flex flex-col gap-5">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Footer nút nộp bài chân trang -->
+            <div class="bg-white border-2 border-[#2d2d2d] rounded-2xl p-6 sketch-shadow flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+              <div class="text-xs text-[#5b403e]">
+                <p class="font-bold">Đã hoàn thành xong các câu hỏi?</p>
+                <p>Hãy kiểm tra lại kỹ các phương án trước khi bấm nộp bài.</p>
+              </div>
+              <button type="button" id="btn-submit-exam-footer" class="w-full sm:w-auto px-6 py-3 bg-[#b71422] hover:bg-[#db3237] text-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow font-headline font-bold text-sm inline-flex items-center justify-center gap-2 transition-transform active:translate-y-0.5">
+                <span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+                Nộp Bài Hoàn Tất
+              </button>
+            </div>
+          </div>
+
+          <!-- Cột phụ: Bảng ma trận câu hỏi (Question Palette / Matrix) Sticky -->
+          <aside class="lg:col-span-4 sticky top-44 bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-5 sketch-shadow flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b-2 border-dashed border-[#dcd5cb] pb-3">
+              <h3 class="font-headline text-base font-bold text-[#1b1c1c] flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[#0284c7] text-[20px]">apps</span>
+                Danh Mục Câu Hỏi
+              </h3>
+              <span id="palette-count-badge" class="px-2 py-0.5 rounded bg-gray-100 border text-xs font-mono font-bold">40 câu</span>
+            </div>
+
+            <!-- Chú thích trạng thái -->
+            <div class="grid grid-cols-3 gap-2 text-[11px] font-mono font-medium">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3.5 h-3.5 rounded bg-[#fdfbf7] border border-[#2d2d2d]"></span>
+                <span>Chưa làm</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-3.5 h-3.5 rounded bg-[#00864c] border border-[#00864c]"></span>
+                <span class="text-[#00864c] font-bold">Đã chọn</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-3.5 h-3.5 rounded bg-[#fef3c7] border border-[#d97706]"></span>
+                <span class="text-[#b45309] font-bold">Đặt cờ</span>
+              </div>
+            </div>
+
+            <!-- Ma trận các ô số câu hỏi (1..N) -->
+            <div id="palette-container" class="grid grid-cols-5 gap-2 max-h-[340px] overflow-y-auto pr-1 py-1">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Thống kê nhanh trong palette -->
+            <div class="border-t-2 border-dashed border-[#dcd5cb] pt-3 flex items-center justify-between text-xs font-mono">
+              <span class="text-[#76716a]">Đã làm: <strong id="palette-answered-stat" class="text-[#00864c]">0</strong></span>
+              <span class="text-[#76716a]">Chưa làm: <strong id="palette-unanswered-stat" class="text-[#b71422]">0</strong></span>
+              <span class="text-[#76716a]">Đánh dấu: <strong id="palette-flagged-stat" class="text-[#b45309]">0</strong></span>
+            </div>
+          </aside>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================================
+           VIEW 3: MÀN HÌNH KẾT QUẢ & XEM LẠI BÀI LÀM (EXAM RESULTS & REVIEW)
+           ===================================================================== -->
+      <section id="view-exam-results" hidden style="display: none;" class="flex flex-col gap-6">
+
+        <!-- Card Kết Quả Điểm Số Chính (Hero Result Card) -->
+        <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 md:p-10 sketch-shadow flex flex-col items-center text-center relative overflow-hidden">
+          
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] border border-[#d97706] text-[#b45309] font-mono text-xs font-bold uppercase mb-3">
+            <span class="material-symbols-outlined text-[16px]">celebration</span>
+            Bài kiểm tra đã hoàn thành
+          </div>
+
+          <h2 class="font-headline text-2xl md:text-3xl font-extrabold text-[#1b1c1c]">Kết Quả Khảo Thí</h2>
+          <p id="result-exam-title" class="text-sm font-medium text-[#5b403e] mt-1 max-w-xl">Đề thi giữa kì 1 KHTN 6</p>
+
+          <!-- Vòng tròn hiển thị điểm số lớn -->
+          <div class="my-6 flex flex-col items-center justify-center">
+            <div class="w-36 h-36 md:w-44 md:h-44 rounded-full border-[3px] border-[#2d2d2d] bg-[#fdfbf7] sketch-shadow flex flex-col items-center justify-center p-4">
+              <span id="result-score-10" class="font-headline text-4xl md:text-5xl font-extrabold text-[#b71422]">8.5</span>
+              <span class="font-mono text-xs font-bold uppercase text-[#76716a] mt-1">Thang điểm 10</span>
+            </div>
+            <p id="result-fraction-text" class="font-mono text-sm font-bold text-[#1b1c1c] mt-3">Đúng: 34 / 40 câu hỏi</p>
+          </div>
+
+          <div id="result-eval-badge" class="px-4 py-1.5 rounded-xl border-2 border-[#2d2d2d] font-headline text-sm font-bold sketch-shadow-sm mb-4 bg-[#e8f5e9] text-[#006a3b]">
+            Xuất sắc! Bạn nắm bài rất tốt!
+          </div>
+
+          <!-- 4 Thẻ thống kê con -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-2xl my-2">
+            <div class="p-3 bg-[#e8f5e9] border border-[#00864c] rounded-xl flex flex-col items-center">
+              <span class="material-symbols-outlined text-[#00864c] text-[20px]">check_circle</span>
+              <span id="result-stat-correct" class="font-mono text-base font-bold text-[#00864c] mt-1">34</span>
+              <span class="text-[11px] text-[#006a3b] font-medium">Câu đúng</span>
+            </div>
+            <div class="p-3 bg-[#ffebee] border border-[#d32f2f] rounded-xl flex flex-col items-center">
+              <span class="material-symbols-outlined text-[#d32f2f] text-[20px]">cancel</span>
+              <span id="result-stat-wrong" class="font-mono text-base font-bold text-[#d32f2f] mt-1">4</span>
+              <span class="text-[11px] text-[#c62828] font-medium">Câu sai</span>
+            </div>
+            <div class="p-3 bg-[#f5f5f5] border border-gray-400 rounded-xl flex flex-col items-center">
+              <span class="material-symbols-outlined text-gray-500 text-[20px]">radio_button_unchecked</span>
+              <span id="result-stat-unanswered" class="font-mono text-base font-bold text-gray-700 mt-1">2</span>
+              <span class="text-[11px] text-gray-600 font-medium">Bỏ qua</span>
+            </div>
+            <div class="p-3 bg-[#e0f2fe] border border-[#0284c7] rounded-xl flex flex-col items-center">
+              <span class="material-symbols-outlined text-[#0284c7] text-[20px]">timer</span>
+              <span id="result-stat-time" class="font-mono text-base font-bold text-[#0284c7] mt-1">24m 12s</span>
+              <span class="text-[11px] text-[#0369a1] font-medium">Thời gian</span>
+            </div>
+          </div>
+
+          <!-- Các nút hành động -->
+          <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+            <button type="button" id="btn-toggle-review" class="px-5 py-2.5 bg-white hover:bg-gray-50 text-[#1b1c1c] border-2 border-[#2d2d2d] rounded-xl sketch-shadow font-headline text-sm font-bold inline-flex items-center gap-2 transition-transform active:translate-y-0.5">
+              <span class="material-symbols-outlined text-[18px]">visibility</span>
+              Xem Lại Bài Làm & Lời Giải
+            </button>
+            <button type="button" id="btn-retake-exam" class="px-5 py-2.5 bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] border-2 border-[#2d2d2d] rounded-xl sketch-shadow font-headline text-sm font-bold inline-flex items-center gap-2 transition-transform active:translate-y-0.5">
+              <span class="material-symbols-outlined text-[18px]">replay</span>
+              Làm Lại Đề Này
+            </button>
+            <button type="button" id="btn-finish-to-list" class="px-5 py-2.5 bg-[#b71422] hover:bg-[#db3237] text-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow font-headline text-sm font-bold inline-flex items-center gap-2 transition-transform active:translate-y-0.5">
+              <span class="material-symbols-outlined text-[18px]">view_list</span>
+              Về Danh Sách Đề Thi
+            </button>
+          </div>
+        </div>
+
+        <!-- Khung xem lại chi tiết bài thi (Review Stream) -->
+        <div id="review-stream-container" hidden style="display: none;" class="flex flex-col gap-5 mt-4">
+          <div class="bg-white border-2 border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex items-center justify-between gap-4">
+            <h3 class="font-headline text-base font-bold text-[#1b1c1c] flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#006a3b]">assignment_turned_in</span>
+              Chi Tiết Từng Câu Hỏi & Hướng Dẫn Giải
+            </h3>
+            <div class="flex items-center gap-2">
+              <button type="button" id="filter-review-all" class="px-3 py-1 bg-[#2d2d2d] text-white rounded-lg text-xs font-mono font-bold">Tất cả</button>
+              <button type="button" id="filter-review-wrong" class="px-3 py-1 bg-white border border-[#2d2d2d] rounded-lg text-xs font-mono font-bold hover:bg-gray-100">Chỉ câu sai</button>
+            </div>
+          </div>
+
+          <div id="review-questions-list" class="flex flex-col gap-5">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       MODAL: LỊCH SỬ KHẢO THÍ & TIẾN ĐỘ HỌC TẬP
+       ========================================================================= -->
+  <div id="modal-exam-history" hidden style="display: none;" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#fdfbf7] border-[3px] border-[#2d2d2d] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col sketch-shadow-lg overflow-hidden">
+      <!-- Header modal -->
+      <div class="p-5 border-b-[2.5px] border-[#2d2d2d] bg-white flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-[#e0f2fe] border-2 border-[#2d2d2d] flex items-center justify-center sketch-shadow-sm">
+            <span class="material-symbols-outlined text-[#0284c7] text-[22px]">history_edu</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-bold text-lg text-[#1b1c1c]">Lịch Sử Khảo Thí & Tiến Độ Ôn Luyện</h3>
+            <p class="text-xs text-[#76716a]">Tra cứu các bài kiểm tra đã làm, đối chiếu đáp án và xem lại lời giải chi tiết</p>
+          </div>
+        </div>
+        <button type="button" id="btn-close-history-modal" class="p-1.5 rounded-lg border-2 border-[#2d2d2d] bg-white hover:bg-red-50 text-red-600 transition-colors" title="Đóng modal">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Content modal: Thống kê & Bảng bài thi -->
+      <div class="p-6 overflow-y-auto flex flex-col gap-6">
+        <!-- 4 Thẻ tổng kết tóm tắt -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-3 bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm flex flex-col items-center text-center">
+            <span class="font-mono text-xs text-[#76716a] font-bold">Số đề đã thi</span>
+            <span id="history-stat-count" class="font-headline text-2xl font-extrabold text-[#b71422] mt-1">0</span>
+          </div>
+          <div class="p-3 bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm flex flex-col items-center text-center">
+            <span class="font-mono text-xs text-[#76716a] font-bold">Điểm trung bình</span>
+            <span id="history-stat-avg" class="font-headline text-2xl font-extrabold text-[#006a3b] mt-1">0.0</span>
+          </div>
+          <div class="p-3 bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm flex flex-col items-center text-center">
+            <span class="font-mono text-xs text-[#76716a] font-bold">Điểm cao nhất</span>
+            <span id="history-stat-highest" class="font-headline text-2xl font-extrabold text-[#d97706] mt-1">0.0</span>
+          </div>
+          <div class="p-3 bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm flex flex-col items-center text-center">
+            <span class="font-mono text-xs text-[#76716a] font-bold">Tổng câu đúng</span>
+            <span id="history-stat-correct" class="font-headline text-2xl font-extrabold text-[#0284c7] mt-1">0</span>
+          </div>
+        </div>
+
+        <!-- Bảng danh sách bài thi -->
+        <div class="bg-white border-2 border-[#2d2d2d] rounded-xl overflow-hidden sketch-shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-[#f5f2eb] border-b-2 border-[#2d2d2d] font-mono font-bold text-[#1b1c1c]">
+                  <th class="p-3">Mã đề / Tên đề thi</th>
+                  <th class="p-3">Môn học</th>
+                  <th class="p-3 text-center">Điểm số</th>
+                  <th class="p-3 text-center">Số câu đúng</th>
+                  <th class="p-3 text-center">Thời gian</th>
+                  <th class="p-3 text-center">Ngày nộp</th>
+                  <th class="p-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body" class="divide-y divide-gray-200 font-medium">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -117,5 +485,4 @@
 
   <script type="module" src="/src/pages/exams.js"></script>
 </body>
-
 </html>
