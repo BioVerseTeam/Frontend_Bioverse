@@ -36,6 +36,23 @@ function getAuthHeaders() {
   return headers;
 }
 
+// Resilient Fetch with automatic retry when token is expired/invalid (401/403)
+async function safeFetch(url, options = {}) {
+  try {
+    let res = await fetch(url, options);
+    if ((res.status === 401 || res.status === 403) && options.headers?.['Authorization']) {
+      console.warn(`[safeFetch] ${res.status} với Authorization header tại ${url}. Thử lại không kèm token...`);
+      const headersWithoutAuth = { ...(options.headers || {}) };
+      delete headersWithoutAuth['Authorization'];
+      res = await fetch(url, { ...options, headers: headersWithoutAuth });
+    }
+    return res;
+  } catch (err) {
+    console.error(`[safeFetch] Network error for ${url}:`, err);
+    return { ok: false, status: 0, json: async () => ({}) };
+  }
+}
+
 // DOM Elements
 const views = {
   list: document.getElementById('view-exam-list'),
@@ -328,43 +345,113 @@ async function startExamTaking(exam) {
   }
   if (dom.paletteContainer) dom.paletteContainer.innerHTML = '';
 
-  // 1. Fetch Questions using Student Paper API: GET /api/student/exams/{id}/paper
+  // 1. Fetch Questions with multi-tier fallback
   try {
     let questions = [];
     const headers = getAuthHeaders();
 
-    // Primary: GET /api/student/exams/{id}/paper
-    const resPaper = await fetch(`${API_BASE_URL}/student/exams/${exam.id}/paper`, { headers });
-    if (resPaper.ok) {
-      const dataPaper = await resPaper.json();
-      if (dataPaper.data?.questions && Array.isArray(dataPaper.data.questions)) {
-        questions = dataPaper.data.questions;
+    // TIER 1: Anti-cheat student paper: GET /api/student/exams/{id}/paper
+    try {
+      const resPaper = await safeFetch(`${API_BASE_URL}/student/exams/${exam.id}/paper`, { headers });
+      if (resPaper.ok) {
+        const dataPaper = await resPaper.json();
+        const pList = dataPaper.data?.questions || dataPaper.data?.items;
+        if (Array.isArray(pList) && pList.length > 0) {
+          questions = pList;
+          console.log(`[Exam Taking] Loaded ${questions.length} questions from /api/student/exams/${exam.id}/paper`);
+        }
+      }
+    } catch (e) {
+      console.warn('Lỗi khi gọi /api/student/exams/{id}/paper:', e);
+    }
+
+    // TIER 2: Dedicated questions endpoint: GET /api/questions/exam/{id}
+    if (!questions || questions.length === 0) {
+      try {
+        const resOld = await safeFetch(`${API_BASE_URL}/questions/exam/${exam.id}`, { headers });
+        if (resOld.ok) {
+          const dataOld = await resOld.json();
+          const qList = Array.isArray(dataOld.data) ? dataOld.data : (dataOld.data?.items || dataOld.items);
+          if (Array.isArray(qList) && qList.length > 0) {
+            questions = qList;
+            console.log(`[Exam Taking] Loaded ${questions.length} questions from /api/questions/exam/${exam.id}`);
+          }
+        }
+      } catch (e) {
+        console.warn('Lỗi khi gọi /api/questions/exam/{id}:', e);
       }
     }
 
-    // Fallback 1: GET /api/questions/exam/{id}
-    if (questions.length === 0) {
-      const resOld = await fetch(`${API_BASE_URL}/questions/exam/${exam.id}`, { headers });
-      if (resOld.ok) {
-        const dataOld = await resOld.json();
-        if (dataOld.data && Array.isArray(dataOld.data)) {
-          questions = dataOld.data;
+    // TIER 3: Exam details with embedded questions: GET /api/exams/{id}
+    if (!questions || questions.length === 0) {
+      try {
+        const resExam = await safeFetch(`${API_BASE_URL}/exams/${exam.id}`, { headers });
+        if (resExam.ok) {
+          const dataExam = await resExam.json();
+          const qList = dataExam.data?.questions || dataExam.data?.examQuestions;
+          if (Array.isArray(qList) && qList.length > 0) {
+            questions = qList;
+            console.log(`[Exam Taking] Loaded ${questions.length} questions from /api/exams/${exam.id}`);
+          }
+        }
+      } catch (e) {
+        console.warn('Lỗi khi gọi /api/exams/{id}:', e);
+      }
+    }
+
+    // TIER 4: Builder structure: GET /api/exams/{id}/builder
+    if (!questions || questions.length === 0) {
+      try {
+        const resBuilder = await safeFetch(`${API_BASE_URL}/exams/${exam.id}/builder`, { headers });
+        if (resBuilder.ok) {
+          const dataBuilder = await resBuilder.json();
+          const qList = dataBuilder.data?.questions;
+          if (Array.isArray(qList) && qList.length > 0) {
+            questions = qList;
+            console.log(`[Exam Taking] Loaded ${questions.length} questions from /api/exams/${exam.id}/builder`);
+          }
+        }
+      } catch (e) {
+        console.warn('Lỗi khi gọi /api/exams/{id}/builder:', e);
+      }
+    }
+
+    // TIER 5: In-memory fallback from currentExam or allExams cache
+    if (!questions || questions.length === 0) {
+      if (exam.questions && Array.isArray(exam.questions) && exam.questions.length > 0) {
+        questions = exam.questions;
+        console.log(`[Exam Taking] Loaded ${questions.length} questions from in-memory exam.questions`);
+      } else {
+        const matched = allExams.find(e => e.id === exam.id || (exam.code && e.code === exam.code));
+        if (matched?.questions && Array.isArray(matched.questions) && matched.questions.length > 0) {
+          questions = matched.questions;
+          console.log(`[Exam Taking] Loaded ${questions.length} questions from allExams cache`);
         }
       }
     }
 
-    // Fallback 2: GET /api/exams/{id}/builder
-    if (questions.length === 0) {
-      const resBuilder = await fetch(`${API_BASE_URL}/exams/${exam.id}/builder`, { headers });
-      if (resBuilder.ok) {
-        const dataBuilder = await resBuilder.json();
-        if (dataBuilder.data?.questions && Array.isArray(dataBuilder.data.questions)) {
-          questions = dataBuilder.data.questions;
-        }
-      }
-    }
+    // Normalize question fields so UI always receives standard properties
+    currentQuestions = (questions || []).map((q, idx) => {
+      const qId = q.id || q.questionId || (idx + 1);
+      const rawAnswers = q.answers || q.questionAnswers || [];
+      const normalizedAnswers = rawAnswers.map((ans, aIdx) => ({
+        id: ans.id != null ? ans.id : (aIdx + 1),
+        content: ans.content || '',
+        isCorrect: ans.isCorrect ?? ans.correct,
+        images: ans.images || ans.answerImageResponses || []
+      }));
 
-    currentQuestions = questions;
+      return {
+        ...q,
+        id: qId,
+        questionOrder: q.questionOrder || (idx + 1),
+        point: q.point != null ? q.point : 0.25,
+        content: q.content || '',
+        explain: q.explain || q.explanation || '',
+        images: q.images || q.questionImageResponses || [],
+        answers: normalizedAnswers
+      };
+    });
 
     if (currentQuestions.length === 0) {
       dom.questionsContainer.innerHTML = `
