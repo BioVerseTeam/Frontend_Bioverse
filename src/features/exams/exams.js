@@ -728,6 +728,88 @@ function updateProgressState() {
   if (dom.paletteFlaggedStat) dom.paletteFlaggedStat.textContent = flaggedCount;
 }
 
+
+// =========================================================================
+// PRELOAD REVIEW DATA (Full answers, isCorrect & scientific explanations)
+// =========================================================================
+async function preloadReviewData() {
+  reviewQuestionsData = null;
+
+  // 1. Try GET /api/student/exam-attempts/{attemptId} if attemptId is present
+  if (lastAttemptId) {
+    try {
+      const res = await safeFetch(`${API_BASE_URL}/student/exam-attempts/${lastAttemptId}`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) {
+        const d = await res.json();
+        if (d.data?.questions && d.data.questions.length > 0) {
+          reviewQuestionsData = d.data.questions;
+          console.log(`[Review] Loaded ${reviewQuestionsData.length} questions from attempt ${lastAttemptId}`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Lỗi khi tải exam-attempt từ server:', err);
+    }
+  }
+
+  // 2. Fallback: Fetch complete questions with isCorrect & explain from /api/questions/exam/{id}
+  let fullQuestions = [];
+  try {
+    const resQ = await safeFetch(`${API_BASE_URL}/questions/exam/${currentExam.id}`);
+    if (resQ.ok) {
+      const dQ = await resQ.json();
+      if (Array.isArray(dQ.data) && dQ.data.length > 0) {
+        fullQuestions = dQ.data;
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi khi tải questions từ /api/questions/exam:', err);
+  }
+
+  // 3. Fallback: Check cached allExams or currentExam
+  if (fullQuestions.length === 0) {
+    const matched = allExams.find(e => e.id === currentExam.id || (currentExam.code && e.code === currentExam.code));
+    if (matched?.questions && Array.isArray(matched.questions) && matched.questions.length > 0) {
+      fullQuestions = matched.questions;
+    }
+  }
+
+  if (fullQuestions.length === 0 && currentExam?.questions && Array.isArray(currentExam.questions)) {
+    fullQuestions = currentExam.questions;
+  }
+
+  // 4. Synthesize review questions with user answers, correctness, and real explanations
+  if (fullQuestions && fullQuestions.length > 0) {
+    reviewQuestionsData = fullQuestions.map((fq, idx) => {
+      const qId = fq.id || fq.questionId || (idx + 1);
+      const userSelectedId = userAnswers[qId];
+      const rawAns = fq.answers || fq.questionAnswers || [];
+      const selectedAns = rawAns.find(a => a.id === userSelectedId);
+      const isCorrect = selectedAns ? (selectedAns.isCorrect === true || selectedAns.correct === true) : false;
+
+      return {
+        questionId: qId,
+        questionOrder: fq.questionOrder || (idx + 1),
+        content: fq.content || '',
+        point: fq.point != null ? fq.point : 0.25,
+        earnedPoint: isCorrect ? (fq.point != null ? fq.point : 0.25) : 0,
+        explanation: fq.explain || fq.explanation || 'Kiến thức cốt lõi chuẩn SGK Khoa học Tự nhiên.',
+        selectedAnswerId: userSelectedId,
+        isCorrect: isCorrect,
+        answers: rawAns.map(a => ({
+          id: a.id,
+          content: a.content || '',
+          isCorrect: a.isCorrect === true || a.correct === true,
+          isSelected: a.id === userSelectedId
+        }))
+      };
+    });
+    console.log(`[Review] Synthesized ${reviewQuestionsData.length} review questions with correct answers & explanations.`);
+  }
+}
+
 // -------------------------------------------------------------------------
 // SUBMIT EXAM & SERVER-SIDE GRADING (POST /api/student/exams/{id}/submit)
 // -------------------------------------------------------------------------
@@ -772,7 +854,7 @@ async function submitExam(isAuto = false) {
   let resultData = null;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/student/exams/${currentExam.id}/submit`, {
+    const res = await safeFetch(`${API_BASE_URL}/student/exams/${currentExam.id}/submit`, {
       method: 'POST',
       headers,
       body: JSON.stringify(submitPayload)
@@ -805,8 +887,11 @@ async function submitExam(isAuto = false) {
       }
     }
   } catch (err) {
-    console.warn('API POST /api/student/exams/{id}/submit chưa khả dụng, sử dụng bộ tính điểm dự phòng client:', err);
+    console.warn('Lỗi khi nộp bài thi lên server:', err);
   }
+
+  // Pre-load full review questions with correct answers and explanations
+  await preloadReviewData();
 
   // Client-side fallback grading if server grading not available
   if (!serverGradingSuccess) {
@@ -814,8 +899,9 @@ async function submitExam(isAuto = false) {
     let wrongCount = 0;
     let unansweredCount = 0;
 
-    currentQuestions.forEach(q => {
-      const userSelectedId = userAnswers[q.id];
+    (reviewQuestionsData || currentQuestions).forEach(q => {
+      const qId = q.questionId || q.id;
+      const userSelectedId = userAnswers[qId];
       const answers = q.answers || q.questionAnswers || [];
 
       if (!userSelectedId) {
@@ -927,21 +1013,8 @@ async function toggleReviewStream() {
     dom.reviewStreamContainer.removeAttribute('hidden');
     dom.reviewStreamContainer.style.display = 'flex';
 
-    // If attemptId exists and not loaded, fetch from GET /api/student/exam-attempts/{attemptId}
-    if (lastAttemptId && !reviewQuestionsData) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/student/exam-attempts/${lastAttemptId}`, {
-          headers: getAuthHeaders()
-        });
-        if (res.ok) {
-          const resp = await res.json();
-          if (resp.data?.questions) {
-            reviewQuestionsData = resp.data.questions;
-          }
-        }
-      } catch (err) {
-        console.warn('Lỗi khi tải chi tiết bài làm từ server, dùng dữ liệu client fallback:', err);
-      }
+    if (!reviewQuestionsData) {
+      await preloadReviewData();
     }
 
     renderReviewQuestions();
@@ -1039,8 +1112,7 @@ function renderReviewQuestions() {
             </div>
           </div>
           <div class="shrink-0 flex items-center gap-1 font-mono text-xs font-bold">
-            ${isCorrectAnswer ? '<span class="text-[#00864c] hidden sm:inline">Đáp án đúng</span>' : ''}
-            ${isSelectedByUser && !isCorrectAnswer ? '<span class="text-[#d32f2f] hidden sm:inline">Bạn đã chọn</span>' : ''}
+            ${(isSelectedByUser && isCorrectAnswer) ? '<span class="text-[#00864c] font-bold">Chính xác (Đáp án đúng)</span>' : (isCorrectAnswer ? '<span class="text-[#00864c] font-bold">Đáp án đúng</span>' : (isSelectedByUser ? '<span class="text-[#d32f2f] font-bold">Bạn đã chọn</span>' : ''))}
             ${icon}
           </div>
         </div>
