@@ -118,7 +118,25 @@ const dom = {
   historyStatAvg: document.getElementById('history-stat-avg'),
   historyStatHighest: document.getElementById('history-stat-highest'),
   historyStatCorrect: document.getElementById('history-stat-correct'),
-  historyTableBody: document.getElementById('history-table-body')
+  historyTableBody: document.getElementById('history-table-body'),
+
+  // Custom Confirmation Modals
+  modalConfirmSubmit: document.getElementById('modal-confirm-submit'),
+  confirmSubmitIconWrapper: document.getElementById('confirm-submit-icon-wrapper'),
+  confirmSubmitIcon: document.getElementById('confirm-submit-icon'),
+  confirmSubmitExamName: document.getElementById('confirm-submit-exam-name'),
+  confirmSubmitProgressText: document.getElementById('confirm-submit-progress-text'),
+  confirmSubmitStatDone: document.getElementById('confirm-submit-stat-done'),
+  confirmSubmitStatLeft: document.getElementById('confirm-submit-stat-left'),
+  confirmSubmitStatFlagged: document.getElementById('confirm-submit-stat-flagged'),
+  confirmSubmitMessageBox: document.getElementById('confirm-submit-message-box'),
+  confirmSubmitMessage: document.getElementById('confirm-submit-message'),
+  btnCancelSubmit: document.getElementById('btn-cancel-submit'),
+  btnDoSubmit: document.getElementById('btn-do-submit'),
+
+  modalConfirmAbort: document.getElementById('modal-confirm-abort'),
+  btnCancelAbort: document.getElementById('btn-cancel-abort'),
+  btnDoAbort: document.getElementById('btn-do-abort')
 };
 
 // =========================================================================
@@ -513,7 +531,8 @@ function startTimer() {
     if (remainingSeconds <= 0) {
       clearInterval(timerInterval);
       timerInterval = null;
-      alert('⏰ Đã hết thời gian làm bài! Hệ thống đang tự động nộp bài thi của bạn.');
+      closeConfirmSubmitModal();
+      closeConfirmAbortModal();
       submitExam(true);
     }
   }, 1000);
@@ -816,17 +835,76 @@ async function preloadReviewData() {
 function handleExamSubmitAttempt() {
   const total = currentQuestions.length;
   const answeredCount = Object.keys(userAnswers).length;
-  const unansweredCount = total - answeredCount;
+  const unansweredCount = Math.max(0, total - answeredCount);
+  const flaggedCount = flaggedQuestions.size;
+  const percent = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
 
-  if (unansweredCount > 0) {
-    const confirmSubmit = confirm(`⚠️ Chú ý: Bạn còn ${unansweredCount} câu hỏi chưa hoàn thành!\n\nBạn có chắc chắn muốn nộp bài thi ngay bây giờ không?`);
-    if (!confirmSubmit) return;
+  if (dom.confirmSubmitExamName) {
+    dom.confirmSubmitExamName.textContent = currentExam?.name || 'Bài kiểm tra Khoa học Tự nhiên';
+  }
+  if (dom.confirmSubmitProgressText) {
+    dom.confirmSubmitProgressText.textContent = `${answeredCount} / ${total} câu (${percent}%)`;
+  }
+  if (dom.confirmSubmitStatDone) dom.confirmSubmitStatDone.textContent = answeredCount;
+  if (dom.confirmSubmitStatLeft) dom.confirmSubmitStatLeft.textContent = unansweredCount;
+  if (dom.confirmSubmitStatFlagged) dom.confirmSubmitStatFlagged.textContent = flaggedCount;
+
+  if (unansweredCount === 0) {
+    if (dom.confirmSubmitIconWrapper) {
+      dom.confirmSubmitIconWrapper.className = 'w-12 h-12 rounded-2xl bg-[#e8f5e9] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center shrink-0';
+    }
+    if (dom.confirmSubmitIcon) {
+      dom.confirmSubmitIcon.textContent = 'task_alt';
+      dom.confirmSubmitIcon.className = 'material-symbols-outlined text-[#00864c] text-[28px]';
+    }
+    if (dom.confirmSubmitMessageBox) {
+      dom.confirmSubmitMessageBox.className = 'p-3 rounded-xl border border-[#86efac] bg-[#f0fdf4] text-xs font-medium text-[#166534] leading-relaxed mb-6';
+    }
+    if (dom.confirmSubmitMessage) {
+      dom.confirmSubmitMessage.innerHTML = '🎉 Tuyệt vời! Bạn đã hoàn thành <strong>tất cả câu hỏi</strong> trong bài thi. Xác nhận nộp bài ngay để xem điểm số và lời giải chi tiết?';
+    }
   } else {
-    const confirmSubmit = confirm(`Bạn đã hoàn thành ${answeredCount}/${total} câu hỏi.\n\nXác nhận nộp bài thi để xem kết quả?`);
-    if (!confirmSubmit) return;
+    if (dom.confirmSubmitIconWrapper) {
+      dom.confirmSubmitIconWrapper.className = 'w-12 h-12 rounded-2xl bg-[#fef3c7] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center shrink-0';
+    }
+    if (dom.confirmSubmitIcon) {
+      dom.confirmSubmitIcon.textContent = 'warning';
+      dom.confirmSubmitIcon.className = 'material-symbols-outlined text-[#d97706] text-[28px]';
+    }
+    if (dom.confirmSubmitMessageBox) {
+      dom.confirmSubmitMessageBox.className = 'p-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] text-xs font-medium text-[#92400e] leading-relaxed mb-6';
+    }
+    if (dom.confirmSubmitMessage) {
+      dom.confirmSubmitMessage.innerHTML = `⚠️ Chú ý: Bạn vẫn còn <strong class="text-[#b71422]">${unansweredCount} câu hỏi chưa trả lời</strong>! Bạn có muốn nộp bài thi ngay bây giờ không?`;
+    }
   }
 
-  submitExam(false);
+  // Open custom modal
+  if (dom.modalConfirmSubmit) {
+    dom.modalConfirmSubmit.removeAttribute('hidden');
+    dom.modalConfirmSubmit.style.display = 'flex';
+  }
+}
+
+function closeConfirmSubmitModal() {
+  if (dom.modalConfirmSubmit) {
+    dom.modalConfirmSubmit.setAttribute('hidden', '');
+    dom.modalConfirmSubmit.style.display = 'none';
+  }
+}
+
+function openConfirmAbortModal() {
+  if (dom.modalConfirmAbort) {
+    dom.modalConfirmAbort.removeAttribute('hidden');
+    dom.modalConfirmAbort.style.display = 'flex';
+  }
+}
+
+function closeConfirmAbortModal() {
+  if (dom.modalConfirmAbort) {
+    dom.modalConfirmAbort.setAttribute('hidden', '');
+    dom.modalConfirmAbort.style.display = 'none';
+  }
 }
 
 async function submitExam(isAuto = false) {
@@ -1352,12 +1430,25 @@ function initEventListeners() {
   });
 
   // Abort Exam Taking
-  dom.btnAbort?.addEventListener('click', () => {
-    const confirmExit = confirm('Bạn có chắc chắn muốn rời khỏi bài thi không?\nTiến trình làm bài hiện tại sẽ không được lưu.');
-    if (confirmExit) {
-      if (timerInterval) clearInterval(timerInterval);
-      switchView('list');
-    }
+  dom.btnAbort?.addEventListener('click', openConfirmAbortModal);
+  dom.btnCancelAbort?.addEventListener('click', closeConfirmAbortModal);
+  dom.btnDoAbort?.addEventListener('click', () => {
+    closeConfirmAbortModal();
+    if (timerInterval) clearInterval(timerInterval);
+    switchView('list');
+  });
+  dom.modalConfirmAbort?.addEventListener('click', (e) => {
+    if (e.target === dom.modalConfirmAbort) closeConfirmAbortModal();
+  });
+
+  // Confirm Submit Modal listeners
+  dom.btnCancelSubmit?.addEventListener('click', closeConfirmSubmitModal);
+  dom.btnDoSubmit?.addEventListener('click', () => {
+    closeConfirmSubmitModal();
+    submitExam(false);
+  });
+  dom.modalConfirmSubmit?.addEventListener('click', (e) => {
+    if (e.target === dom.modalConfirmSubmit) closeConfirmSubmitModal();
   });
 
   // Submit Buttons

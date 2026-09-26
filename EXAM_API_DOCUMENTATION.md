@@ -2,7 +2,7 @@
 
 > **Dự án:** Bioverse Backend (`EXE101_group_project_BE`)  
 > **Phân hệ:** `com.example.exe101_bioverse.exam`  
-> **Phiên bản:** 1.2.0 (Bổ sung toàn diện Validation Rules, Error Messages, Constraints & Mẫu lỗi 400)  
+> **Phiên bản:** 2.1.0 (Bổ sung toàn diện Xưởng biên soạn Exam Studio, Upload Media Cloudflare R2 & Khảo thí Học sinh Anti-Cheat)  
 > **Base URL:** `http://localhost:8080` (Local) / `https://bioverse.eraidev.id.vn` (Production)  
 
 ---
@@ -15,12 +15,14 @@
    - [4.1. Nhóm API Khối lớp (Grade / Classes - `/api/classes`)](#41-nhóm-api-khối-lớp-grade--classes---apiclasses)
    - [4.2. Nhóm API Học kỳ (Semesters - `/api/semesters`)](#42-nhóm-api-học-kỳ-semesters---apisemesters)
    - [4.3. Nhóm API Môn học (Subjects - `/api/subjects`)](#43-nhóm-api-môn-học-subjects---apisubjects)
-   - [4.4. Nhóm API Đề thi (Exams - `/api/exams`)](#44-nhóm-api-đề-thi-exams---apiexams)
-   - [4.5. Nhóm API Câu hỏi (Questions - `/api/questions`)](#45-nhóm-api-câu-hỏi-questions---apiquestions)
+   - [4.4. Nhóm API Đề thi & Xưởng biên soạn Exam Studio (Exams - `/api/exams`)](#44-nhóm-api-đề-thi-exams---apiexams)
+   - [4.5. Nhóm API Câu hỏi & Ngân hàng Câu hỏi (Questions - `/api/questions`)](#45-nhóm-api-câu-hỏi-questions---apiquestions)
    - [4.6. Nhóm API Liên kết Đề thi - Câu hỏi (Exam Questions - `/api/exam-questions`)](#46-nhóm-api-liên-kết-đề-thi---câu-hỏi-exam-questions---apiexam-questions)
    - [4.7. Nhóm API Đáp án (Answers - `/api/answers`)](#47-nhóm-api-đáp-án-answers---apianswers)
    - [4.8. Nhóm API Hình ảnh Câu hỏi (Question Images - `/api/question-images`)](#48-nhóm-api-hình-ảnh-câu-hỏi-question-images---apiquestion-images)
    - [4.9. Nhóm API Hình ảnh Đáp án (Answer Images - `/api/answer-images`)](#49-nhóm-api-hình-ảnh-đáp-án-answer-images---apianswer-images)
+   - [4.10. Nhóm API Tải lên Đa phương tiện Cloudflare R2 (Media Upload - `/api/media`)](#410-nhóm-api-tải-lên-đa-phương-tiện-cloudflare-r2-media-upload---apimedia)
+   - [4.11. Nhóm API Học sinh Làm bài & Chống Gian lận (Student Exam Flow - `/api/student`)](#411-nhóm-api-học-sinh-làm-bài--chống-gian-lận-student-exam-flow---apistudent)
 5. [Quy trình mẫu tạo đề thi hoàn chỉnh (End-to-End Workflow)](#5-quy-trình-mẫu-tạo-đề-thi-hoàn-chỉnh-end-to-end-workflow)
 
 ---
@@ -99,7 +101,7 @@ Khi xảy ra lỗi nghiệp vụ (ví dụ: không tìm thấy tài nguyên, tr�
 }
 ```
 
-#### Bảng danh mục mã lỗi nghiệp vụ phân hệ Exam (`ErrorCode` Series 16xx):
+#### Bảng danh mục mã lỗi nghiệp vụ phân hệ Exam (`ErrorCode` Series 16xx & 14xx):
 
 | Mã lỗi (`code`) | Tên ErrorCode | HTTP Status | Thông báo mặc định (`message`) | Mô tả tình huống xảy ra |
 | :---: | :--- | :---: | :--- | :--- |
@@ -114,7 +116,11 @@ Khi xảy ra lỗi nghiệp vụ (ví dụ: không tìm thấy tài nguyên, tr�
 | **`1609`** | `QUESTION_IMAGE_NOT_FOUND` | 404 NOT FOUND | `"Không tìm thấy hình ảnh câu hỏi"` | Truy vấn / cập nhật ảnh câu hỏi theo ID không tồn tại |
 | **`1610`** | `ANSWER_IMAGE_NOT_FOUND` | 404 NOT FOUND | `"Không tìm thấy hình ảnh đáp án"` | Truy vấn / cập nhật ảnh đáp án theo ID không tồn tại |
 | **`1611`** | `UNSUPPORTED_RETURN_TYPE` | 400 BAD REQUEST | `"Kiểu dữ liệu phản hồi không được hỗ trợ"` | Truy vấn dạng chi tiết / cơ bản nhưng truyền `returnType` không hợp lệ |
+| **`1612`** | `EXAM_CODE_EXISTS` | 409 CONFLICT | `"Mã đề thi đã tồn tại trong hệ thống"` | Tạo mới hoặc đổi mã đề sang mã đã có của đề khác |
+| **`1613`** | `EXAM_ATTEMPT_NOT_FOUND` | 404 NOT FOUND | `"Lượt làm bài thi không tồn tại trong hệ thống"` | Truy vấn chi tiết lượt thi của học sinh không tồn tại |
 | **`1400`** | `INVALID_DATA` | 400 BAD REQUEST | `"Dữ liệu không hợp lệ"` | Dữ liệu đầu vào sai logic hoặc vi phạm Bean Validation |
+| **`1410`** | `INVALID_FILE` | 400 BAD REQUEST | `"File không hợp lệ"` | File rỗng hoặc không đúng định dạng ảnh (JPG, PNG, WebP) |
+| **`1411`** | `FILE_TOO_LARGE` | 400 BAD REQUEST | `"File vượt quá dung lượng cho phép"` | File tải lên vượt quá giới hạn tối đa 5MB |
 
 ### 2.5. Danh sách Enums kiểm soát tính hợp lệ
 - **`QuestionType`:** `SINGLE_CHOICE`, `MULTIPLE_CHOICE` (Không được để trống / sai cú pháp).
@@ -140,12 +146,35 @@ Khi xảy ra lỗi nghiệp vụ (ví dụ: không tìm thấy tài nguyên, tr�
 | | `name` | String | **Có** | `@NotBlank`, `@Size(max = 255)` | `"Tiêu đề đề thi không được để trống"`<br>`"Tiêu đề đề thi không được vượt quá 255 ký tự"` |
 | | `subjectName` | String | **Có** | `@NotBlank`, `@Size(max = 255)` | `"Tên môn học không được để trống"`<br>`"Tên môn học không được vượt quá 255 ký tự"` |
 | | `questions` | List | Không | `@Valid` | Tự động cascade validate danh sách câu hỏi con |
+| **`ExamUpdateRequest`** | `code` | String | Không | `@Size(max = 255)` | `"Mã đề thi không được vượt quá 255 ký tự"` |
+| | `name` | String | Không | `@Size(max = 255)` | `"Tiêu đề đề thi không được vượt quá 255 ký tự"` |
+| | `type` | ExamType | Không | Tùy chọn | Giá trị enum `DEFAULT` |
+| | `subjectId` | Long | Không | `@Positive` | `"ID môn học phải lớn hơn 0"` |
+| | `durationMinutes`| Integer | Không | `@Positive` | `"Thời lượng làm bài phải lớn hơn 0"` |
+| | `totalScore` | Double | Không | `@Positive` | `"Tổng điểm phải lớn hơn 0"` |
+| | `isActive` | Boolean | Không | Tùy chọn | Cờ kích hoạt phát hành |
+| **`ExamDuplicateRequest`**| `newCode` | String | **Có** | `@NotBlank`, `@Size(max = 255)` | `"Mã đề thi mới không được để trống"`<br>`"Mã đề thi không được vượt quá 255 ký tự"` |
+| | `newTitle` | String | **Có** | `@NotBlank`, `@Size(max = 255)` | `"Tiêu đề đề thi mới không được để trống"`<br>`"Tiêu đề đề thi không được vượt quá 255 ký tự"` |
+| **`ExamQuestionsReorderRequest`** | `items` | List | **Có** | `@NotNull`, `@Valid` | `"Danh sách sắp xếp câu hỏi không được để trống"` |
+| | `items[].examQuestionId` | Long | **Có** | `@NotNull`, `@Positive` | `"ID liên kết câu hỏi không được để trống"`<br>`"ID phải lớn hơn 0"` |
+| | `items[].newOrder` | Integer | **Có** | `@NotNull`, `@Min(1)` | `"Thứ tự câu mới phải bắt đầu từ 1"` |
+| | `items[].point` | Double | Không | `@PositiveOrZero` | `"Điểm số câu hỏi không được âm"` |
+| **`CompositeQuestionRequest`** | `type` | QuestionType | **Có** | `@NotNull` | `"Loại câu hỏi không được để trống"` |
+| | `content` | String | **Có** | `@NotBlank` | `"Nội dung câu hỏi không được để trống"` |
+| | `point` | Double | Không | `@PositiveOrZero` | `"Điểm số không được âm"` (mặc định 0.25) |
+| | `answers` | List | Không | `@Valid` | Tự động cascade validate danh sách phương án |
+| | `images` | List | Không | `@Valid` | Tự động cascade validate danh sách URL hình ảnh |
+| **`PickFromBankRequest`** | `questionIds` | List<Long> | **Có** | `@NotNull`, `@Size(min = 1)` | `"Danh sách câu hỏi cần chọn không được để trống"` |
+| | `defaultPoint` | Double | Không | `@PositiveOrZero` | `"Điểm số mặc định không được âm"` (mặc định 0.25) |
 | **`QuestionRequest`** | `type` | QuestionType | **Có** | `@NotNull` | `"Loại câu hỏi không được để trống"` |
 | | `content` | String | **Có** | `@NotBlank` | `"Nội dung câu hỏi không được để trống"` |
 | | `point` | double | **Có** | `@PositiveOrZero` | `"Điểm số không được âm"` |
 | | `questionOrder`| int | **Có** | `@Min(1)` | `"Thứ tự câu hỏi phải bắt đầu từ 1"` |
 | | `answers` | List | Không | `@Valid` | Tự động cascade validate danh sách đáp án |
 | | `questionImageRequests` | List | Không | `@Valid` | Tự động cascade validate danh sách ảnh |
+| **`QuestionUpdateRequest`** | `type` | QuestionType | Không | Tùy chọn | Giá trị enum `QuestionType` |
+| | `content` | String | Không | Tùy chọn | Nội dung câu hỏi mới |
+| | `explain` | String | Không | Tùy chọn | Lời giải thích |
 | **`ExamQuestionRequest`** | `examId` | Long | **Có** | `@NotNull`, `@Positive` | `"ID đề thi không được để trống"`<br>`"ID đề thi phải lớn hơn 0"` |
 | | `questionId` | Long | **Có** | `@NotNull`, `@Positive` | `"ID câu hỏi không được để trống"`<br>`"ID câu hỏi phải lớn hơn 0"` |
 | | `point` | double | **Có** | `@PositiveOrZero` | `"Điểm số không được âm"` |
@@ -158,6 +187,14 @@ Khi xảy ra lỗi nghiệp vụ (ví dụ: không tìm thấy tài nguyên, tr�
 | | `displayOrder` | int | **Có** | `@Min(1)` | `"Thứ tự hiển thị ảnh phải bắt đầu từ 1"` |
 | **`AnswerImageRequest`** | `url` | String | **Có** | `@NotBlank` | `"URL hình ảnh không được để trống"` |
 | | `displayOrder` | int | **Có** | `@Min(1)` | `"Thứ tự hiển thị ảnh phải bắt đầu từ 1"` |
+| **`StudentExamSubmitRequest`** | `answers` | List | **Có** | `@NotNull`, `@Valid` | `"Danh sách câu trả lời không được để trống"` |
+| | `startedAt` | LocalDateTime | Không | Tùy chọn | Thời điểm học sinh bắt đầu làm bài |
+| | `timeSpentSec` | Integer | Không | `@PositiveOrZero` | `"Tổng thời gian làm bài không được âm"` |
+| **`StudentSubmittedAnswerRequest`** | `questionId` | Long | **Có** | `@NotNull`, `@Positive` | `"ID câu hỏi không được để trống"`<br>`"ID câu hỏi phải lớn hơn 0"` |
+| | `selectedAnswerId` | Long | Không | `@Positive` | ID đáp án đã chọn (`null` nếu bỏ qua) |
+| | `timeSpentSec` | Integer | Không | `@PositiveOrZero` | `"Thời gian trả lời câu hỏi không được âm"` |
+
+---
 
 ---
 

@@ -4,7 +4,7 @@
 > **Package:** `com.example.exe101_bioverse.exam`  
 > **Cơ sở dữ liệu:** PostgreSQL 16 (Hỗ trợ Local & Supabase)  
 > **ORM Framework:** Spring Data JPA / Hibernate 6  
-> **Phiên bản cập nhật:** 2.0.0 (Bổ sung Xưởng biên soạn Exam Studio & Luồng khảo thí Student Exam Flow)  
+> **Phiên bản cập nhật:** 2.1.0 (Bổ sung toàn diện Xưởng biên soạn Exam Studio, Upload Media Cloudflare R2 & Khảo thí Học sinh Anti-Cheat)  
 
 ---
 
@@ -536,6 +536,13 @@ Toàn bộ logic nghiệp vụ được đóng gói độc lập trong package `
 - **Lịch sử thi & Tiến độ học tập (`getStudentHistory`):**
   - Tổng hợp danh sách tất cả các bài thi đã làm của học sinh theo thứ tự thời gian mới nhất.
   - Tính toán số liệu thống kê: tổng số đề thi đã làm, điểm trung bình (`averageScore`), điểm cao nhất (`highestScore`), tổng thời gian ôn luyện (`totalTimeSpentSec`).
+
+### 5.10. Tích hợp Lưu trữ Đa phương tiện Cloudflare R2 (`MediaController` & `R2StorageService`)
+- Tích hợp dịch vụ Object Storage S3-compatible (Cloudflare R2) hỗ trợ tải lên trực tiếp tệp hình ảnh câu hỏi và đáp án:
+  - Kiểm tra định dạng cho phép: `JPG`, `PNG`, `WebP`.
+  - Giới hạn kích thước tệp tải lên: tối đa 5MB.
+  - Tự động sinh tên tệp duy nhất bằng `UUID` kết hợp thư mục phân loại (`exams/questions`, `exams/answers`).
+  - Trả về URL công khai phục vụ lưu trữ vào `QuestionImage` và `AnswerImage`.
 
 ---
 
