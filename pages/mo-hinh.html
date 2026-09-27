@@ -73,6 +73,10 @@
         <button type="button" id="btn-front" class="specimen-tool-btn">Trước</button>
         <button type="button" id="btn-side" class="specimen-tool-btn">Bên</button>
         <button type="button" id="btn-top" class="specimen-tool-btn">Trên</button>
+        <button type="button" id="btn-game" class="specimen-tool-btn specimen-tool-btn--game" aria-pressed="false" title="Thử thách nhận diện giải phẫu 3D">
+          <span class="material-symbols-outlined">sports_esports</span>
+          <span id="btn-game-label">🎮 Thử thách</span>
+        </button>
       </div>
 
       <p class="specimen-hint">Kéo để xoay · Cuộn để phóng to · Bấm một bộ phận: phần đó nổi viền, phần còn lại mờ đi</p>
@@ -120,7 +124,31 @@
           <span id="parts-count">0</span>
         </div>
         <div id="parts-list" class="specimen-parts"></div>
+
+        <!-- BẢNG GAME THỬ THÁCH NHẬN DIỆN GIẢI PHẪU -->
+        <div id="game-panel" class="specimen-game-panel" hidden aria-live="polite"></div>
       </aside>
+    </div>
+
+    <!-- MODAL XÁC NHẬN THOÁT THỬ THÁCH -->
+    <div id="game-exit-modal" class="specimen-status" hidden>
+      <div class="specimen-status-card text-left max-w-sm">
+        <div class="flex items-center gap-2 mb-2 text-rose-600">
+          <span class="material-symbols-outlined text-[26px]">warning</span>
+          <h2 class="text-lg font-bold font-['Epilogue'] text-gray-900 m-0">Thoát thử thách?</h2>
+        </div>
+        <p class="text-sm font-['Be_Vietnam_Pro'] text-[#5b403e] mb-4">
+          Lượt chơi hiện tại chưa hoàn thành. Nếu thoát bây giờ, điểm số và kết quả sẽ không được lưu.
+        </p>
+        <div class="flex items-center justify-end gap-2">
+          <button type="button" id="btn-game-continue" class="px-4 py-2 bg-white border-2 border-[#2d2d2d] rounded-xl font-bold font-['Space_Grotesk'] text-xs hover:bg-gray-50 sketch-shadow-sm">
+            Tiếp tục chơi
+          </button>
+          <button type="button" id="btn-game-confirm-exit" class="px-4 py-2 bg-[#db3237] text-white border-2 border-[#2d2d2d] rounded-xl font-bold font-['Space_Grotesk'] text-xs hover:bg-[#b91c1c] sketch-shadow-sm">
+            Thoát
+          </button>
+        </div>
+      </div>
     </div>
 
     <div id="specimen-loading" class="specimen-status">
