@@ -23,6 +23,8 @@ const CLEAN_ROUTES = {
   '/admin-reactions': '/pages/admin-reactions.html',
   '/admin-users': '/pages/admin-users.html',
   '/admin-roles': '/pages/admin-roles.html',
+  '/admin-exams': '/pages/admin-exams.html',
+  '/admin-academic': '/pages/admin-academic.html',
 };
 
 /** Legacy *.html URLs → clean paths (browser address bar). */
@@ -45,6 +47,8 @@ const HTML_REDIRECTS = {
   '/admin-reactions.html': '/admin-reactions',
   '/admin-users.html': '/admin-users',
   '/admin-roles.html': '/admin-roles',
+  '/admin-exams.html': '/admin-exams',
+  '/admin-academic.html': '/admin-academic',
   // Built multi-page assets live under /pages/*.html — redirect if opened directly.
   '/pages/lab.html': '/lab',
   '/pages/login.html': '/login',
@@ -63,6 +67,8 @@ const HTML_REDIRECTS = {
   '/pages/admin-reactions.html': '/admin-reactions',
   '/pages/admin-users.html': '/admin-users',
   '/pages/admin-roles.html': '/admin-roles',
+  '/pages/admin-exams.html': '/admin-exams',
+  '/pages/admin-academic.html': '/admin-academic',
 };
 
 function cleanUrlMiddleware(req, res, next) {
@@ -116,6 +122,8 @@ export default defineConfig({
         adminReactions: resolve(__dirname, 'pages/admin-reactions.html'),
         adminUsers: resolve(__dirname, 'pages/admin-users.html'),
         adminRoles: resolve(__dirname, 'pages/admin-roles.html'),
+        adminExams: resolve(__dirname, 'pages/admin-exams.html'),
+        adminAcademic: resolve(__dirname, 'pages/admin-academic.html'),
       }
     }
   },

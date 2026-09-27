@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Học kỳ & Môn học - BioVerse Admin</title>
+  <meta name="description" content="Quản lý cấu trúc phân cấp học thuật: Khối lớp (6-9), Học kỳ (HK1, HK2) và Môn học KHTN.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Học kỳ & Môn học</span>
+          </div>
+        </a>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Quản trị viên</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-12">
+      <div class="max-w-7xl mx-auto flex flex-col gap-6">
+        
+        <!-- Gate kiểm tra quyền Admin -->
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập tài khoản ADMIN để quản trị cấu trúc học thuật.</p>
+          <a id="admin-gate-login" href="/login?next=/admin-academic" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <!-- Workspace chính -->
+        <div id="admin-workspace" hidden class="flex flex-col gap-6">
+          
+          <!-- Banner tiêu đề -->
+          <div class="relative bg-white sketch-border p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#f3e8ff] border border-[#7c3aed] text-[#7c3aed] text-xs font-['Space_Grotesk'] font-bold uppercase mb-2">
+                <span class="material-symbols-outlined text-[14px]">account_tree</span>
+                Cấu trúc phân cấp học thuật
+              </div>
+              <h1 class="font-['Epilogue'] text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-[#2d2d2d]">
+                Khối Lớp ➔ Học Kỳ ➔ Môn Học
+              </h1>
+              <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-sm mt-1.5">
+                Thiết lập cây dữ liệu 3 tầng làm nền tảng tổ chức các đề kiểm tra và câu hỏi Khoa học Tự nhiên.
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <a href="/admin-exams" class="neo-btn neo-btn-secondary rounded-xl px-4 py-2.5 text-sm inline-flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">quiz</span>
+                Đi tới Đề thi
+              </a>
+            </div>
+          </div>
+
+          <!-- 3 Cột phân cấp (Miller Columns) -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            
+            <!-- CỘT 1: KHỐI LỚP (CLASSES) -->
+            <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col gap-3 min-h-[480px]">
+              <div class="flex items-center justify-between border-b-2 border-dashed border-[#dcd5cb] pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-lg bg-[#e8f5e9] border border-[#48bb78] text-[#006a3b] flex items-center justify-center font-['Space_Grotesk'] font-bold text-xs">1</span>
+                  <div>
+                    <h2 class="font-['Epilogue'] text-base font-bold text-[#2d2d2d]">Khối Lớp</h2>
+                    <span id="class-count" class="font-['Space_Grotesk'] text-[11px] text-[#76716a]">Đang tải...</span>
+                  </div>
+                </div>
+                <button type="button" id="btn-add-class" class="neo-btn neo-btn-primary rounded-xl px-2.5 py-1.5 text-xs inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  Thêm khối
+                </button>
+              </div>
+              <p class="text-xs text-[#76716a] italic">Chọn một khối lớp để quản lý các học kỳ trực thuộc:</p>
+              <div id="class-list" class="flex flex-col gap-2 overflow-y-auto max-h-[500px]"></div>
+            </div>
+
+            <!-- CỘT 2: HỌC KỲ (SEMESTERS) -->
+            <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col gap-3 min-h-[480px]">
+              <div class="flex items-center justify-between border-b-2 border-dashed border-[#dcd5cb] pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-lg bg-[#e0f2fe] border border-[#0284c7] text-[#0369a1] flex items-center justify-center font-['Space_Grotesk'] font-bold text-xs">2</span>
+                  <div>
+                    <h2 class="font-['Epilogue'] text-base font-bold text-[#2d2d2d]">Học Kỳ</h2>
+                    <span id="semester-count" class="font-['Space_Grotesk'] text-[11px] text-[#76716a]">Chọn khối lớp</span>
+                  </div>
+                </div>
+                <button type="button" id="btn-add-semester" disabled class="neo-btn neo-btn-secondary rounded-xl px-2.5 py-1.5 text-xs inline-flex items-center gap-1 opacity-50 cursor-not-allowed">
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  Thêm học kỳ
+                </button>
+              </div>
+              <p id="semester-hint" class="text-xs text-[#76716a] italic">Vui lòng chọn một Khối lớp ở cột bên trái.</p>
+              <div id="semester-list" class="flex flex-col gap-2 overflow-y-auto max-h-[500px]"></div>
+            </div>
+
+            <!-- CỘT 3: MÔN HỌC (SUBJECTS) -->
+            <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col gap-3 min-h-[480px]">
+              <div class="flex items-center justify-between border-b-2 border-dashed border-[#dcd5cb] pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-lg bg-[#fef3c7] border border-[#d97706] text-[#b45309] flex items-center justify-center font-['Space_Grotesk'] font-bold text-xs">3</span>
+                  <div>
+                    <h2 class="font-['Epilogue'] text-base font-bold text-[#2d2d2d]">Môn Học</h2>
+                    <span id="subject-count" class="font-['Space_Grotesk'] text-[11px] text-[#76716a]">Chọn học kỳ</span>
+                  </div>
+                </div>
+                <button type="button" id="btn-add-subject" disabled class="neo-btn neo-btn-primary rounded-xl px-2.5 py-1.5 text-xs inline-flex items-center gap-1 opacity-50 cursor-not-allowed">
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  Thêm môn
+                </button>
+              </div>
+              <p id="subject-hint" class="text-xs text-[#76716a] italic">Vui lòng chọn một Học kỳ ở cột giữa.</p>
+              <div id="subject-list" class="flex flex-col gap-2 overflow-y-auto max-h-[500px]"></div>
+            </div>
+
+          </div>
+
+          <!-- BẢNG TRA CỨU MÃ LỖI NGHIỆP VỤ PHÂN HỆ EXAM (SERIES 16XX) -->
+          <div class="bg-white border-2 border-[#2d2d2d] rounded-2xl p-4 md:p-5 sketch-shadow">
+            <details class="group">
+              <summary class="flex items-center justify-between cursor-pointer list-none">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#7c3aed]">shield</span>
+                  <h3 class="font-['Epilogue'] font-bold text-sm md:text-base text-[#1b1c1c]">
+                    Quy chuẩn & Danh mục mã lỗi nghiệp vụ Backend (ErrorCode Series 16xx & 1400)
+                  </h3>
+                </div>
+                <span class="material-symbols-outlined text-gray-500 transition-transform group-open:rotate-180">expand_more</span>
+              </summary>
+              <div class="mt-4 pt-3 border-t border-dashed border-[#dcd5cb] text-xs font-['Be_Vietnam_Pro'] space-y-3">
+                <p class="text-[#5b403e]">Hệ thống tự động phát hiện và xử lý các ràng buộc toàn vẹn học thuật theo bảng mã sau:</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="bg-[#f6f3f2] border-b border-[#2d2d2d] font-['Space_Grotesk'] text-[11px] text-[#2d2d2d] uppercase">
+                        <th class="p-2 font-bold">Mã lỗi</th>
+                        <th class="p-2 font-bold">Tên ErrorCode</th>
+                        <th class="p-2 font-bold">HTTP Status</th>
+                        <th class="p-2 font-bold">Thông báo nghiệp vụ</th>
+                        <th class="p-2 font-bold">Tình huống & Hướng dẫn xử lý</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#dcd5cb] text-xs">
+                      <tr>
+                        <td class="p-2 font-mono font-bold text-[#b71422]">1601</td>
+                        <td class="p-2 font-mono text-[#7c3aed]">CLASS_NOT_FOUND</td>
+                        <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">404 NOT FOUND</span></td>
+                        <td class="p-2 font-medium">Không tìm thấy khối lớp</td>
+                        <td class="p-2 text-[#5b403e]">Khối lớp cần truy vấn/cập nhật không tồn tại hoặc vừa bị xóa.</td>
+                      </tr>
+                      <tr>
+                        <td class="p-2 font-mono font-bold text-[#b71422]">1602</td>
+                        <td class="p-2 font-mono text-[#7c3aed]">CLASS_GRADE_EXISTS</td>
+                        <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">409 CONFLICT</span></td>
+                        <td class="p-2 font-medium">Khối lớp đã tồn tại trong hệ thống</td>
+                        <td class="p-2 text-[#5b403e]">Số khối (grade 6, 7, 8, 9) đã có sẵn. Hệ thống chặn trùng lặp số khối.</td>
+                      </tr>
+                      <tr>
+                        <td class="p-2 font-mono font-bold text-[#b71422]">1603</td>
+                        <td class="p-2 font-mono text-[#7c3aed]">SEMESTER_NOT_FOUND</td>
+                        <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">404 NOT FOUND</span></td>
+                        <td class="p-2 font-medium">Không tìm thấy học kỳ</td>
+                        <td class="p-2 text-[#5b403e]">Học kỳ theo ID không tồn tại hoặc đã bị xóa khỏi khối lớp.</td>
+                      </tr>
+                      <tr>
+                        <td class="p-2 font-mono font-bold text-[#b71422]">1604</td>
+                        <td class="p-2 font-mono text-[#7c3aed]">SUBJECT_NOT_FOUND</td>
+                        <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-bold">404 NOT FOUND</span></td>
+                        <td class="p-2 font-medium">Không tìm thấy môn học</td>
+                        <td class="p-2 text-[#5b403e]">Môn học theo ID không tồn tại hoặc đã bị xóa khỏi học kỳ.</td>
+                      </tr>
+                      <tr>
+                        <td class="p-2 font-mono font-bold text-[#b71422]">1400</td>
+                        <td class="p-2 font-mono text-[#7c3aed]">INVALID_DATA</td>
+                        <td class="p-2"><span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">400 BAD REQ</span></td>
+                        <td class="p-2 font-medium">Dữ liệu không hợp lệ</td>
+                        <td class="p-2 text-[#5b403e]">Vi phạm validation: grade ngoài 6-9, thứ tự học kỳ ngoài 1-2, mã môn trống/quá 50 ký tự.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </details>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: KHỐI LỚP -->
+  <dialog id="modal-class" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-md w-full">
+    <form id="form-class" method="dialog" class="p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-class-title" class="font-['Epilogue'] text-lg font-bold">Thêm Khối Lớp</h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <input type="hidden" id="class-id">
+      
+      <!-- Thông báo lỗi nghiệp vụ nội bộ Form -->
+      <div id="class-form-error" class="text-xs p-2.5 rounded-xl bg-[#ffdad6] border border-[#b71422] text-[#b71422]" hidden></div>
+
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="class-grade">Số khối lớp (6 đến 9) *</label>
+        <select id="class-grade" required class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm bg-white font-semibold">
+          <option value="6">Khối 6</option>
+          <option value="7">Khối 7</option>
+          <option value="8">Khối 8</option>
+          <option value="9">Khối 9</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="class-name">Tên hiển thị khối lớp *</label>
+        <input type="text" id="class-name" required maxlength="100" placeholder="Ví dụ: Lớp 8" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="class-desc">Mô tả / Ghi chú</label>
+        <textarea id="class-desc" rows="2" placeholder="Chương trình Khoa học tự nhiên..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Lưu khối lớp</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL: HỌC KỲ -->
+  <dialog id="modal-semester" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-md w-full">
+    <form id="form-semester" method="dialog" class="p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-semester-title" class="font-['Epilogue'] text-lg font-bold">Thêm Học Kỳ</h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <input type="hidden" id="semester-id">
+      <input type="hidden" id="semester-class-id">
+      
+      <!-- Thông báo lỗi nghiệp vụ nội bộ Form -->
+      <div id="semester-form-error" class="text-xs p-2.5 rounded-xl bg-[#ffdad6] border border-[#b71422] text-[#b71422]" hidden></div>
+
+      <div class="p-2.5 rounded-xl bg-[#f6f3f2] border border-[#dcd5cb] text-xs font-medium text-[#5b403e]">
+        Trực thuộc: <strong id="semester-parent-name" class="text-black">...</strong>
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="semester-order">Thứ tự học kỳ (1 hoặc 2) *</label>
+        <select id="semester-order" required class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm bg-white font-semibold">
+          <option value="1">Học kỳ 1</option>
+          <option value="2">Học kỳ 2</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="semester-name">Tên học kỳ *</label>
+        <input type="text" id="semester-name" required maxlength="100" placeholder="Ví dụ: Học kỳ 1" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="semester-desc">Mô tả</label>
+        <textarea id="semester-desc" rows="2" placeholder="Giai đoạn học kỳ I..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Lưu học kỳ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- MODAL: MÔN HỌC -->
+  <dialog id="modal-subject" class="p-0 rounded-2xl bg-white border-[2.5px] border-[#2d2d2d] sketch-shadow backdrop:bg-black/40 max-w-md w-full">
+    <form id="form-subject" method="dialog" class="p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="modal-subject-title" class="font-['Epilogue'] text-lg font-bold">Thêm Môn Học</h3>
+        <button type="button" class="btn-close-modal material-symbols-outlined text-gray-500 hover:text-black">close</button>
+      </div>
+      <input type="hidden" id="subject-id">
+      <input type="hidden" id="subject-semester-id">
+      
+      <!-- Thông báo lỗi nghiệp vụ nội bộ Form -->
+      <div id="subject-form-error" class="text-xs p-2.5 rounded-xl bg-[#ffdad6] border border-[#b71422] text-[#b71422]" hidden></div>
+
+      <div class="p-2.5 rounded-xl bg-[#f6f3f2] border border-[#dcd5cb] text-xs font-medium text-[#5b403e]">
+        Trực thuộc: <strong id="subject-parent-name" class="text-black">...</strong>
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="subject-code">Mã môn học *</label>
+        <input type="text" id="subject-code" required maxlength="50" placeholder="Ví dụ: KHTN8, BIO8_HK1" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm uppercase font-mono">
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="subject-name">Tên môn học *</label>
+        <input type="text" id="subject-name" required maxlength="100" placeholder="Ví dụ: Khoa học tự nhiên 8" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-['Space_Grotesk'] font-bold uppercase mb-1" for="subject-desc">Mô tả</label>
+        <textarea id="subject-desc" rows="2" placeholder="Chương trình Khoa học tự nhiên cấp THCS..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 text-sm"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" class="btn-close-modal neo-btn neo-btn-secondary rounded-xl px-4 py-2 text-sm">Hủy</button>
+        <button type="submit" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-sm">Lưu môn học</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/pages/adminAcademic.js"></script>
+</body>
+</html>

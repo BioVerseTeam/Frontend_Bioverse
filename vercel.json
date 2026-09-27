@@ -21,6 +21,8 @@
     { "source": "/admin-reactions.html", "destination": "/admin-reactions", "permanent": true },
     { "source": "/admin-users.html", "destination": "/admin-users", "permanent": true },
     { "source": "/admin-roles.html", "destination": "/admin-roles", "permanent": true },
+    { "source": "/admin-exams.html", "destination": "/admin-exams", "permanent": true },
+    { "source": "/admin-academic.html", "destination": "/admin-academic", "permanent": true },
     { "source": "/pages/lab.html", "destination": "/lab", "permanent": true },
     { "source": "/pages/login.html", "destination": "/login", "permanent": true },
     { "source": "/pages/register.html", "destination": "/register", "permanent": true },
@@ -37,7 +39,9 @@
     { "source": "/pages/admin-labs.html", "destination": "/admin-labs", "permanent": true },
     { "source": "/pages/admin-reactions.html", "destination": "/admin-reactions", "permanent": true },
     { "source": "/pages/admin-users.html", "destination": "/admin-users", "permanent": true },
-    { "source": "/pages/admin-roles.html", "destination": "/admin-roles", "permanent": true }
+    { "source": "/pages/admin-roles.html", "destination": "/admin-roles", "permanent": true },
+    { "source": "/pages/admin-exams.html", "destination": "/admin-exams", "permanent": true },
+    { "source": "/pages/admin-academic.html", "destination": "/admin-academic", "permanent": true }
   ],
   "rewrites": [
     { "source": "/lab", "destination": "/pages/lab.html" },
@@ -56,6 +60,8 @@
     { "source": "/admin-labs", "destination": "/pages/admin-labs.html" },
     { "source": "/admin-reactions", "destination": "/pages/admin-reactions.html" },
     { "source": "/admin-users", "destination": "/pages/admin-users.html" },
-    { "source": "/admin-roles", "destination": "/pages/admin-roles.html" }
+    { "source": "/admin-roles", "destination": "/pages/admin-roles.html" },
+    { "source": "/admin-exams", "destination": "/pages/admin-exams.html" },
+    { "source": "/admin-academic", "destination": "/pages/admin-academic.html" }
   ]
 }
