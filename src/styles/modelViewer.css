@@ -488,3 +488,443 @@
     max-height: 12vh;
   }
 }
+
+/* ============================================================
+   FIND THE PART GAMIFICATION V1 STYLES
+   ============================================================ */
+
+.specimen-tool-btn--game {
+  background: #fff;
+  border-color: #2d2d2d;
+  color: #1b1c1c;
+  transition: all 0.2s ease;
+}
+
+.specimen-tool-btn--game:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #db3237;
+  color: #b91c1c;
+}
+
+.specimen-tool-btn--game.is-active {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #b91c1c !important;
+  box-shadow: 2px 2px 0 #991b1b;
+}
+
+.specimen-tool-btn--game:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
+
+.specimen-game-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 14px 16px 16px;
+  overflow-y: auto;
+  gap: 12px;
+  background: #fdfbf7;
+}
+
+.specimen-game-panel[hidden] {
+  display: none !important;
+}
+
+.game-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.game-step-badge {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4b5563;
+  letter-spacing: 0.04em;
+}
+
+.game-score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: #fff9c4;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 999px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #854d0e;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+}
+
+.game-progress-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+
+.game-progress-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid #2d2d2d;
+  background: #e5e7eb;
+  transition: all 0.25s ease;
+}
+
+.game-progress-dot.is-active {
+  background: #f59e0b;
+  transform: scale(1.25);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35);
+}
+
+.game-progress-dot.is-correct {
+  background: #10b981;
+}
+
+.game-progress-dot.is-wrong {
+  background: #ef4444;
+}
+
+.game-card {
+  background: #ffffff;
+  border: 2px solid #2d2d2d;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 3px 3px 0 #2d2d2d;
+}
+
+.game-prompt-header {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #db3237;
+  margin-bottom: 4px;
+}
+
+.game-target-title {
+  margin: 0;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #111827;
+}
+
+.game-target-latin {
+  font-size: 12px;
+  font-style: italic;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.game-instruction {
+  margin: 10px 0 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+}
+
+/* Feedback card */
+.game-feedback {
+  border-radius: 14px;
+  border: 2px solid #2d2d2d;
+  padding: 12px 14px;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  animation: gameFadeIn 0.25s ease-out;
+}
+
+.game-feedback.is-correct {
+  background: #ecfdf5;
+  border-color: #059669;
+  box-shadow: 3px 3px 0 #059669;
+}
+
+.game-feedback.is-wrong {
+  background: #fff1f2;
+  border-color: #e11d48;
+  box-shadow: 3px 3px 0 #e11d48;
+}
+
+.game-feedback-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 6px;
+}
+
+.game-feedback.is-correct .game-feedback-title {
+  color: #065f46;
+}
+
+.game-feedback.is-wrong .game-feedback-title {
+  color: #9f1239;
+}
+
+.game-feedback-detail {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.game-feedback-detail .part-highlight {
+  font-weight: 700;
+}
+
+.game-feedback-detail .part-highlight.wrong {
+  color: #be123c;
+  text-decoration: line-through;
+}
+
+.game-feedback-detail .part-highlight.correct {
+  color: #047857;
+}
+
+/* Educational note in game */
+.game-edu-note {
+  background: #fff9c4;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #3d332f;
+}
+
+.game-edu-note dt {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #00864c;
+  margin-top: 6px;
+}
+
+.game-edu-note dt:first-child {
+  margin-top: 0;
+}
+
+.game-edu-note dd {
+  margin: 1px 0 0;
+  color: #1f2937;
+}
+
+/* Game Action Buttons */
+.game-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.game-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  background: #db3237;
+  color: #ffffff;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  transition: all 0.15s ease;
+}
+
+.game-btn-primary:hover {
+  background: #b91c1c;
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0 #2d2d2d;
+}
+
+.game-btn-primary:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #2d2d2d;
+}
+
+.game-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 14px;
+  background: #ffffff;
+  color: #1b1c1c;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  transition: all 0.15s ease;
+}
+
+.game-btn-secondary:hover {
+  background: #f9fafb;
+}
+
+.game-btn-quit {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 11px;
+  color: #6b7280;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.game-btn-quit:hover {
+  color: #dc2626;
+}
+
+/* Finish Screen */
+.game-finish-card {
+  text-align: center;
+  padding: 16px 12px;
+}
+
+.game-finish-trophy {
+  font-size: 40px;
+  margin-bottom: 4px;
+}
+
+.game-finish-score {
+  font-family: 'Epilogue', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+  margin: 8px 0 2px;
+}
+
+.game-finish-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.game-finish-msg {
+  margin: 10px 0 14px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4b5563;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px dashed #d1d5db;
+}
+
+.game-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+  text-align: left;
+}
+
+.game-summary-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #ffffff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 8px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 12px;
+}
+
+.game-summary-item.is-correct {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.game-summary-item.is-wrong {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Review screen items */
+.game-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.game-review-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 2px solid #2d2d2d;
+  border-radius: 10px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.game-review-btn:hover {
+  background: #f9fafb;
+  transform: translateX(2px);
+}
+
+.game-review-btn.is-active {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  box-shadow: 2px 2px 0 #0284c7;
+}
+
+@keyframes gameFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

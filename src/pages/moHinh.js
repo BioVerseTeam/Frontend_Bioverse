@@ -9,6 +9,8 @@ import { getModelById, getModelBySlug } from '../api/bioModelApi.js';
 import { markModelExplored, addXP, getProgress } from '../features/progress/progressService.js';
 import { ModelViewer, resolveModelUrl, parseJsonField } from '../features/model/ModelViewer.js';
 import { looksScientific, looksVietnamese } from '../features/model/partNames.js';
+import { getEligibleGameStructures } from '../features/model/anatomyStructures.js';
+import { FindThePartGame } from '../features/model/findThePartGame.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,6 +19,7 @@ let selectedPartId = null;
 let pinFrame = 0;
 let pinXTo = null;
 let pinYTo = null;
+let gameInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   setupNavbarAuth();
@@ -69,6 +72,30 @@ function bindUi() {
     hideNote();
     syncPartList();
   });
+
+  const btnGame = document.getElementById('btn-game');
+  btnGame?.addEventListener('click', (e) => {
+    pulse(e.currentTarget);
+    if (!gameInstance || !gameInstance.canPlay()) return;
+    if (gameInstance.isActive) {
+      if (gameInstance.results.length > 0 && (gameInstance.phase === 'question' || gameInstance.phase === 'feedback')) {
+        showGameExitModal();
+      } else {
+        exitGameMode();
+      }
+    } else {
+      startGameMode();
+    }
+  });
+
+  document.getElementById('btn-game-continue')?.addEventListener('click', () => {
+    hideGameExitModal();
+  });
+
+  document.getElementById('btn-game-confirm-exit')?.addEventListener('click', () => {
+    hideGameExitModal();
+    exitGameMode();
+  });
 }
 
 async function loadSpecimen() {
@@ -109,6 +136,7 @@ async function loadSpecimen() {
       onReady: (parts) => {
         hideLoading();
         renderParts(parts, { animate: true });
+        initGameMode(model, parts);
       },
       onError: () => {
         showError('Không tải được file 3D', 'Kiểm tra file trên R2 hoặc CORS, rồi thử lại.');
@@ -117,7 +145,7 @@ async function loadSpecimen() {
     });
 
     viewer.load(url, {
-      slug: model.slug || slug || '',
+      slug: model.slug || model.nameEn || model.name || slug || '',
       annotations: model.annotations,
       scale: model.defaultScale,
       rotation: model.defaultRotation,
@@ -215,6 +243,16 @@ function syncPartList() {
 }
 
 function handlePartClick(part) {
+  if (gameInstance && gameInstance.isActive) {
+    if (gameInstance.phase === 'question' && !gameInstance.isLocked) {
+      if (!part || !part.id) {
+        return;
+      }
+      gameInstance.submitAnswer(part.id, part.name || part.id);
+    }
+    return;
+  }
+
   selectedPartId = part?.id || null;
   syncPartList();
   if (!part) {
@@ -438,3 +476,436 @@ function escapeHtml(value) {
 function escapeAttr(value) {
   return escapeHtml(value);
 }
+
+/* ============================================================
+   FIND THE PART GAME MODE LOGIC & RENDERING
+   ============================================================ */
+
+function initGameMode(model, parts) {
+  const slug = model.slug || model.nameEn || model.name || new URLSearchParams(window.location.search).get('slug') || '';
+  let eligible = getEligibleGameStructures(slug);
+
+  // Fallback: nếu mô hình chưa có trong registry nhưng có nhiều bộ phận mesh tách biệt
+  if ((!eligible || eligible.length === 0) && parts?.length >= 3) {
+    const seenNames = new Set();
+    eligible = parts
+      .filter((p) => !p.isInternal)
+      .filter((p) => {
+        const norm = (p.name || '').trim().toLowerCase();
+        if (!norm || seenNames.has(norm)) return false;
+        seenNames.add(norm);
+        return true;
+      })
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        color: p.color,
+        description: p.description,
+        function: p.function,
+        location: p.location,
+        isInternal: p.isInternal,
+        game: { findPart: true }
+      }));
+  }
+
+  const btnGame = document.getElementById('btn-game');
+  if (!eligible || eligible.length === 0) {
+    if (btnGame) {
+      btnGame.disabled = true;
+      btnGame.title = 'Thử thách chưa khả dụng cho mô hình này.';
+      btnGame.setAttribute('aria-disabled', 'true');
+    }
+    gameInstance = null;
+    return;
+  }
+
+  if (btnGame) {
+    btnGame.disabled = false;
+    btnGame.title = 'Thử thách nhận diện giải phẫu 3D';
+    btnGame.removeAttribute('aria-disabled');
+  }
+
+  gameInstance = new FindThePartGame({
+    structures: eligible,
+    modelTitle: model.name || 'Mô hình sinh học',
+    maxQuestions: 5,
+    onStateChange: handleGameStateChange
+  });
+}
+
+function startGameMode() {
+  if (!gameInstance || !gameInstance.canPlay()) return;
+
+  selectedPartId = null;
+  hideNote();
+  viewer?.selectPart(null, { focus: false });
+  viewer?.setGameMode(true);
+
+  setGameSidebarVisible(true);
+
+  const btnGame = document.getElementById('btn-game');
+  if (btnGame) {
+    btnGame.classList.add('is-active');
+    setText('btn-game-label', '🎮 Đang chơi');
+  }
+
+  gameInstance.start();
+}
+
+function exitGameMode() {
+  if (gameInstance) {
+    gameInstance.exit();
+  }
+}
+
+function setGameSidebarVisible(isGame) {
+  const copy = document.getElementById('model-copy');
+  const partNote = document.getElementById('part-note');
+  const partsHead = document.querySelector('.specimen-parts-head');
+  const partsList = document.getElementById('parts-list');
+  const gamePanel = document.getElementById('game-panel');
+
+  if (copy) copy.hidden = isGame;
+  if (partNote) partNote.hidden = isGame || !selectedPartId;
+  if (partsHead) partsHead.hidden = isGame;
+  if (partsList) partsList.hidden = isGame;
+  if (gamePanel) gamePanel.hidden = !isGame;
+}
+
+function showGameExitModal() {
+  const modal = document.getElementById('game-exit-modal');
+  if (modal) modal.hidden = false;
+}
+
+function hideGameExitModal() {
+  const modal = document.getElementById('game-exit-modal');
+  if (modal) modal.hidden = true;
+}
+
+function handleGameStateChange(state) {
+  const gamePanel = document.getElementById('game-panel');
+  const btnGame = document.getElementById('btn-game');
+
+  if (!state.isActive) {
+    setGameSidebarVisible(false);
+    if (btnGame) {
+      btnGame.classList.remove('is-active');
+      setText('btn-game-label', '🎮 Thử thách');
+    }
+    viewer?.setGameMode(false);
+    viewer?.clearGameHighlight();
+    syncPartList();
+    if (gamePanel) gamePanel.innerHTML = '';
+    return;
+  }
+
+  if (!gamePanel) return;
+
+  switch (state.phase) {
+    case 'question':
+      renderGameQuestion(state);
+      break;
+    case 'feedback':
+      renderGameFeedback(state);
+      break;
+    case 'finished':
+      renderGameFinished(state);
+      break;
+    case 'review':
+      renderGameReview(state);
+      break;
+  }
+}
+
+function renderGameQuestion(state) {
+  const gamePanel = document.getElementById('game-panel');
+  if (!gamePanel) return;
+
+  viewer?.clearGameHighlight();
+
+  const dotsHtml = Array.from({ length: state.total }, (_, i) => {
+    let dotClass = 'game-progress-dot';
+    if (i < state.results.length) {
+      dotClass += state.results[i].isCorrect ? ' is-correct' : ' is-wrong';
+    } else if (i === state.index) {
+      dotClass += ' is-active';
+    }
+    return `<span class="${dotClass}" title="Câu ${i + 1}"></span>`;
+  }).join('');
+
+  gamePanel.innerHTML = `
+    <div class="game-meta-bar">
+      <span class="game-step-badge">Câu ${state.index + 1} / ${state.total}</span>
+      <span class="game-score-badge">
+        <span class="material-symbols-outlined text-[15px]">stars</span>
+        <span>${state.score} điểm</span>
+      </span>
+    </div>
+
+    <div class="game-progress-dots">
+      ${dotsHtml}
+    </div>
+
+    <div class="game-card">
+      <div class="game-prompt-header">🎯 Hãy tìm bộ phận:</div>
+      <h3 class="game-target-title">${escapeHtml(state.question.name)}</h3>
+      ${state.question.latin ? `<div class="game-target-latin">${escapeHtml(state.question.latin)}</div>` : ''}
+      <div class="game-instruction">
+        <span class="material-symbols-outlined text-[16px] text-[#db3237]">touch_app</span>
+        <span>Click vào đúng vị trí của cơ quan này trên mô hình 3D.</span>
+      </div>
+    </div>
+
+    <div class="game-actions">
+      <button type="button" id="btn-game-quit" class="game-btn-quit">Thoát thử thách</button>
+    </div>
+  `;
+
+  document.getElementById('btn-game-quit')?.addEventListener('click', () => {
+    if (state.results.length > 0) {
+      showGameExitModal();
+    } else {
+      exitGameMode();
+    }
+  });
+}
+
+function renderGameFeedback(state) {
+  const gamePanel = document.getElementById('game-panel');
+  if (!gamePanel) return;
+
+  const result = state.results[state.results.length - 1];
+  if (!result) return;
+
+  viewer?.setGameHighlight({
+    correctId: result.targetId,
+    wrongId: result.isCorrect ? null : result.selectedId
+  });
+  viewer?.focusPart(result.targetId);
+
+  const dotsHtml = Array.from({ length: state.total }, (_, i) => {
+    let dotClass = 'game-progress-dot';
+    if (i < state.results.length) {
+      dotClass += state.results[i].isCorrect ? ' is-correct' : ' is-wrong';
+    } else if (i === state.index) {
+      dotClass += ' is-active';
+    }
+    return `<span class="${dotClass}" title="Câu ${i + 1}"></span>`;
+  }).join('');
+
+  const target = result.targetData || {};
+
+  gamePanel.innerHTML = `
+    <div class="game-meta-bar">
+      <span class="game-step-badge">Câu ${state.index + 1} / ${state.total}</span>
+      <span class="game-score-badge">
+        <span class="material-symbols-outlined text-[15px]">stars</span>
+        <span>${state.score} điểm</span>
+      </span>
+    </div>
+
+    <div class="game-progress-dots">
+      ${dotsHtml}
+    </div>
+
+    <div class="game-feedback ${result.isCorrect ? 'is-correct' : 'is-wrong'}">
+      <div class="game-feedback-title">
+        <span class="material-symbols-outlined text-[20px]">
+          ${result.isCorrect ? 'check_circle' : 'cancel'}
+        </span>
+        <span>${result.isCorrect ? 'CHÍNH XÁC! (+100 điểm)' : 'CHƯA CHÍNH XÁC'}</span>
+      </div>
+      <div class="game-feedback-detail">
+        ${
+          result.isCorrect
+            ? `Bạn đã tìm đúng <strong>${escapeHtml(result.targetName)}</strong>.`
+            : `Bạn đã chọn: <span class="part-highlight wrong">${escapeHtml(result.selectedName)}</span><br>
+               Đáp án đúng: <span class="part-highlight correct">${escapeHtml(result.targetName)}</span>`
+        }
+      </div>
+    </div>
+
+    <div class="game-edu-note">
+      <dl class="m-0">
+        ${target.latin ? `<dt>Tên khoa học / La-tinh</dt><dd class="italic">${escapeHtml(target.latin)}</dd>` : ''}
+        ${target.function ? `<dt>Chức năng sinh học</dt><dd>${escapeHtml(target.function)}</dd>` : ''}
+        ${target.description ? `<dt>Vị trí & Cấu tạo</dt><dd>${escapeHtml(target.description)}</dd>` : ''}
+        ${target.learningNote ? `<dt>Ghi nhớ / Bệnh lý</dt><dd>${escapeHtml(target.learningNote)}</dd>` : ''}
+      </dl>
+    </div>
+
+    <div class="game-actions">
+      <button type="button" id="btn-game-next" class="game-btn-primary">
+        <span>${state.index === state.total - 1 ? 'Xem kết quả' : 'Câu tiếp theo'}</span>
+        <span class="material-symbols-outlined text-[18px]">
+          ${state.index === state.total - 1 ? 'emoji_events' : 'arrow_forward'}
+        </span>
+      </button>
+    </div>
+  `;
+
+  document.getElementById('btn-game-next')?.addEventListener('click', () => {
+    gameInstance.nextQuestion();
+  });
+}
+
+function renderGameFinished(state) {
+  const gamePanel = document.getElementById('game-panel');
+  if (!gamePanel) return;
+
+  const summary = state.summary;
+  viewer?.clearGameHighlight();
+
+  const resultsListHtml = state.results.map((r, i) => `
+    <div class="game-summary-item ${r.isCorrect ? 'is-correct' : 'is-wrong'}">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px] ${r.isCorrect ? 'text-emerald-600' : 'text-rose-600'}">
+          ${r.isCorrect ? 'check_circle' : 'cancel'}
+        </span>
+        <span class="font-bold text-[#1b1c1c]">Câu ${i + 1}: ${escapeHtml(r.targetName)}</span>
+      </div>
+      <div class="text-[11px] ${r.isCorrect ? 'text-emerald-700 font-semibold' : 'text-rose-700'}">
+        ${r.isCorrect ? '+100 đ' : `Chọn: ${escapeHtml(r.selectedName)}`}
+      </div>
+    </div>
+  `).join('');
+
+  gamePanel.innerHTML = `
+    <div class="game-finish-card">
+      <div class="game-finish-trophy">🏆</div>
+      <h3 class="font-['Epilogue'] text-lg font-bold text-[#1b1c1c] m-0">HOÀN THÀNH THỬ THÁCH</h3>
+      <p class="text-xs text-[#5b403e] mt-1 mb-2 font-['Be_Vietnam_Pro']">${escapeHtml(summary.modelTitle)}</p>
+
+      <div class="game-finish-score">${summary.score} / ${summary.maxScore}</div>
+      <div class="game-finish-pct">${summary.correctCount} / ${summary.total} chính xác (${summary.percentage}%)</div>
+
+      <div class="game-finish-msg">
+        <p class="m-0">${escapeHtml(summary.message)}</p>
+      </div>
+
+      <div class="game-summary-list">
+        ${resultsListHtml}
+      </div>
+
+      <div class="game-actions">
+        <button type="button" id="btn-game-review" class="game-btn-secondary">
+          <span class="material-symbols-outlined text-[18px]">manage_search</span>
+          <span>Xem lại đáp án</span>
+        </button>
+        <button type="button" id="btn-game-replay" class="game-btn-primary">
+          <span class="material-symbols-outlined text-[18px]">replay</span>
+          <span>Chơi lại</span>
+        </button>
+        <button type="button" id="btn-game-exit-to-learn" class="game-btn-secondary">
+          <span class="material-symbols-outlined text-[18px]">menu_book</span>
+          <span>Quay lại học</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-game-review')?.addEventListener('click', () => {
+    gameInstance.startReview(0);
+  });
+
+  document.getElementById('btn-game-replay')?.addEventListener('click', () => {
+    gameInstance.start();
+  });
+
+  document.getElementById('btn-game-exit-to-learn')?.addEventListener('click', () => {
+    exitGameMode();
+  });
+}
+
+function renderGameReview(state) {
+  const gamePanel = document.getElementById('game-panel');
+  if (!gamePanel) return;
+
+  const currentIdx = state.currentReviewIndex;
+  const currentRecord = state.results[currentIdx];
+  if (!currentRecord) return;
+
+  const targetStructure = gameInstance?.allStructures?.find((s) => s.id === currentRecord.targetId) || currentRecord.targetData || {};
+  const selectedStructure = gameInstance?.allStructures?.find((s) => s.id === currentRecord.selectedId);
+  const targetId = targetStructure.id || currentRecord.targetId;
+  const targetLabel = targetStructure.name || currentRecord.targetName;
+  const selectedLabel = selectedStructure?.name || currentRecord.selectedName;
+
+  viewer?.setGameHighlight({
+    correctId: targetId
+  });
+  viewer?.focusPart(targetId);
+
+  const target = targetStructure;
+
+  const reviewBtnsHtml = state.results.map((r, i) => `
+    <button type="button" class="game-review-btn ${i === currentIdx ? 'is-active' : ''}" data-review-idx="${i}">
+      <span class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[16px] ${r.isCorrect ? 'text-emerald-600' : 'text-rose-600'}">
+          ${r.isCorrect ? 'check_circle' : 'cancel'}
+        </span>
+        <span>Câu ${i + 1}: ${escapeHtml(r.targetName)}</span>
+      </span>
+      <span class="text-xs ${r.isCorrect ? 'text-emerald-600 font-bold' : 'text-rose-600'}">
+        ${r.isCorrect ? 'Đúng' : 'Sai'}
+      </span>
+    </button>
+  `).join('');
+
+  gamePanel.innerHTML = `
+    <div class="flex items-center justify-between pb-2 border-b border-gray-200">
+      <span class="font-['Space_Grotesk'] text-xs font-bold text-[#db3237] uppercase tracking-wider">
+        🔍 Xem lại đáp án
+      </span>
+      <span class="text-xs text-gray-500 font-semibold font-['Space_Grotesk']">
+        ${currentIdx + 1} / ${state.results.length}
+      </span>
+    </div>
+
+    <div class="game-review-list">
+      ${reviewBtnsHtml}
+    </div>
+
+    <div class="game-edu-note mt-2">
+      <h4 class="font-['Epilogue'] text-sm font-bold text-[#1b1c1c] m-0 mb-1 flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
+        <span>${escapeHtml(targetLabel)}</span>
+      </h4>
+      ${!currentRecord.isCorrect ? `<p class="text-xs text-rose-700 m-0 mb-2">Bạn đã chọn nhầm: <strong>${escapeHtml(selectedLabel)}</strong></p>` : ''}
+      <dl class="m-0">
+        ${target.latin ? `<dt>Tên khoa học / La-tinh</dt><dd class="italic">${escapeHtml(target.latin)}</dd>` : ''}
+        ${target.function ? `<dt>Chức năng sinh học</dt><dd>${escapeHtml(target.function)}</dd>` : ''}
+        ${target.description ? `<dt>Vị trí & Cấu tạo</dt><dd>${escapeHtml(target.description)}</dd>` : ''}
+        ${target.learningNote ? `<dt>Ghi nhớ / Bệnh lý</dt><dd>${escapeHtml(target.learningNote)}</dd>` : ''}
+      </dl>
+    </div>
+
+    <div class="game-actions">
+      <button type="button" id="btn-game-back-to-summary" class="game-btn-secondary">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Về bảng kết quả</span>
+      </button>
+      <button type="button" id="btn-game-review-exit" class="game-btn-primary">
+        <span class="material-symbols-outlined text-[18px]">menu_book</span>
+        <span>Quay lại học</span>
+      </button>
+    </div>
+  `;
+
+  gamePanel.querySelectorAll('[data-review-idx]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.reviewIdx, 10);
+      gameInstance.setReviewIndex(idx);
+    });
+  });
+
+  document.getElementById('btn-game-back-to-summary')?.addEventListener('click', () => {
+    gameInstance.phase = 'finished';
+    gameInstance._notify();
+  });
+
+  document.getElementById('btn-game-review-exit')?.addEventListener('click', () => {
+    exitGameMode();
+  });
+}
+

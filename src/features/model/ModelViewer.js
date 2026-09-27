@@ -74,6 +74,8 @@ export class ModelViewer {
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
     this._downPos = null;
+    this.isGameMode = false;
+    this.gameHighlight = null;
 
     this.initScene();
     this.initLights();
@@ -360,6 +362,7 @@ export class ModelViewer {
     });
 
     this._mainMesh = allMeshes[0] || null;
+    this._occlusionMeshes = allMeshes;
 
     const slug = settings?.slug || this._slug || this._currentUrl || '';
     const predefined = getAnatomyStructuresForModel(slug);
@@ -383,31 +386,101 @@ export class ModelViewer {
     const size = this._modelSize || new THREE.Vector3(1, 1, 1);
 
     structures.forEach((item, index) => {
-      const id = slugify(item.id) || `part-${index + 1}`;
+      // Canonical semantic ID must be preserved exactly (never slugified)
+      const id = item.id;
+      const structureId = item.id;
       const color = item.color || PART_COLORS[index % PART_COLORS.length];
       const isInternal = Boolean(item.isInternal);
       const group = new THREE.Group();
       group.name = `part:${id}`;
+      group.userData = { partId: id, structureId: id };
 
-      // Calculate local position for hotspot in authoritative model-local coordinates
-      let posX = 0;
-      let posY = 0;
-      let posZ = 0;
-      if (item.position) {
-        if (Math.abs(item.position.y) <= 1.0 && Math.abs(item.position.x) <= 1.0 && item.position.y >= 0 && item.position.y <= 1.0 && size.y > 5.0) {
-          // Normalized relative coordinate (e.g. Digestive System where size.y ~ 67.7)
-          posX = (Number(item.position.x) || 0) * size.x;
-          posY = ((Number(item.position.y) || 0.5) - 0.5) * size.y;
-          posZ = (Number(item.position.z) || 0) * size.z;
-        } else {
-          // Absolute model-local coordinate (e.g. Heart ~0.25m, Lungs ~0.37m)
-          posX = Number(item.position.x) || 0;
-          posY = Number(item.position.y) || 0;
-          posZ = Number(item.position.z) || 0;
+      // Check if this structure maps to specific meshes (mesh grouping)
+      const matchedMeshes = [];
+      const matchPatterns = [
+        item.id,
+        ...(item.aliases || []),
+        ...(item.meshNames || [])
+      ].map((p) => String(p).toLowerCase().replace(/_/g, ' '));
+
+      allMeshes.forEach((m) => {
+        const mName = (m.name || '').toLowerCase().replace(/_/g, ' ');
+        if (matchPatterns.some((pattern) => mName.includes(pattern))) {
+          matchedMeshes.push(m);
+          m.userData.partId = id;
+          m.userData.structureId = id;
         }
+      });
+      const meshes = matchedMeshes.length > 0 ? matchedMeshes : allMeshes;
+
+      let anchorLocal = null;
+
+      // GEOMETRY-DERIVED SURFACE ANCHOR: For models with real semantic meshes (like Muscular System)
+      if (matchedMeshes.length > 0) {
+        const sidePreference = item.anchorSide || 'left';
+        let targetMeshes = matchedMeshes.filter((m) => (m.name || '').toLowerCase().includes(sidePreference));
+        if (!targetMeshes.length) {
+          targetMeshes = matchedMeshes;
+        }
+
+        // 1. Calculate combined bounding box of target meshes in world space
+        const structBox = new THREE.Box3();
+        targetMeshes.forEach((m) => structBox.union(new THREE.Box3().setFromObject(m)));
+        const structCenter = new THREE.Vector3();
+        structBox.getCenter(structCenter);
+
+        // 2. Determine outward direction from body axis / item.surfaceNormal
+        let outwardDir = null;
+        if (item.surfaceNormal) {
+          outwardDir = new THREE.Vector3(item.surfaceNormal.x, item.surfaceNormal.y, item.surfaceNormal.z).normalize();
+        } else {
+          outwardDir = new THREE.Vector3(structCenter.x, 0, structCenter.z);
+          if (outwardDir.lengthSq() < 1e-4) outwardDir.set(0, 0, structCenter.z >= 0 ? 1 : -1);
+          outwardDir.normalize();
+        }
+
+        // 3. Cast ray from outside toward structure center to find true outer surface point
+        const rayStart = structCenter.clone().add(outwardDir.clone().multiplyScalar(1.2));
+        const rayDir = outwardDir.clone().negate();
+        const raycaster = new THREE.Raycaster(rayStart, rayDir);
+        const hits = raycaster.intersectObjects(targetMeshes, false);
+
+        let surfacePoint = null;
+        let surfaceNormal = outwardDir;
+        if (hits.length > 0) {
+          surfacePoint = hits[0].point;
+          if (hits[0].face) {
+            surfaceNormal = hits[0].face.normal.clone().transformDirection(hits[0].object.matrixWorld);
+          }
+        } else {
+          surfacePoint = structCenter.clone();
+        }
+
+        // 4. Attach marker with small outward surface-normal offset (0.035m in world space)
+        const anchorWorld = surfacePoint.clone().add(surfaceNormal.clone().multiplyScalar(0.035));
+        anchorLocal = this.modelGroup.worldToLocal(anchorWorld);
       }
-      const localPos = new THREE.Vector3(posX, posY, posZ);
-      group.position.copy(localPos);
+
+      // Fallback: If no matched meshes or single-mesh models (e.g. Heart), use author coordinates
+      if (!anchorLocal) {
+        let posX = 0;
+        let posY = 0;
+        let posZ = 0;
+        if (item.position) {
+          if (Math.abs(item.position.y) <= 1.0 && Math.abs(item.position.x) <= 1.0 && item.position.y >= 0 && item.position.y <= 1.0 && size.y > 5.0) {
+            posX = (Number(item.position.x) || 0) * size.x;
+            posY = ((Number(item.position.y) || 0.5) - 0.5) * size.y;
+            posZ = (Number(item.position.z) || 0) * size.z;
+          } else {
+            posX = Number(item.position.x) || 0;
+            posY = Number(item.position.y) || 0;
+            posZ = Number(item.position.z) || 0;
+          }
+        }
+        anchorLocal = new THREE.Vector3(posX, posY, posZ);
+      }
+
+      group.position.copy(anchorLocal);
 
       // Keep hotspot group as child of anatomyGroup (which lives inside modelGroup)
       if (this.anatomyGroup) {
@@ -416,24 +489,13 @@ export class ModelViewer {
         this.modelGroup.add(group);
       }
 
-      // Check if this structure maps to specific meshes (mesh grouping)
-      const matchedMeshes = [];
-      if (item.meshNames && Array.isArray(item.meshNames)) {
-        allMeshes.forEach((m) => {
-          if (item.meshNames.some((name) => m.name.toLowerCase().includes(name.toLowerCase()))) {
-            matchedMeshes.push(m);
-          }
-        });
-      }
-      const meshes = matchedMeshes.length > 0 ? matchedMeshes : allMeshes;
-
       // Create 3D Hotspot pin marker with distinct styling for internal vs external structures
       const hotspot = this._createHotspotMarker(id, item, color, index);
       group.add(hotspot);
 
-      // Robust bounded surface snapping for external structures only (valves stay at internal plane)
-      if (mainMesh) {
-        this._snapHotspotToSurface(group, mainMesh, localPos, isInternal);
+      // Robust bounded surface snapping for external structures only on single-mesh models
+      if (matchedMeshes.length === 0 && mainMesh) {
+        this._snapHotspotToSurface(group, mainMesh, anchorLocal, isInternal);
       }
 
       const origin = group.position.clone();
@@ -443,6 +505,7 @@ export class ModelViewer {
 
       const part = {
         id,
+        structureId,
         name: item.name,
         latin: item.latin || item.scientificName || '',
         description: item.description || item.structure || '',
@@ -467,6 +530,11 @@ export class ModelViewer {
 
       this.parts.push(part);
       this.partById.set(id, part);
+      if (item.aliases && Array.isArray(item.aliases)) {
+        item.aliases.forEach((alias) => {
+          this.partById.set(alias, part);
+        });
+      }
     });
   }
 
@@ -528,7 +596,8 @@ export class ModelViewer {
     const group = new THREE.Group();
     group.name = `hotspot:${partId}`;
     const isInternal = Boolean(item.isInternal);
-    group.userData = { partId, index, isHotspot: true, isInternal };
+    const structureId = item.id || partId;
+    group.userData = { partId, structureId, index, isHotspot: true, isInternal };
 
     // Small, intentional marker radius in model-local coordinates (~2.5cm world radius)
     const localR = Math.max(0.002, 0.024 / (this._modelScale || 1));
@@ -545,7 +614,7 @@ export class ModelViewer {
       opacity: isInternal ? 0.55 : 0.95
     });
     const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-    coreMesh.userData = { partId, isCore: true, isInternal };
+    coreMesh.userData = { partId, structureId, isCore: true, isInternal };
     coreMesh.renderOrder = 3;
     group.add(coreMesh);
 
@@ -561,7 +630,7 @@ export class ModelViewer {
       depthWrite: false
     });
     const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-    ringMesh.userData = { isRing: true, partId, isInternal };
+    ringMesh.userData = { isRing: true, partId, structureId, isInternal };
     ringMesh.renderOrder = 4;
     group.add(ringMesh);
 
@@ -576,7 +645,7 @@ export class ModelViewer {
         depthWrite: false
       });
       const innerRingMesh = new THREE.Mesh(innerRingGeo, innerRingMat);
-      innerRingMesh.userData = { isRing: true, isInnerValveRing: true };
+      innerRingMesh.userData = { isRing: true, isInnerValveRing: true, partId, structureId };
       innerRingMesh.renderOrder = 5;
       group.add(innerRingMesh);
     }
@@ -585,7 +654,7 @@ export class ModelViewer {
     const hitGeo = new THREE.SphereGeometry(localR * 3.5, 8, 8);
     const hitMat = new THREE.MeshBasicMaterial({ visible: false });
     const hitMesh = new THREE.Mesh(hitGeo, hitMat);
-    hitMesh.userData = { partId, isHitbox: true };
+    hitMesh.userData = { partId, structureId, isHitbox: true };
     group.add(hitMesh);
 
     this._hotspotRaycastMeshes.push(hitMesh);
@@ -647,6 +716,7 @@ export class ModelViewer {
   getParts() {
     return this.parts.map((part) => ({
       id: part.id,
+      structureId: part.structureId || part.id,
       name: part.name,
       latin: part.latin,
       description: part.description,
@@ -670,18 +740,38 @@ export class ModelViewer {
       const box = new THREE.Box3().setFromObject(part.group);
       box.getCenter(this._screenVec);
     }
+
+    // Check anatomical occlusion from camera
+    let isOccluded = false;
+    const occMeshes = this._occlusionMeshes || (this._mainMesh ? [this._mainMesh] : []);
+    if (occMeshes.length > 0) {
+      const camPos = this.camera.position;
+      const dir = this._screenVec.clone().sub(camPos);
+      const dist = dir.length();
+      if (dist > 0.1) {
+        dir.normalize();
+        this._occlusionRaycaster.set(camPos, dir);
+        this._occlusionRaycaster.far = Math.max(0.01, dist - 0.03);
+        const ownMeshes = new Set(part.meshes || []);
+        const hits = this._occlusionRaycaster.intersectObjects(occMeshes, false);
+        if (hits.some((h) => !ownMeshes.has(h.object))) {
+          isOccluded = true;
+        }
+      }
+    }
+
     this._screenVec.project(this.camera);
     return {
       x: (this._screenVec.x * 0.5 + 0.5) * this.width,
       y: (-this._screenVec.y * 0.5 + 0.5) * this.height,
-      visible: this._screenVec.z > -1 && this._screenVec.z < 1
+      visible: !isOccluded && this._screenVec.z > -1 && this._screenVec.z < 1
     };
   }
 
   getPart(id) {
     const part = this.partById.get(id);
     if (!part) return null;
-    return this.getParts().find((item) => item.id === id) || null;
+    return this.getParts().find((item) => item.id === part.id) || null;
   }
 
   selectPart(id, { focus = true } = {}) {
@@ -762,6 +852,118 @@ export class ModelViewer {
     }
   }
 
+  setGameMode(active) {
+    this.isGameMode = Boolean(active);
+    if (!this.isGameMode) {
+      this.clearGameHighlight();
+    }
+  }
+
+  setGameHighlight({ correctId = null, wrongId = null } = {}) {
+    this.gameHighlight = { correctId, wrongId };
+
+    this.parts.forEach((part) => {
+      const isCorrect = part.id === correctId;
+      const isWrong = part.id === wrongId;
+
+      if (part.hotspot) {
+        const ring = part.hotspot.getObjectByProperty('isRing', true);
+        const core = part.hotspot.getObjectByProperty('isCore', true);
+
+        if (isCorrect) {
+          gsap.killTweensOf(part.hotspot.scale);
+          gsap.to(part.hotspot.scale, { x: 1.55, y: 1.55, z: 1.55, duration: 0.35, ease: 'back.out(2)' });
+          if (ring?.material) {
+            ring.material.color.setHex(0x22c55e);
+            ring.material.opacity = 1.0;
+          }
+          if (core?.material) {
+            core.material.color.setHex(0x22c55e);
+            core.material.emissive.setHex(0x22c55e);
+            core.material.emissiveIntensity = 1.0;
+          }
+        } else if (isWrong) {
+          gsap.killTweensOf(part.hotspot.scale);
+          gsap.to(part.hotspot.scale, {
+            x: 1.35,
+            y: 1.35,
+            z: 1.35,
+            duration: 0.12,
+            yoyo: true,
+            repeat: 2,
+            ease: 'power1.inOut'
+          });
+          if (ring?.material) {
+            ring.material.color.setHex(0xef4444);
+            ring.material.opacity = 1.0;
+          }
+          if (core?.material) {
+            core.material.color.setHex(0xef4444);
+            core.material.emissive.setHex(0xef4444);
+            core.material.emissiveIntensity = 1.0;
+          }
+        } else {
+          gsap.killTweensOf(part.hotspot.scale);
+          gsap.to(part.hotspot.scale, { x: 0.85, y: 0.85, z: 0.85, duration: 0.25 });
+          if (ring?.material) {
+            ring.material.opacity = 0.25;
+          }
+        }
+      }
+
+      // Meshes highlight
+      part.meshes.forEach((mesh) => {
+        eachMaterial(mesh.material, (mat) => {
+          if (mat.emissive) {
+            if (isCorrect) {
+              mat.emissive.setHex(0x22c55e);
+              mat.emissiveIntensity = 0.45;
+              mat.needsUpdate = true;
+            } else if (isWrong) {
+              mat.emissive.setHex(0xef4444);
+              mat.emissiveIntensity = 0.4;
+              mat.needsUpdate = true;
+            } else if (correctId || wrongId) {
+              if (this._hotspots.length === 0) {
+                mat.emissive.setHex(0x000000);
+                mat.emissiveIntensity = 0;
+                mat.needsUpdate = true;
+              }
+            }
+          }
+        });
+      });
+    });
+  }
+
+  clearGameHighlight() {
+    this.gameHighlight = null;
+    this.parts.forEach((part) => {
+      if (part.hotspot) {
+        gsap.killTweensOf(part.hotspot.scale);
+        gsap.to(part.hotspot.scale, { x: 1.0, y: 1.0, z: 1.0, duration: 0.25 });
+        const ring = part.hotspot.getObjectByProperty('isRing', true);
+        const core = part.hotspot.getObjectByProperty('isCore', true);
+        if (ring?.material) {
+          ring.material.color.set(part.color || '#3b82f6');
+          ring.material.opacity = part.isInternal ? 0.6 : 0.8;
+        }
+        if (core?.material) {
+          core.material.color.set(part.color || '#3b82f6');
+          core.material.emissive.set(part.color || '#3b82f6');
+          core.material.emissiveIntensity = part.isInternal ? 0.45 : 0.85;
+        }
+      }
+      part.meshes.forEach((mesh) => {
+        eachMaterial(mesh.material, (mat) => {
+          restoreMaterialLook(mat);
+          mat.needsUpdate = true;
+        });
+      });
+    });
+    this._applyHighlight();
+  }
+
   setCameraPreset(preset) {
     const presets = {
       front: new THREE.Vector3(0, 0.25, 4.3),
@@ -790,10 +992,11 @@ export class ModelViewer {
     if (this._hotspotRaycastMeshes.length > 0) {
       const hitHotspots = this.raycaster.intersectObjects(this._hotspotRaycastMeshes, false);
       if (hitHotspots.length > 0) {
-        const partId = hitHotspots[0].object.userData.partId;
-        const part = this.partById.get(partId);
+        const hitObj = hitHotspots[0].object;
+        const targetId = hitObj.userData.structureId || hitObj.userData.partId;
+        const part = this.partById.get(targetId);
         if (part && part.visible) {
-          return { part: this.getPart(part.id), mesh: hitHotspots[0].object, screen };
+          return { part: this.getPart(part.id), mesh: hitObj, screen };
         }
       }
     }
@@ -807,7 +1010,16 @@ export class ModelViewer {
     const hitPoint = hits[0].point;
     const hitMesh = hits[0].object;
 
-    // 3. If model has hotspots, find the closest hotspot to the clicked surface point
+    // 2a. If hit mesh explicitly has a mapped canonical structureId
+    const directId = hitMesh.userData.structureId || hitMesh.userData.partId;
+    if (directId && this.partById.has(directId)) {
+      const part = this.partById.get(directId);
+      if (part && part.visible) {
+        return { part: this.getPart(part.id), mesh: hitMesh, screen };
+      }
+    }
+
+    // 3. If model has hotspots (single-mesh or hybrid models), find closest hotspot to clicked point
     if (this._hotspots.length > 0) {
       let closestPart = null;
       let minDistance = Infinity;
@@ -816,7 +1028,7 @@ export class ModelViewer {
         const worldPos = new THREE.Vector3();
         part.hotspot.getWorldPosition(worldPos);
         const dist = worldPos.distanceTo(hitPoint);
-        const maxRadius = part.hoverRadiusWorld || 0.75;
+        const maxRadius = Math.max(part.hoverRadiusWorld || 0, 0.65);
         if (dist < maxRadius && dist < minDistance) {
           minDistance = dist;
           closestPart = part;
@@ -827,14 +1039,18 @@ export class ModelViewer {
       }
     }
 
-    // 4. Default: fallback to mesh userData
-    const part = this.partById.get(hitMesh.userData.partId);
-    if (!part) return null;
-    return {
-      part: this.getPart(part.id),
-      mesh: hitMesh,
-      screen
-    };
+    // 4. Default: fallback to mesh userData if it belongs to a verified part
+    const fallbackPart = this.partById.get(hitMesh.userData.partId);
+    if (fallbackPart && fallbackPart.visible) {
+      return {
+        part: this.getPart(fallbackPart.id),
+        mesh: hitMesh,
+        screen
+      };
+    }
+
+    // 5. Fail-safe (Section 9): If mesh cannot be resolved to a verified semantic structure, return null
+    return null;
   }
 
   _handleMouseMove(event) {
@@ -859,10 +1075,14 @@ export class ModelViewer {
     }
     const result = this._pick(event);
     if (result?.part) {
-      this.selectPart(result.part.id);
+      if (!this.isGameMode) {
+        this.selectPart(result.part.id);
+      }
       this.onPartClick?.(result.part, result.screen);
     } else {
-      this.selectPart(null, { focus: false });
+      if (!this.isGameMode) {
+        this.selectPart(null, { focus: false });
+      }
       this.onPartClick?.(null, null);
     }
   }
@@ -1047,7 +1267,8 @@ export class ModelViewer {
 
         // Raycast from camera to hotspot world position to check anatomical occlusion
         let isOccluded = false;
-        if (mainMesh && !isSelected) {
+        const occMeshes = this._occlusionMeshes || (mainMesh ? [mainMesh] : []);
+        if (occMeshes.length > 0 && !isSelected) {
           const worldPos = new THREE.Vector3();
           h.group.getWorldPosition(worldPos);
           const dir = worldPos.clone().sub(camPos);
@@ -1056,8 +1277,10 @@ export class ModelViewer {
             dir.normalize();
             this._occlusionRaycaster.set(camPos, dir);
             this._occlusionRaycaster.far = Math.max(0.01, dist - 0.02);
-            const occHits = this._occlusionRaycaster.intersectObject(mainMesh, false);
-            if (occHits.length > 0) {
+            const part = this.partById.get(h.userData?.partId);
+            const ownMeshes = new Set(part?.meshes || []);
+            const occHits = this._occlusionRaycaster.intersectObjects(occMeshes, false);
+            if (occHits.some((hit) => !ownMeshes.has(hit.object))) {
               isOccluded = true;
             }
           }
@@ -1065,14 +1288,14 @@ export class ModelViewer {
 
         const pulse = 0.8 + Math.sin(now * 3.0 + (h.userData?.index || 0)) * 0.2;
         const baseRingOpacity = isSelected ? 1.0 : (isHovered ? 0.95 : (isInternal ? 0.6 : 0.8));
-        const finalRingOpacity = (isOccluded ? 0.15 : baseRingOpacity) * pulse;
+        const finalRingOpacity = (isOccluded ? 0.08 : baseRingOpacity) * pulse;
 
         if (h.ring?.material) {
           h.ring.material.opacity = finalRingOpacity;
         }
         if (h.core?.material) {
           const baseCoreOpacity = isSelected ? 1.0 : (isInternal ? 0.55 : 0.95);
-          h.core.material.opacity = isOccluded ? 0.18 : baseCoreOpacity;
+          h.core.material.opacity = isOccluded ? 0.10 : baseCoreOpacity;
         }
       });
     }
@@ -1165,6 +1388,9 @@ function labelPart(note, key, index) {
   let name = (note?.name && looksVietnamese(note.name))
     ? note.name
     : (known?.name || vietnamesePartName(note?.name || key, index));
+  if (/^(phải|trái|trên|dưới|sau|trước)$/i.test(name.trim())) {
+    name = `Bộ phận ${name.toLowerCase()}`;
+  }
   const side = sideFromKey(key);
   if (side && !name.toLowerCase().includes(side.toLowerCase())) {
     name = `${name} ${side}`.trim();
