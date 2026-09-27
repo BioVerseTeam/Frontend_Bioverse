@@ -33,7 +33,37 @@ const PHRASES = [
   ['os ethmoidale', 'xương sàng'],
   ['os zygomaticum', 'xương gò má'],
   ['os palatinum', 'xương khẩu cái'],
-  ['inferior turbinate', 'xương xoăn mũi dưới']
+  ['inferior turbinate', 'xương xoăn mũi dưới'],
+  ['pectoralis major', 'cơ ngực lớn'],
+  ['pectoralis minor', 'cơ ngực bé'],
+  ['biceps brachii', 'cơ nhị đầu cánh tay'],
+  ['triceps brachii', 'cơ tam đầu cánh tay'],
+  ['biceps femoris', 'cơ nhị đầu đùi'],
+  ['gluteus maximus', 'cơ mông lớn'],
+  ['gluteus medius', 'cơ mông nhỡ'],
+  ['gluteus minimus', 'cơ mông bé'],
+  ['rectus abdominis', 'cơ thẳng bụng'],
+  ['rectus femoris', 'cơ thẳng đùi'],
+  ['latissimus dorsi', 'cơ lưng rộng'],
+  ['serratus anterior', 'cơ răng trước'],
+  ['tibialis anterior', 'cơ chày trước'],
+  ['sternocleidomastoid', 'cơ ức đòn chũm'],
+  ['external oblique', 'cơ chéo bụng ngoài'],
+  ['internal oblique', 'cơ chéo bụng trong'],
+  ['transverse abdominis', 'cơ ngang bụng'],
+  ['long head', 'đầu dài'],
+  ['short head', 'đầu ngắn'],
+  ['lateral head', 'đầu ngoài'],
+  ['medial head', 'đầu trong'],
+  ['inferior oblique', 'cơ chéo dưới'],
+  ['superior oblique', 'cơ chéo trên'],
+  ['inferior rectus', 'cơ thẳng dưới'],
+  ['superior rectus', 'cơ thẳng trên'],
+  ['lateral rectus', 'cơ thẳng ngoài'],
+  ['medial rectus', 'cơ thẳng trong'],
+  ['plantar interosseous', 'cơ gian cốt gan chân'],
+  ['abductor digiti minimi', 'cơ giạng ngón út'],
+  ['lumbrical', 'cơ giun']
 ];
 
 const SIDES = {
@@ -136,6 +166,22 @@ const TERMS = {
   skin: 'da',
   muscle: 'cơ',
   muscles: 'cơ',
+  deltoid: 'cơ delta',
+  pectoralis: 'cơ ngực',
+  trapezius: 'cơ thang',
+  gluteus: 'cơ mông',
+  gastrocnemius: 'cơ bắp chân',
+  soleus: 'cơ dép',
+  quadriceps: 'cơ tứ đầu',
+  hamstring: 'cơ gân kheo',
+  brachialis: 'cơ cánh tay',
+  brachioradialis: 'cơ cánh tay quay',
+  infraspinatus: 'cơ dưới gai',
+  supraspinatus: 'cơ trên gai',
+  subscapularis: 'cơ dưới vai',
+  rhomboid: 'cơ trám',
+  sartorius: 'cơ may',
+  gracilis: 'cơ thon',
   bone: 'xương',
   bones: 'xương',
   rib: 'xương sườn',
@@ -295,7 +341,13 @@ export function sideFromKey(raw) {
 export function vietnamesePartName(raw, fallbackIndex = 1) {
   const source = String(raw || '').trim();
   if (!source) return `Bộ phận ${fallbackIndex}`;
-  if (looksVietnamese(source)) return source.replace(/\s+/g, ' ').trim();
+  if (looksVietnamese(source)) {
+    const trimmed = source.replace(/\s+/g, ' ').trim();
+    if (/^(phải|trái|trên|dưới|trước|sau)$/i.test(trimmed)) {
+      return `Bộ phận ${trimmed.toLowerCase()}`;
+    }
+    return trimmed;
+  }
 
   let working = tokenize(normalizeSource(source)).join(' ');
   const sides = [];
@@ -327,6 +379,10 @@ export function vietnamesePartName(raw, fallbackIndex = 1) {
       body.push(token);
     }
   });
+
+  if (!body.length && sides.length) {
+    body.push(`Bộ phận ${fallbackIndex}`);
+  }
 
   const name = [uniqueJoin(body), uniqueJoin(sides)].filter(Boolean).join(' ').trim();
   return capitalizeVi(name || `Bộ phận ${fallbackIndex}`);

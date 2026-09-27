@@ -15,6 +15,8 @@ export const CARDIOVASCULAR_STRUCTURES = [
     latin: 'Aorta',
     color: '#ef4444',
     isInternal: false,
+    game: { findPart: true },
+    meshNames: ['aorta', 'aortic', 'dong_mach_chu'],
     position: { x: 0.018, y: 0.070, z: 0.038 },
     hoverRadius: 0.035,
     cameraPosition: { x: 0.45, y: 1.05, z: 3.5 },
@@ -31,6 +33,8 @@ export const CARDIOVASCULAR_STRUCTURES = [
     latin: 'Ventriculus sinister',
     color: '#f43f5e',
     isInternal: false,
+    game: { findPart: true },
+    meshNames: ['left_ventricle', 'ventriculus_sinister', 'tam_that_trai'],
     position: { x: 0.032, y: -0.040, z: 0.054 },
     hoverRadius: 0.042,
     cameraPosition: { x: 1.25, y: -0.45, z: 3.4 },
@@ -47,6 +51,8 @@ export const CARDIOVASCULAR_STRUCTURES = [
     latin: 'Ventriculus dexter',
     color: '#3b82f6',
     isInternal: false,
+    game: { findPart: true },
+    meshNames: ['right_ventricle', 'ventriculus_dexter', 'tam_that_phai'],
     position: { x: -0.022, y: -0.035, z: 0.062 },
     hoverRadius: 0.042,
     cameraPosition: { x: -1.05, y: -0.35, z: 3.5 },
@@ -59,10 +65,12 @@ export const CARDIOVASCULAR_STRUCTURES = [
   {
     id: 'atria',
     number: 4,
-    name: 'Tâm nhĩ (Trái & Phải)',
+    name: 'Tâm nhĩ',
     latin: 'Atrium cordis',
     color: '#a855f7',
     isInternal: false,
+    game: { findPart: true },
+    meshNames: ['atria', 'atrium', 'tam_nhi'],
     position: { x: -0.035, y: 0.045, z: 0.032 },
     hoverRadius: 0.040,
     cameraPosition: { x: -1.2, y: 0.85, z: 3.5 },
@@ -79,6 +87,8 @@ export const CARDIOVASCULAR_STRUCTURES = [
     latin: 'Valvae cordis',
     color: '#eab308',
     isInternal: true,
+    game: { findPart: false, reason: 'Cấu trúc bên trong trên mô hình bề mặt ngoài' },
+    meshNames: ['valve', 'valvae', 'van_tim'],
     position: { x: 0.008, y: -0.005, z: 0.015 },
     hoverRadius: 0.035,
     cameraPosition: { x: 0.35, y: 0.15, z: 3.5 },
@@ -95,6 +105,8 @@ export const CARDIOVASCULAR_STRUCTURES = [
     latin: 'Arteria pulmonalis',
     color: '#06b6d4',
     isInternal: false,
+    game: { findPart: true },
+    meshNames: ['pulmonary_artery', 'pulmonary', 'dong_mach_phoi'],
     position: { x: 0.008, y: 0.025, z: 0.068 },
     hoverRadius: 0.038,
     cameraPosition: { x: 0.45, y: 0.55, z: 3.5 },
@@ -113,6 +125,8 @@ export const RESPIRATORY_STRUCTURES = [
     name: 'Khí quản',
     latin: 'Trachea',
     color: '#38bdf8',
+    game: { findPart: true },
+    meshNames: ['trachea', 'khi_quan', 'thairoid01:low_part01', 'lungh_part01'],
     position: { x: -0.001, y: 0.112, z: 0.010 },
     hoverRadius: 0.045,
     cameraPosition: { x: 0.0, y: 0.12, z: 0.42 },
@@ -128,6 +142,8 @@ export const RESPIRATORY_STRUCTURES = [
     name: 'Phế quản chính',
     latin: 'Bronchi principales',
     color: '#a855f7',
+    game: { findPart: true },
+    meshNames: ['bronchi', 'bronchus', 'phe_quan'],
     position: { x: -0.001, y: 0.061, z: 0.008 },
     hoverRadius: 0.040,
     cameraPosition: { x: 0.0, y: 0.07, z: 0.38 },
@@ -140,9 +156,11 @@ export const RESPIRATORY_STRUCTURES = [
   {
     id: 'pulmo_dexter',
     number: 3,
-    name: 'Phổi phải (3 thùy)',
+    name: 'Phổi phải',
     latin: 'Pulmo dexter',
     color: '#ef4444',
+    game: { findPart: true },
+    meshNames: ['pulmo_dexter', 'right_lung', 'lung_right', 'phoi_phai'],
     position: { x: -0.045, y: 0.020, z: 0.020 },
     hoverRadius: 0.055,
     cameraPosition: { x: -0.16, y: 0.02, z: 0.45 },
@@ -155,9 +173,11 @@ export const RESPIRATORY_STRUCTURES = [
   {
     id: 'pulmo_sinister',
     number: 4,
-    name: 'Phổi trái (2 thùy & Khuyết tim)',
+    name: 'Phổi trái',
     latin: 'Pulmo sinister',
     color: '#3b82f6',
+    game: { findPart: true },
+    meshNames: ['pulmo_sinister', 'left_lung', 'lung_left', 'phoi_trai'],
     position: { x: 0.048, y: 0.020, z: 0.020 },
     hoverRadius: 0.055,
     cameraPosition: { x: 0.16, y: 0.02, z: 0.45 },
@@ -173,6 +193,8 @@ export const RESPIRATORY_STRUCTURES = [
     name: 'Các thùy phổi & Màng phổi',
     latin: 'Lobi pulmonis & Pleura',
     color: '#f59e0b',
+    game: { findPart: true },
+    meshNames: ['lobi_pulmonis', 'thairoid01:low_part02', 'lungh_part02', 'thuy_phoi', 'mang_phoi'],
     position: { x: -0.038, y: 0.075, z: 0.012 },
     hoverRadius: 0.048,
     cameraPosition: { x: -0.10, y: 0.08, z: 0.40 },
@@ -188,6 +210,8 @@ export const RESPIRATORY_STRUCTURES = [
     name: 'Phế nang & Mạng mao mạch',
     latin: 'Alveoli pulmonis',
     color: '#10b981',
+    game: { findPart: false, reason: 'Cấu trúc vi mô bên trong nhu mô phổi' },
+    meshNames: ['alveoli', 'phe_nang'],
     position: { x: 0.035, y: -0.030, z: 0.015 },
     hoverRadius: 0.042,
     cameraPosition: { x: 0.12, y: -0.04, z: 0.38 },
@@ -201,11 +225,14 @@ export const RESPIRATORY_STRUCTURES = [
 
 export const DIGESTIVE_STRUCTURES = [
   {
-    id: 'thuc-quan',
+    id: 'esophagus',
+    aliases: ['thuc-quan', 'thuc_quan', 'oesophagus'],
     number: 1,
     name: 'Thực quản',
     latin: 'Oesophagus',
     color: '#48bb78',
+    game: { findPart: true },
+    meshNames: ['esophagus', 'oesophagus', 'thuc_quan'],
     position: { x: 0.0, y: 0.85, z: 0.05 },
     hoverRadius: 0.045,
     cameraPosition: { x: 0.0, y: 0.75, z: 0.38 },
@@ -216,11 +243,14 @@ export const DIGESTIVE_STRUCTURES = [
     learningNote: 'Thói quen ăn quá nhanh hoặc nằm ngay sau ăn dễ làm cơ vòng thực quản dưới suy yếu gây trào ngược dạ dày thực quản (GERD).'
   },
   {
-    id: 'gan',
+    id: 'liver',
+    aliases: ['gan', 'hepar'],
     number: 2,
     name: 'Gan',
     latin: 'Hepar',
     color: '#ed8936',
+    game: { findPart: true },
+    meshNames: ['liver', 'hepar', 'gan'],
     position: { x: -0.28, y: 0.56, z: 0.15 },
     hoverRadius: 0.065,
     cameraPosition: { x: -0.25, y: 0.55, z: 0.42 },
@@ -231,11 +261,14 @@ export const DIGESTIVE_STRUCTURES = [
     learningNote: 'Gan có khả năng tái sinh kỳ diệu; tuy nhiên rượu bia và mỡ thừa kéo dài có thể gây xơ gan không hồi phục.'
   },
   {
-    id: 'da-day',
+    id: 'stomach',
+    aliases: ['da-day', 'da_day', 'gaster', 'ventriculus'],
     number: 3,
     name: 'Dạ dày',
     latin: 'Ventriculus / Gaster',
     color: '#e53e3e',
+    game: { findPart: true },
+    meshNames: ['stomach', 'gaster', 'da_day', 'ventriculus'],
     position: { x: 0.22, y: 0.54, z: 0.15 },
     hoverRadius: 0.060,
     cameraPosition: { x: 0.22, y: 0.52, z: 0.40 },
@@ -246,11 +279,14 @@ export const DIGESTIVE_STRUCTURES = [
     learningNote: 'Lớp niêm mạc nhầy bảo vệ dạ dày khỏi bị chính axit HCl ăn mòn; vi khuẩn HP và stress có thể làm loét lớp màng bảo vệ này.'
   },
   {
-    id: 'tui-mat',
+    id: 'gallbladder',
+    aliases: ['tui-mat', 'tui_mat', 'vesica_fellea'],
     number: 4,
     name: 'Túi mật',
     latin: 'Vesica fellea',
     color: '#d69e2e',
+    game: { findPart: true },
+    meshNames: ['gallbladder', 'vesica_fellea', 'tui_mat'],
     position: { x: -0.16, y: 0.48, z: 0.2 },
     hoverRadius: 0.038,
     cameraPosition: { x: -0.15, y: 0.46, z: 0.35 },
@@ -261,11 +297,14 @@ export const DIGESTIVE_STRUCTURES = [
     learningNote: 'Rối loạn chuyển hóa cholesterol hoặc muối mật có thể hình thành sỏi mật gây tắc ống dẫn mật.'
   },
   {
-    id: 'tuy',
+    id: 'pancreas',
+    aliases: ['tuy', 'tuyen_tuy'],
     number: 5,
     name: 'Tuyến tụy',
     latin: 'Pancreas',
     color: '#38b2ac',
+    game: { findPart: true },
+    meshNames: ['pancreas', 'tuy'],
     position: { x: 0.02, y: 0.46, z: 0.05 },
     hoverRadius: 0.042,
     cameraPosition: { x: 0.05, y: 0.45, z: 0.35 },
@@ -276,11 +315,14 @@ export const DIGESTIVE_STRUCTURES = [
     learningNote: 'Tế bào đảo tụy tiết Insulin giúp đưa đường glucose vào tế bào; suy giảm insulin là nguyên nhân gây bệnh tiểu đường.'
   },
   {
-    id: 'ruot-non',
+    id: 'small_intestine',
+    aliases: ['ruot-non', 'ruot_non', 'intestinum_tenue'],
     number: 6,
     name: 'Ruột non',
     latin: 'Intestinum tenue',
     color: '#3182ce',
+    game: { findPart: true },
+    meshNames: ['small_intestine', 'intestinum_tenue', 'ruot_non', 'jejunum', 'ileum'],
     position: { x: 0.0, y: 0.32, z: 0.18 },
     hoverRadius: 0.065,
     cameraPosition: { x: 0.0, y: 0.32, z: 0.42 },
@@ -291,11 +333,14 @@ export const DIGESTIVE_STRUCTURES = [
     learningNote: 'Các lông ruột vi mô chứa mạng mao mạch máu và mạch bạch huyết dày đặc, giúp chất dinh dưỡng khuếch tán nhanh chóng vào cơ thể.'
   },
   {
-    id: 'ruot-gia',
+    id: 'large_intestine',
+    aliases: ['ruot-gia', 'ruot_gia', 'colon', 'intestinum_crassum'],
     number: 7,
-    name: 'Ruột già / Đại tràng',
+    name: 'Ruột già',
     latin: 'Intestinum crassum / Colon',
     color: '#805ad5',
+    game: { findPart: true },
+    meshNames: ['large_intestine', 'intestinum_crassum', 'colon', 'ruot_gia'],
     position: { x: 0.32, y: 0.3, z: 0.18 },
     hoverRadius: 0.065,
     cameraPosition: { x: 0.28, y: 0.30, z: 0.42 },
@@ -306,11 +351,14 @@ export const DIGESTIVE_STRUCTURES = [
     learningNote: 'Uống đủ nước và ăn nhiều chất xơ giúp nhu động đại tràng khỏe mạnh, ngăn ngừa táo bón và các bệnh đại tràng.'
   },
   {
-    id: 'truc-trang',
+    id: 'rectum',
+    aliases: ['truc-trang', 'truc_trang', 'anus'],
     number: 8,
     name: 'Trực tràng & Hậu môn',
     latin: 'Rectum & Anus',
     color: '#2b6cb0',
+    game: { findPart: true },
+    meshNames: ['rectum', 'truc_trang', 'anus'],
     position: { x: 0.0, y: 0.05, z: 0.0 },
     hoverRadius: 0.040,
     cameraPosition: { x: 0.0, y: 0.08, z: 0.35 },
@@ -319,6 +367,180 @@ export const DIGESTIVE_STRUCTURES = [
     function: 'Lưu trữ phân tạm thời và kiểm soát bài tiết phân ra ngoài cơ thể qua cơ vòng hậu môn.',
     location: 'Phần cuối cùng của ống tiêu hóa, nằm ở vùng chậu hông.',
     learningNote: 'Cơ vòng hậu môn chịu sự điều khiển có ý thức của não bộ, giúp cơ thể chủ động trong việc bài tiết.'
+  }
+];
+
+export const MUSCULAR_STRUCTURES = [
+  {
+    id: 'pectoralis_major',
+    aliases: ['co_nguc_lon', 'pectoralis_major'],
+    number: 1,
+    name: 'Cơ ngực lớn',
+    latin: 'Musculus pectoralis major',
+    color: '#ef4444',
+    game: { findPart: true },
+    meshNames: ['pectoralis major', 'pectoralis_major'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.0, y: 0.0, z: 1.0 },
+    position: { x: 0.112, y: 0.492, z: 0.120 },
+    hoverRadius: 0.065,
+    cameraPosition: { x: 0.0, y: 0.95, z: 2.10 },
+    cameraTarget: { x: 0.0, y: 0.93, z: 0.12 },
+    description: 'Khối cơ dày hình cánh quạt phủ gần như toàn bộ phần trên của thành ngực trước.',
+    function: 'Khép cánh tay, xoay trong cánh tay và gập khớp vai; hỗ trợ nâng lồng ngực khi hít thở sâu.',
+    location: 'Nằm ở thành trước ngực, phía dưới xương đòn và xương ức.'
+  },
+  {
+    id: 'deltoid',
+    aliases: ['co_delta', 'deltoideus'],
+    number: 2,
+    name: 'Cơ delta',
+    latin: 'Musculus deltoideus',
+    color: '#f97316',
+    game: { findPart: true },
+    meshNames: ['deltoid'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 1.0, y: 0.0, z: 0.0 },
+    position: { x: 0.243, y: 0.539, z: -0.048 },
+    hoverRadius: 0.065,
+    cameraPosition: { x: 1.35, y: 1.10, z: 1.60 },
+    cameraTarget: { x: 0.35, y: 1.02, z: -0.05 },
+    description: 'Khối cơ hình tam giác lớn ôm bọc quanh mỏm cùng vai và khớp vai.',
+    function: 'Dang cánh tay ra xa thân mình (chủ lực ở góc 15°-90°), gập và duỗi khớp vai.',
+    location: 'Bao quanh chỏm khớp vai ở cả hai bên cơ thể.'
+  },
+  {
+    id: 'biceps_brachii',
+    aliases: ['co_nhi_dau_canh_tay', 'biceps_brachii'],
+    number: 3,
+    name: 'Cơ nhị đầu cánh tay',
+    latin: 'Musculus biceps brachii',
+    color: '#eab308',
+    game: { findPart: true },
+    meshNames: ['biceps brachii', 'biceps_brachii'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.5, y: 0.0, z: 0.8 },
+    position: { x: 0.214, y: 0.439, z: 0.003 },
+    hoverRadius: 0.055,
+    cameraPosition: { x: 1.00, y: 0.85, z: 1.85 },
+    cameraTarget: { x: 0.35, y: 0.82, z: 0.0 },
+    description: 'Cơ bắp tay trước gồm 2 đầu (đầu dài và đầu ngắn) uốn cong nổi rõ khi gập cẳng tay.',
+    function: 'Gập cẳng tay tại khớp khuỷu và ngửa cẳng tay (xoay ngoài bàn tay).',
+    location: 'Nằm ở mặt trước cánh tay nối từ bả vai tới xương quay cẳng tay.'
+  },
+  {
+    id: 'triceps_brachii',
+    aliases: ['co_tam_dau_canh_tay', 'triceps_brachii'],
+    number: 4,
+    name: 'Cơ tam đầu cánh tay',
+    latin: 'Musculus triceps brachii',
+    color: '#06b6d4',
+    game: { findPart: true },
+    meshNames: ['triceps brachii', 'triceps_brachii'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.3, y: 0.0, z: -1.0 },
+    position: { x: 0.190, y: 0.431, z: -0.103 },
+    hoverRadius: 0.055,
+    cameraPosition: { x: 1.00, y: 0.85, z: -1.85 },
+    cameraTarget: { x: 0.35, y: 0.82, z: -0.1 },
+    description: 'Cơ bắp tay sau gồm 3 đầu (đầu dài, đầu ngoài, đầu trong) chiếm phần lớn cơ mặt sau cánh tay.',
+    function: 'Duỗi cẳng tay tại khớp khuỷu (đối vận với cơ nhị đầu).',
+    location: 'Nằm ở toàn bộ mặt sau xương cánh tay.'
+  },
+  {
+    id: 'trapezius',
+    aliases: ['co_thang'],
+    number: 5,
+    name: 'Cơ thang',
+    latin: 'Musculus trapezius',
+    color: '#8b5cf6',
+    game: { findPart: true },
+    meshNames: ['trapezius'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.0, y: 0.0, z: -1.0 },
+    position: { x: 0.085, y: 0.548, z: -0.132 },
+    hoverRadius: 0.065,
+    cameraPosition: { x: 0.0, y: 1.15, z: -2.10 },
+    cameraTarget: { x: 0.0, y: 1.04, z: -0.14 },
+    description: 'Khối cơ dẹt hình thang rộng lớn trải dài từ đáy sọ dọc đốt sống cổ và ngực đến xương bả vai.',
+    function: 'Nâng, xoay và khép xương bả vai về phía cột sống; hỗ trợ ngửa cổ và giữ vững tư thế cột sống.',
+    location: 'Nằm ở vùng lưng trên và sau gáy.'
+  },
+  {
+    id: 'gluteus_maximus',
+    aliases: ['co_mong_lon', 'gluteus_maximus'],
+    number: 6,
+    name: 'Cơ mông lớn',
+    latin: 'Musculus gluteus maximus',
+    color: '#ec4899',
+    game: { findPart: true },
+    meshNames: ['gluteus maximus', 'gluteus_maximus'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.0, y: 0.0, z: -1.0 },
+    position: { x: 0.083, y: 0.064, z: -0.130 },
+    hoverRadius: 0.065,
+    cameraPosition: { x: 0.0, y: 0.25, z: -2.10 },
+    cameraTarget: { x: 0.0, y: 0.14, z: -0.15 },
+    description: 'Khối cơ đơn lẻ lớn nhất và khỏe nhất cơ thể con người, tạo nên hình dạng vùng mông.',
+    function: 'Duỗi và xoay ngoài khớp háng, đóng vai trò then chốt giúp con người đứng thẳng, đi bộ, chạy và leo bậc thang.',
+    location: 'Nằm ở phía sau khung chậu vùng mông.'
+  },
+  {
+    id: 'biceps_femoris',
+    aliases: ['co_nhi_dau_dui', 'biceps_femoris'],
+    number: 7,
+    name: 'Cơ nhị đầu đùi',
+    latin: 'Musculus biceps femoris',
+    color: '#10b981',
+    game: { findPart: true },
+    meshNames: ['biceps femoris', 'biceps_femoris'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.0, y: 0.0, z: -1.0 },
+    position: { x: 0.098, y: -0.186, z: -0.097 },
+    hoverRadius: 0.060,
+    cameraPosition: { x: 0.20, y: -0.30, z: -2.10 },
+    cameraTarget: { x: 0.15, y: -0.35, z: -0.1 },
+    description: 'Một trong ba cơ thuộc nhóm cơ gân kheo (hamstring) ở mặt sau đùi.',
+    function: 'Gập cẳng chân tại khớp gối và duỗi khớp háng khi bước đi hoặc chạy nhảy.',
+    location: 'Nằm ở nửa ngoài mặt sau đùi.'
+  },
+  {
+    id: 'gastrocnemius',
+    aliases: ['co_bap_chan', 'co_sinh_doi'],
+    number: 8,
+    name: 'Cơ bắp chân (Cơ sinh đôi)',
+    latin: 'Musculus gastrocnemius',
+    color: '#3b82f6',
+    game: { findPart: true },
+    meshNames: ['gastrocnemius'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.0, y: 0.0, z: -1.0 },
+    position: { x: 0.059, y: -0.453, z: -0.109 },
+    hoverRadius: 0.055,
+    cameraPosition: { x: 0.15, y: -0.80, z: -2.10 },
+    cameraTarget: { x: 0.10, y: -0.86, z: -0.1 },
+    description: 'Khối cơ bắp chân nổi rõ gồm 2 bụng cơ (bụng ngoài và bụng trong) nối với gót chân qua gân gót (Achilles).',
+    function: 'Gập gan bàn chân (nhón gót chân) và hỗ trợ gập khớp gối khi vận động đẩy cơ thể về phía trước.',
+    location: 'Nằm ở mặt sau cẳng chân.'
+  },
+  {
+    id: 'soleus',
+    aliases: ['co_dep'],
+    number: 9,
+    name: 'Cơ dép',
+    latin: 'Musculus soleus',
+    color: '#6366f1',
+    game: { findPart: true },
+    meshNames: ['soleus'],
+    anchorSide: 'left',
+    surfaceNormal: { x: 0.0, y: 0.0, z: -1.0 },
+    position: { x: 0.070, y: -0.536, z: -0.086 },
+    hoverRadius: 0.050,
+    cameraPosition: { x: 0.15, y: -0.95, z: -2.10 },
+    cameraTarget: { x: 0.10, y: -1.02, z: -0.1 },
+    description: 'Cơ dẹt hình cá bơn nằm ngay dưới cơ sinh đôi cẳng chân, cùng hòa nhập vào gân Achilles.',
+    function: 'Duy trì tư thế đứng thẳng thăng bằng chống lại trọng lực và gập gan bàn chân khi đi bộ.',
+    location: 'Nằm sâu dưới cơ bắp chân ở mặt sau cẳng chân.'
   }
 ];
 
@@ -336,7 +558,12 @@ export const MODEL_ANATOMY_REGISTRY = {
   'he-tieu-hoa': DIGESTIVE_STRUCTURES,
   'digestive': DIGESTIVE_STRUCTURES,
   'stomach': DIGESTIVE_STRUCTURES,
-  'digestive_system': DIGESTIVE_STRUCTURES
+  'digestive_system': DIGESTIVE_STRUCTURES,
+
+  'he-co-bap': MUSCULAR_STRUCTURES,
+  'co-bap': MUSCULAR_STRUCTURES,
+  'muscular': MUSCULAR_STRUCTURES,
+  'muscular_system': MUSCULAR_STRUCTURES
 };
 
 /**
@@ -344,13 +571,63 @@ export const MODEL_ANATOMY_REGISTRY = {
  */
 export function getAnatomyStructuresForModel(slugOrKey) {
   if (!slugOrKey) return null;
-  const clean = String(slugOrKey).toLowerCase().trim().replace(/[^a-z0-9_-]+/g, '');
+  const raw = String(slugOrKey).toLowerCase().trim();
+  const deaccented = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+  const clean = deaccented.replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+  const cleanUnderscore = clean.replace(/-/g, '_');
+
   if (MODEL_ANATOMY_REGISTRY[clean]) return MODEL_ANATOMY_REGISTRY[clean];
+  if (MODEL_ANATOMY_REGISTRY[cleanUnderscore]) return MODEL_ANATOMY_REGISTRY[cleanUnderscore];
 
   for (const [key, list] of Object.entries(MODEL_ANATOMY_REGISTRY)) {
-    if (clean.includes(key) || key.includes(clean)) {
+    const keyUnderscore = key.replace(/-/g, '_');
+    if (
+      clean === key ||
+      cleanUnderscore === keyUnderscore ||
+      clean.includes(key) ||
+      cleanUnderscore.includes(keyUnderscore) ||
+      key.includes(clean)
+    ) {
       return list;
     }
   }
   return null;
+}
+
+/**
+ * Lấy danh sách cấu trúc giải phẫu học hợp lệ cho chế độ chơi "🎮 Find the Part"
+ * @param {string|Array} slugOrList - slug mô hình hoặc mảng cấu trúc
+ * @returns {Array} danh sách các cấu trúc eligible (findPart === true)
+ */
+export function getEligibleGameStructures(slugOrList) {
+  const structures = Array.isArray(slugOrList)
+    ? slugOrList
+    : getAnatomyStructuresForModel(slugOrList);
+  if (!structures || !structures.length) return [];
+  return structures.filter((item) => {
+    if (item.game && typeof item.game.findPart === 'boolean') {
+      return item.game.findPart;
+    }
+    // Mặc định: nếu không ghi rõ, cho phép trừ khi là cấu trúc bên trong không nhìn thấy
+    return !item.isInternal;
+  });
+}
+
+export function resolveCanonicalStructure(idOrObject, structures = []) {
+  if (!idOrObject) return null;
+  const searchId = typeof idOrObject === 'string' ? idOrObject.trim() : (idOrObject.id || idOrObject.partId || '').trim();
+  if (!searchId) return null;
+  const normalized = searchId.toLowerCase().replace(/-/g, '_');
+
+  return structures.find((s) => {
+    if (s.id === searchId || s.id.toLowerCase() === normalized) return true;
+    if (s.aliases && (s.aliases.includes(searchId) || s.aliases.some((a) => a.toLowerCase() === normalized))) {
+      return true;
+    }
+    return false;
+  }) || null;
 }
