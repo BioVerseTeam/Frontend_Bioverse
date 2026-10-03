@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng giá & Gói cước - BioVerse</title>
+  <meta name="description" content="Khám phá các gói cước BioVerse Premium để trải nghiệm toàn bộ kho mô hình 3D, phòng thí nghiệm ảo và trợ lý AI không giới hạn.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen flex flex-col">
+  <!-- Top Navigation -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-4 md:px-8 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a class="flex items-center gap-2 group" href="/">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">view_in_ar</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-['Epilogue'] text-xl font-black tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-['Space_Grotesk'] text-xs text-on-surface-variant font-bold tracking-wide">Sổ tay STEM</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-4 text-sm font-bold">
+        <a href="/" class="hover:text-primary transition-colors">Trang chủ</a>
+        <a href="/sinh-hoc" class="hover:text-primary transition-colors">Mô hình 3D</a>
+        <a href="/phan-ung" class="hover:text-primary transition-colors">Phản ứng Hoá học</a>
+        <a href="/exams" class="hover:text-primary transition-colors">Đề thi khảo thí</a>
+        <a href="/pricing" class="text-primary underline decoration-2 underline-offset-4">Gói cước</a>
+      </nav>
+
+      <div id="header-user-cluster" class="flex items-center gap-3">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Đang tải...</span>
+          <span id="header-user-badge" class="font-label-sm text-[11px] px-2 py-0.5 rounded-full border border-[#2d2d2d] bg-[#ffdad6] font-bold">Free Access</span>
+        </div>
+        <a id="header-login-btn" href="/login" class="neo-btn neo-btn-primary rounded-xl px-4 py-2 text-sm flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">login</span>
+          Đăng nhập
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 w-full pt-28 pb-16 px-4 md:px-8">
+    <div class="max-w-6xl mx-auto flex flex-col gap-10">
+
+      <!-- Free Access Banner (Thu hút người dùng) -->
+      <div id="free-access-banner" class="relative bg-[#e8f5e9] border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 md:p-8 sketch-shadow overflow-hidden">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-[#2e7d32] text-white border-2 border-[#2d2d2d] flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[30px]">celebration</span>
+            </div>
+            <div>
+              <div class="inline-block bg-[#2e7d32] text-white text-xs font-bold px-2.5 py-0.5 rounded-full border border-[#2d2d2d] mb-1.5 uppercase tracking-wider">
+                Ưu đãi đặc biệt
+              </div>
+              <h2 class="font-['Epilogue'] text-xl md:text-2xl font-black text-[#1b1c1c] leading-tight">
+                BioVerse đang mở TRẢI NGHIỆM MIỄN PHÍ toàn bộ hệ thống!
+              </h2>
+              <p class="font-['Be_Vietnam_Pro'] text-sm text-[#385038] mt-1 max-w-2xl">
+                Tất cả học sinh và giáo viên có thể tự do xem toàn bộ mô hình 3D, làm đề thi không giới hạn và trò chuyện cùng trợ lý AI BioBot. Bạn cũng có thể đăng ký gói trước để ủng hộ dự án phát triển lâu dài!
+              </p>
+            </div>
+          </div>
+          <a href="/sinh-hoc" class="neo-btn neo-btn-secondary shrink-0 rounded-xl px-5 py-2.5 text-sm font-bold flex items-center gap-2">
+            <span>Bắt đầu học ngay</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Pricing Heading -->
+      <div class="text-center max-w-2xl mx-auto flex flex-col items-center gap-3">
+        <span class="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-widest text-primary px-3 py-1 bg-[#ffdad6] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm">
+          BioVerse Premium Plans
+        </span>
+        <h1 class="font-['Epilogue'] text-3xl md:text-5xl font-black tracking-tight text-[#1b1c1c]">
+          Nâng tầm trải nghiệm học STEM
+        </h1>
+        <p class="font-['Be_Vietnam_Pro'] text-sm md:text-base text-[#5b403e]">
+          Mở khóa toàn diện không gian học tập khoa học 3D, phòng thí nghiệm ảo và nhận đặc quyền hỗ trợ sớm nhất.
+        </p>
+      </div>
+
+      <!-- Plans Container -->
+      <div id="plans-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        <div class="col-span-full text-center py-12 text-[#5b403e]">
+          <span class="material-symbols-outlined text-[40px] animate-spin text-primary">progress_activity</span>
+          <p class="mt-2 text-sm font-semibold">Đang tải danh sách gói cước...</p>
+        </div>
+      </div>
+
+      <!-- Feature Comparison -->
+      <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 md:p-8 sketch-shadow mt-4">
+        <h2 class="font-['Epilogue'] text-2xl font-bold mb-6 text-center">Bảng so sánh quyền lợi</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr class="border-b-2 border-[#2d2d2d] bg-[#f9f7f2]">
+                <th class="p-3.5 font-bold">Tính năng</th>
+                <th class="p-3.5 font-bold text-center">Tài khoản Khách</th>
+                <th class="p-3.5 font-bold text-center text-primary">Tài khoản BioVerse</th>
+                <th class="p-3.5 font-bold text-center text-[#2e7d32]">Thành viên Premium</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y border-b border-[#2d2d2d]">
+              <tr>
+                <td class="p-3.5 font-medium">Khám phá mô hình 3D Sinh học</td>
+                <td class="p-3.5 text-center">Có (cơ bản)</td>
+                <td class="p-3.5 text-center font-bold text-primary">Không giới hạn (Đang Free)</td>
+                <td class="p-3.5 text-center font-bold text-[#2e7d32]">Toàn bộ 3D sắc nét</td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-medium">Làm đề thi trắc nghiệm KHTN</td>
+                <td class="p-3.5 text-center text-gray-400">—</td>
+                <td class="p-3.5 text-center font-bold text-primary">Không giới hạn (Đang Free)</td>
+                <td class="p-3.5 text-center font-bold text-[#2e7d32]">Không giới hạn + Lời giải AI</td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-medium">Phòng thí nghiệm Hoá học & Phản ứng</td>
+                <td class="p-3.5 text-center">3 phản ứng mẫu</td>
+                <td class="p-3.5 text-center font-bold text-primary">Mở toàn bộ (Đang Free)</td>
+                <td class="p-3.5 text-center font-bold text-[#2e7d32]">Đầy đủ phòng Lab</td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-medium">Trò chuyện cùng AI BioBot</td>
+                <td class="p-3.5 text-center text-gray-400">—</td>
+                <td class="p-3.5 text-center font-bold text-primary">Không giới hạn (Đang Free)</td>
+                <td class="p-3.5 text-center font-bold text-[#2e7d32]">Ưu tiên tốc độ cao</td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-medium">Mini-game "Find The Part" 3D</td>
+                <td class="p-3.5 text-center text-gray-400">—</td>
+                <td class="p-3.5 text-center font-bold text-primary">Mở trải nghiệm (Đang Free)</td>
+                <td class="p-3.5 text-center font-bold text-[#2e7d32]">Toàn bộ thử thách</td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-medium">Cổng thanh toán bảo mật VietQR / PayOS</td>
+                <td class="p-3.5 text-center text-gray-400">—</td>
+                <td class="p-3.5 text-center text-gray-400">—</td>
+                <td class="p-3.5 text-center font-bold text-[#2e7d32]">Kích hoạt tức thì</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="border-t-2 border-[#2d2d2d] bg-[#f9f7f2] py-8 px-4 text-center text-xs text-[#5b403e]">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <p>© 2026 BioVerse STEM Platform. Đồng hành cùng học sinh Việt Nam.</p>
+      <div class="flex items-center gap-4">
+        <a href="/" class="hover:underline">Trang chủ</a>
+        <a href="/pricing" class="hover:underline">Bảng giá</a>
+        <a href="/admin" class="hover:underline">Admin Desk</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/pages/pricing.js"></script>
+</body>
+</html>
