@@ -33,6 +33,13 @@ export const ADMIN_NAV = [
       { href: '/admin-users', path: 'admin-users', label: 'Người dùng', icon: 'group' },
       { href: '/admin-roles', path: 'admin-roles', label: 'Vai trò', icon: 'badge' }
     ]
+  },
+  {
+    label: 'Kinh doanh',
+    items: [
+      { href: '/admin-plans', path: 'admin-plans', label: 'Gói cước', icon: 'loyalty' },
+      { href: '/admin-payments', path: 'admin-payments', label: 'Thanh toán & Sub', icon: 'payments' }
+    ]
   }
 ];
 
@@ -303,7 +310,9 @@ function pageTitle(current) {
     'admin-exams': 'Đề thi & Câu hỏi',
     'admin-academic': 'Học kỳ & Môn học',
     'admin-users': 'Người dùng',
-    'admin-roles': 'Vai trò'
+    'admin-roles': 'Vai trò',
+    'admin-plans': 'Gói cước Premium',
+    'admin-payments': 'Thanh toán & Subscriptions'
   };
   return titles[current] || 'Phòng điều hành';
 }

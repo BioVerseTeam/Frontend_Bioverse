@@ -34,6 +34,7 @@ export function setupNavbarAuth() {
     applyAdminChrome();
   } else {
     insertAdminNav(isLoggedIn ? user : null);
+    insertPricingNav();
   }
 
   const cluster = document.getElementById('header-user-cluster')
@@ -135,6 +136,18 @@ function insertAdminNav(user) {
   link.dataset.path = 'admin';
   link.className = 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent';
   link.textContent = 'Điều hành';
+  nav.appendChild(link);
+}
+
+function insertPricingNav() {
+  const nav = document.querySelector('header nav:not([hidden])');
+  if (!nav) return;
+  if (nav.querySelector('a[href="/pricing"]')) return;
+
+  const link = document.createElement('a');
+  link.href = '/pricing';
+  link.className = 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all border-2 border-transparent';
+  link.innerHTML = '<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">loyalty</span>Gói cước</span>';
   nav.appendChild(link);
 }
 

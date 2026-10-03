@@ -41,7 +41,15 @@
     { "source": "/pages/admin-users.html", "destination": "/admin-users", "permanent": true },
     { "source": "/pages/admin-roles.html", "destination": "/admin-roles", "permanent": true },
     { "source": "/pages/admin-exams.html", "destination": "/admin-exams", "permanent": true },
-    { "source": "/pages/admin-academic.html", "destination": "/admin-academic", "permanent": true }
+    { "source": "/pages/admin-academic.html", "destination": "/admin-academic", "permanent": true },
+    { "source": "/pricing.html", "destination": "/pricing", "permanent": true },
+    { "source": "/checkout.html", "destination": "/checkout", "permanent": true },
+    { "source": "/admin-plans.html", "destination": "/admin-plans", "permanent": true },
+    { "source": "/admin-payments.html", "destination": "/admin-payments", "permanent": true },
+    { "source": "/pages/pricing.html", "destination": "/pricing", "permanent": true },
+    { "source": "/pages/checkout.html", "destination": "/checkout", "permanent": true },
+    { "source": "/pages/admin-plans.html", "destination": "/admin-plans", "permanent": true },
+    { "source": "/pages/admin-payments.html", "destination": "/admin-payments", "permanent": true }
   ],
   "rewrites": [
     { "source": "/lab", "destination": "/pages/lab.html" },
@@ -54,6 +62,8 @@
     { "source": "/sinh-hoc", "destination": "/pages/sinh-hoc.html" },
     { "source": "/mo-hinh", "destination": "/pages/mo-hinh.html" },
     { "source": "/phan-ung", "destination": "/pages/phan-ung.html" },
+    { "source": "/pricing", "destination": "/pages/pricing.html" },
+    { "source": "/checkout", "destination": "/pages/checkout.html" },
     { "source": "/admin", "destination": "/pages/admin.html" },
     { "source": "/admin-models", "destination": "/pages/admin-models.html" },
     { "source": "/admin-categories", "destination": "/pages/admin-categories.html" },
@@ -62,6 +72,8 @@
     { "source": "/admin-users", "destination": "/pages/admin-users.html" },
     { "source": "/admin-roles", "destination": "/pages/admin-roles.html" },
     { "source": "/admin-exams", "destination": "/pages/admin-exams.html" },
-    { "source": "/admin-academic", "destination": "/pages/admin-academic.html" }
+    { "source": "/admin-academic", "destination": "/pages/admin-academic.html" },
+    { "source": "/admin-plans", "destination": "/pages/admin-plans.html" },
+    { "source": "/admin-payments", "destination": "/pages/admin-payments.html" }
   ]
 }

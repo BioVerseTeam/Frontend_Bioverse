@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanh toán & Subscriptions - BioVerse Admin</title>
+  <meta name="description" content="Quản lý giao dịch PayOS và danh sách người dùng sở hữu gói cước Premium.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Thanh toán</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-space-xs"></nav>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Admin</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-10">
+      <div class="max-w-6xl mx-auto flex flex-col gap-5">
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập tài khoản ADMIN để theo dõi doanh thu và người dùng.</p>
+          <a id="admin-gate-login" href="/login?next=/admin-payments" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <div id="admin-workspace" hidden>
+          <div class="relative bg-white sketch-border p-5 md:p-7">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div>
+                <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-2">Giao dịch & Subscriptions</h1>
+                <p class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e]">Theo dõi lịch sử đơn thanh toán PayOS và tài khoản sở hữu gói Premium.</p>
+              </div>
+
+              <!-- Tabs switch -->
+              <div class="flex bg-[#f9f7f2] border-2 border-[#2d2d2d] rounded-xl p-1 shrink-0 text-xs font-bold">
+                <button id="tab-payments-btn" class="px-4 py-2 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all">
+                  Đơn thanh toán PayOS
+                </button>
+                <button id="tab-subs-btn" class="px-4 py-2 rounded-lg text-gray-600 hover:text-black transition-all">
+                  Người dùng có gói
+                </button>
+              </div>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div class="flex items-center gap-2">
+                <select id="status-filter" class="border-2 border-[#2d2d2d] rounded-xl px-3 py-2 text-xs bg-white font-semibold">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="PAID">Đã thanh toán (PAID)</option>
+                  <option value="PENDING">Đang chờ (PENDING)</option>
+                  <option value="CANCELLED">Đã hủy (CANCELLED)</option>
+                  <option value="FAILED">Thất bại (FAILED)</option>
+                </select>
+                <button id="refresh-btn" class="neo-btn neo-btn-secondary rounded-xl px-3 py-2 text-xs font-bold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[16px]">refresh</span>
+                  Làm mới
+                </button>
+              </div>
+
+              <div class="relative w-full sm:w-64">
+                <input type="text" id="keyword-input" placeholder="Tìm theo email, tên, mã..." class="w-full border-2 border-[#2d2d2d] rounded-xl pl-8 pr-3 py-2 text-xs">
+                <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[16px] text-gray-400">search</span>
+              </div>
+            </div>
+
+            <!-- Content Container -->
+            <div id="tab-content" class="overflow-x-auto border-2 border-[#2d2d2d] rounded-xl">
+              <div class="p-8 text-center text-gray-500">
+                <span class="material-symbols-outlined text-[32px] animate-spin text-primary">progress_activity</span>
+                <p class="mt-2 text-xs">Đang nạp dữ liệu...</p>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination" class="flex items-center justify-between mt-4 text-xs text-gray-600">
+              <span id="page-info">Trang 1</span>
+              <div class="flex items-center gap-2">
+                <button id="prev-page-btn" disabled class="neo-btn neo-btn-secondary px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40">Trang trước</button>
+                <button id="next-page-btn" disabled class="neo-btn neo-btn-secondary px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40">Trang sau</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/pages/adminPayments.js"></script>
+</body>
+</html>
