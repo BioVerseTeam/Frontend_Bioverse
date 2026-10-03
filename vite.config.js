@@ -25,6 +25,10 @@ const CLEAN_ROUTES = {
   '/admin-roles': '/pages/admin-roles.html',
   '/admin-exams': '/pages/admin-exams.html',
   '/admin-academic': '/pages/admin-academic.html',
+  '/pricing': '/pages/pricing.html',
+  '/checkout': '/pages/checkout.html',
+  '/admin-plans': '/pages/admin-plans.html',
+  '/admin-payments': '/pages/admin-payments.html',
 };
 
 /** Legacy *.html URLs → clean paths (browser address bar). */
@@ -49,6 +53,10 @@ const HTML_REDIRECTS = {
   '/admin-roles.html': '/admin-roles',
   '/admin-exams.html': '/admin-exams',
   '/admin-academic.html': '/admin-academic',
+  '/pricing.html': '/pricing',
+  '/checkout.html': '/checkout',
+  '/admin-plans.html': '/admin-plans',
+  '/admin-payments.html': '/admin-payments',
   // Built multi-page assets live under /pages/*.html — redirect if opened directly.
   '/pages/lab.html': '/lab',
   '/pages/login.html': '/login',
@@ -69,6 +77,10 @@ const HTML_REDIRECTS = {
   '/pages/admin-roles.html': '/admin-roles',
   '/pages/admin-exams.html': '/admin-exams',
   '/pages/admin-academic.html': '/admin-academic',
+  '/pages/pricing.html': '/pricing',
+  '/pages/checkout.html': '/checkout',
+  '/pages/admin-plans.html': '/admin-plans',
+  '/pages/admin-payments.html': '/admin-payments',
 };
 
 function cleanUrlMiddleware(req, res, next) {
@@ -115,6 +127,8 @@ export default defineConfig({
         sinhHoc: resolve(__dirname, 'pages/sinh-hoc.html'),
         moHinh: resolve(__dirname, 'pages/mo-hinh.html'),
         phanUng: resolve(__dirname, 'pages/phan-ung.html'),
+        pricing: resolve(__dirname, 'pages/pricing.html'),
+        checkout: resolve(__dirname, 'pages/checkout.html'),
         admin: resolve(__dirname, 'pages/admin.html'),
         adminModels: resolve(__dirname, 'pages/admin-models.html'),
         adminCategories: resolve(__dirname, 'pages/admin-categories.html'),
@@ -124,6 +138,8 @@ export default defineConfig({
         adminRoles: resolve(__dirname, 'pages/admin-roles.html'),
         adminExams: resolve(__dirname, 'pages/admin-exams.html'),
         adminAcademic: resolve(__dirname, 'pages/admin-academic.html'),
+        adminPlans: resolve(__dirname, 'pages/admin-plans.html'),
+        adminPayments: resolve(__dirname, 'pages/admin-payments.html'),
       }
     }
   },

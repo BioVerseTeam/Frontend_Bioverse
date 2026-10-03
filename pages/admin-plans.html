@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gói cước Premium - BioVerse Admin</title>
+  <meta name="description" content="Quản lý các gói cước thành viên, bảng giá, thời hạn và tính năng.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="admin" href="/admin">
+          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="material-symbols-outlined text-on-primary text-[24px]">admin_panel_settings</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Gói cước</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-space-xs"></nav>
+      </div>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Admin</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-10">
+      <div class="max-w-6xl mx-auto flex flex-col gap-5">
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập tài khoản ADMIN để quản lý gói cước.</p>
+          <a id="admin-gate-login" href="/login?next=/admin-plans" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <div id="admin-workspace" hidden>
+          <div class="relative bg-white sketch-border p-5 md:p-7">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <div>
+                <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-2">Quản lý Gói cước</h1>
+                <p class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e]">Cấu hình bảng giá, thời lượng sử dụng và danh sách quyền lợi gói cước.</p>
+              </div>
+              <button id="add-plan-btn" class="neo-btn neo-btn-primary rounded-xl px-4 py-2.5 text-sm font-bold flex items-center gap-2 shrink-0">
+                <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                Tạo gói mới
+              </button>
+            </div>
+
+            <!-- Table of plans -->
+            <div class="overflow-x-auto border-2 border-[#2d2d2d] rounded-xl">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr class="bg-[#f9f7f2] border-b-2 border-[#2d2d2d]">
+                    <th class="p-3.5 font-bold">Thứ tự</th>
+                    <th class="p-3.5 font-bold">Tên gói</th>
+                    <th class="p-3.5 font-bold">Slug</th>
+                    <th class="p-3.5 font-bold">Thời hạn</th>
+                    <th class="p-3.5 font-bold">Giá bán</th>
+                    <th class="p-3.5 font-bold">Giá gốc</th>
+                    <th class="p-3.5 font-bold">Trạng thái</th>
+                    <th class="p-3.5 font-bold text-right">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="plans-table-body" class="divide-y border-[#2d2d2d]">
+                  <tr>
+                    <td colspan="8" class="p-8 text-center text-gray-500">
+                      <span class="material-symbols-outlined text-[32px] animate-spin text-primary">progress_activity</span>
+                      <p class="mt-2 text-xs">Đang tải danh sách gói...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Create/Edit Plan -->
+  <div id="plan-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl w-full max-w-lg sketch-shadow p-6 overflow-y-auto max-h-[90vh]">
+      <div class="flex items-center justify-between border-b-2 border-[#2d2d2d] pb-3 mb-4">
+        <h3 id="plan-modal-title" class="font-['Epilogue'] text-xl font-bold">Tạo gói cước mới</h3>
+        <button id="close-modal-btn" class="text-gray-500 hover:text-black">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="plan-form" class="flex flex-col gap-4 text-xs font-semibold">
+        <input type="hidden" id="plan-id">
+
+        <div>
+          <label class="block mb-1 text-gray-700">Tên gói cước *</label>
+          <input type="text" id="plan-name" required placeholder="VD: Gói Tháng, Gói Học Kỳ..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+        </div>
+
+        <div>
+          <label class="block mb-1 text-gray-700">Mã Slug (tùy chọn, tự sinh nếu để trống)</label>
+          <input type="text" id="plan-slug" placeholder="monthly, quarterly, yearly..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block mb-1 text-gray-700">Chu kỳ *</label>
+            <select id="plan-duration" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal bg-white">
+              <option value="MONTHLY">Tháng (MONTHLY)</option>
+              <option value="QUARTERLY">Quý (QUARTERLY)</option>
+              <option value="YEARLY">Năm (YEARLY)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 text-gray-700">Số ngày hiệu lực *</label>
+            <input type="number" id="plan-days" required min="1" value="30" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block mb-1 text-gray-700">Giá bán (VND) *</label>
+            <input type="number" id="plan-price" required min="0" step="1000" placeholder="49000" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+          </div>
+          <div>
+            <label class="block mb-1 text-gray-700">Giá gốc (VND, để gạch ngang)</label>
+            <input type="number" id="plan-original-price" min="0" step="1000" placeholder="79000" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+          </div>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-gray-700">Mô tả ngắn</label>
+          <input type="text" id="plan-description" placeholder="Mô tả tóm tắt lợi ích của gói..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+        </div>
+
+        <div>
+          <label class="block mb-1 text-gray-700">Danh sách tính năng (phân tách bởi dấu phẩy)</label>
+          <textarea id="plan-features" rows="2" placeholder="Lý thuyết 3D, Bài tập & đề thi, Chat AI..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block mb-1 text-gray-700">Trạng thái</label>
+            <select id="plan-status" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal bg-white">
+              <option value="ACTIVE">ACTIVE (Mở bán)</option>
+              <option value="INACTIVE">INACTIVE (Tạm ẩn)</option>
+              <option value="ARCHIVED">ARCHIVED (Lưu trữ)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block mb-1 text-gray-700">Thứ tự hiển thị</label>
+            <input type="number" id="plan-sort-order" value="1" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4 pt-3 border-t border-[#2d2d2d]">
+          <button type="button" id="cancel-modal-btn" class="neo-btn neo-btn-secondary rounded-xl px-4 py-2 font-bold text-xs">
+            Hủy
+          </button>
+          <button type="submit" id="save-plan-btn" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 font-bold text-xs">
+            Lưu gói cước
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/src/pages/adminPlans.js"></script>
+</body>
+</html>
