@@ -119,3 +119,71 @@ html {
 #palette-container::-webkit-scrollbar-thumb:hover {
   background: #2d2d2d;
 }
+
+/* =========================================================================
+   UI/UX PRO MAX FILTER CHIP STYLES
+   ========================================================================= */
+.exam-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background-color: #ffffff;
+  color: #2d2d2d;
+  border: 2px solid #2d2d2d;
+  border-radius: 9999px;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease, background-color 0.15s ease;
+  user-select: none;
+}
+
+.exam-filter-chip:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #2d2d2d;
+  background-color: #f6f3f2;
+}
+
+.exam-filter-chip:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #2d2d2d;
+}
+
+.exam-filter-chip.is-active {
+  background-color: #b71422 !important;
+  color: #ffffff !important;
+  border-color: #2d2d2d !important;
+  box-shadow: 3px 3px 0 #2d2d2d !important;
+}
+
+.exam-filter-chip .chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background-color: #f0eded;
+  color: #5b403e;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.exam-filter-chip.is-active .chip-count {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+
+/* Exam Card Neo-Brutalist Micro-Interactions */
+.exam-card-item {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.exam-card-item:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0 #2d2d2d;
+}

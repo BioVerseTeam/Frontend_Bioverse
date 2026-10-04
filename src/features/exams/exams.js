@@ -8,6 +8,9 @@
  */
 
 import { recordExamResult } from '../progress/progressService.js';
+import { setupNavbarAuth } from '../../utils/authNavbar.js';
+import { setupBiologyNav } from '../../utils/siteNav.js';
+import { gsap } from 'gsap';
 
 const API_BASE_URL = '/api';
 
@@ -25,6 +28,20 @@ let examStartTimeIso = null;
 let lastAttemptId = null;
 let reviewQuestionsData = null; // Stored from GET /api/student/exam-attempts/{attemptId}
 let reviewFilter = 'all'; // 'all' | 'wrong'
+
+// Filter & Sort State
+let filterGrade = '';
+let filterType = '';
+let filterSubject = '';
+let filterSearch = '';
+let filterSort = 'default';
+
+// Server-side Pagination State
+let currentPage = 0; // 0-indexed for backend API
+let pageSize = 9;
+let totalPages = 1;
+let totalElements = 0;
+let searchDebounceTimer = null;
 
 // Helper: Get Auth Headers
 function getAuthHeaders() {
@@ -63,11 +80,29 @@ const views = {
 const dom = {
   // Catalog View
   searchInput: document.getElementById('search-exam-input'),
+  btnClearSearch: document.getElementById('btn-clear-search'),
   filterSubject: document.getElementById('filter-exam-subject'),
+  sortExamSelect: document.getElementById('sort-exam-select'),
+  filterGradeGroup: document.getElementById('filter-grade-group'),
+  filterTypeGroup: document.getElementById('filter-type-group'),
+  examResultsCount: document.getElementById('exam-results-count'),
+  examTotalCount: document.getElementById('exam-total-count'),
+  btnClearFilters: document.getElementById('btn-clear-filters'),
   btnReload: document.getElementById('btn-reload-exams'),
+  reloadIcon: document.getElementById('reload-icon'),
   btnOpenHistory: document.getElementById('btn-open-history'),
   loadingExams: document.getElementById('loading-exams'),
   examsGrid: document.getElementById('exams-grid'),
+
+  // Pagination Controls
+  paginationBar: document.getElementById('exam-pagination-bar'),
+  paginationCurrentPage: document.getElementById('pagination-current-page'),
+  paginationTotalPages: document.getElementById('pagination-total-pages'),
+  paginationTotalItems: document.getElementById('pagination-total-items'),
+  paginationPageSize: document.getElementById('pagination-page-size'),
+  btnPagePrev: document.getElementById('btn-page-prev'),
+  btnPageNext: document.getElementById('btn-page-next'),
+  paginationNumbers: document.getElementById('pagination-page-numbers'),
 
   // Header User Cluster
   headerXp: document.getElementById('header-user-xp'),
@@ -159,7 +194,7 @@ function switchView(viewName) {
 }
 
 // =========================================================================
-// CLEAN SUBJECT NAME HELPER
+// CLEAN SUBJECT NAME HELPER & EXAM METADATA PARSER
 // =========================================================================
 function getCleanSubjectName(rawSubject) {
   if (!rawSubject) return 'Khoa học Tự nhiên';
@@ -169,35 +204,169 @@ function getCleanSubjectName(rawSubject) {
   return clean || 'Khoa học Tự nhiên';
 }
 
+export function parseExamMetadata(exam) {
+  const text = `${exam.name || ''} ${exam.description || ''} ${exam.subjectName || ''} ${exam.code || ''}`;
+
+  // Grade: 6, 7, 8, 9
+  let grade = '';
+  if (/\b(?:khtn|lớp|grade|khoa học tự nhiên)\s*6\b|khtn6|\b6\b/i.test(text) || text.includes('KHTN 6') || text.includes('KHTN6')) {
+    grade = '6';
+  } else if (/\b(?:khtn|lớp|grade|khoa học tự nhiên)\s*7\b|khtn7|\b7\b/i.test(text) || text.includes('KHTN 7') || text.includes('KHTN7')) {
+    grade = '7';
+  } else if (/\b(?:khtn|lớp|grade|khoa học tự nhiên)\s*8\b|khtn8|\b8\b/i.test(text) || text.includes('KHTN 8') || text.includes('KHTN8')) {
+    grade = '8';
+  } else if (/\b(?:khtn|lớp|grade|khoa học tự nhiên)\s*9\b|khtn9|\b9\b/i.test(text) || text.includes('KHTN 9') || text.includes('KHTN9')) {
+    grade = '9';
+  }
+
+  // Exam Type: GK1, HK1, GK2, HK2, OTHER
+  let examType = 'OTHER';
+  if (/giữa k[ìỳ]\s*1|gk1/i.test(text)) {
+    examType = 'GK1';
+  } else if (/học k[ìỳ]\s*1|hk1|ck1|kì i\b|kỳ i\b/i.test(text)) {
+    examType = 'HK1';
+  } else if (/giữa k[ìỳ]\s*2|gk2/i.test(text)) {
+    examType = 'GK2';
+  } else if (/học k[ìỳ]\s*2|hk2|ck2|kì ii\b|kỳ ii\b/i.test(text)) {
+    examType = 'HK2';
+  }
+
+  const typeLabels = {
+    GK1: 'Giữa kì 1',
+    HK1: 'Học kì 1',
+    GK2: 'Giữa kì 2',
+    HK2: 'Học kì 2',
+    OTHER: 'Ôn tập'
+  };
+
+  const gradeColors = {
+    '6': { bg: 'bg-[#e0f2fe]', border: 'border-[#0284c7]', text: 'text-[#0284c7]' },
+    '7': { bg: 'bg-[#e8f5e9]', border: 'border-[#00864c]', text: 'text-[#00864c]' },
+    '8': { bg: 'bg-[#fef3c7]', border: 'border-[#d97706]', text: 'text-[#b45309]' },
+    '9': { bg: 'bg-[#f3e8ff]', border: 'border-[#7c3aed]', text: 'text-[#6d28d9]' },
+    '': { bg: 'bg-gray-100', border: 'border-gray-400', text: 'text-gray-700' }
+  };
+
+  return {
+    grade,
+    gradeLabel: grade ? `Lớp ${grade}` : 'KHTN THCS',
+    gradeColor: gradeColors[grade] || gradeColors[''],
+    examType,
+    typeLabel: typeLabels[examType] || 'Ôn tập'
+  };
+}
+
 // =========================================================================
-// LOAD EXAM CATALOG (VIEW 1)
 // =========================================================================
+// LOAD EXAM CATALOG & SUMMARY (PAGINATED + REDIS CACHED)
+// =========================================================================
+async function fetchExamSummary() {
+  try {
+    const res = await safeFetch(`${API_BASE_URL}/exams/summary`);
+    if (!res.ok) return;
+    const payload = await res.json();
+    const data = payload?.data;
+    if (!data) return;
+
+    // Total count
+    const total = data.totalExams || 0;
+    if (dom.examTotalCount) dom.examTotalCount.textContent = total;
+    const countGradeAll = document.getElementById('count-grade-all');
+    if (countGradeAll) countGradeAll.textContent = total;
+    const countTypeAll = document.getElementById('count-type-all');
+    if (countTypeAll) countTypeAll.textContent = total;
+
+    // Grade counts
+    const gc = data.gradeCounts || {};
+    const countGrade6 = document.getElementById('count-grade-6');
+    if (countGrade6) countGrade6.textContent = gc['6'] ?? 0;
+    const countGrade7 = document.getElementById('count-grade-7');
+    if (countGrade7) countGrade7.textContent = gc['7'] ?? 0;
+    const countGrade8 = document.getElementById('count-grade-8');
+    if (countGrade8) countGrade8.textContent = gc['8'] ?? 0;
+    const countGrade9 = document.getElementById('count-grade-9');
+    if (countGrade9) countGrade9.textContent = gc['9'] ?? 0;
+
+    // Type counts
+    const tc = data.typeCounts || {};
+    const countTypeGk1 = document.getElementById('count-type-gk1');
+    if (countTypeGk1) countTypeGk1.textContent = tc.GK1 ?? 0;
+    const countTypeHk1 = document.getElementById('count-type-hk1');
+    if (countTypeHk1) countTypeHk1.textContent = tc.HK1 ?? 0;
+    const countTypeGk2 = document.getElementById('count-type-gk2');
+    if (countTypeGk2) countTypeGk2.textContent = tc.GK2 ?? 0;
+    const countTypeHk2 = document.getElementById('count-type-hk2');
+    if (countTypeHk2) countTypeHk2.textContent = tc.HK2 ?? 0;
+    const countTypeOther = document.getElementById('count-type-other');
+    if (countTypeOther) countTypeOther.textContent = tc.OTHER ?? 0;
+
+    // Populate subject filter dropdown if available
+    if (Array.isArray(data.subjects) && dom.filterSubject) {
+      const currentVal = dom.filterSubject.value;
+      const cleanSubjects = [...new Set(data.subjects.map(getCleanSubjectName))].sort();
+      dom.filterSubject.innerHTML = '<option value="">Tất cả môn học</option>';
+      cleanSubjects.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        dom.filterSubject.appendChild(opt);
+      });
+      if (currentVal && cleanSubjects.includes(currentVal)) {
+        dom.filterSubject.value = currentVal;
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi khi tải tóm tắt ngân hàng đề thi:', err);
+  }
+}
+
 async function fetchExams() {
   if (dom.loadingExams) dom.loadingExams.style.display = 'block';
   if (dom.examsGrid) dom.examsGrid.innerHTML = '';
+  if (dom.paginationBar) dom.paginationBar.hidden = true;
+
+  updateFilterUI();
 
   try {
-    const res = await fetch(`${API_BASE_URL}/exams`);
+    const params = new URLSearchParams();
+    params.append('page', currentPage);
+    params.append('size', pageSize);
+
+    if (filterSearch) params.append('search', filterSearch);
+    if (filterGrade) params.append('grade', filterGrade);
+    if (filterType) params.append('examType', filterType);
+    if (filterSort === 'name_asc') {
+      params.append('sort', 'name,asc');
+    }
+
+    const res = await safeFetch(`${API_BASE_URL}/exams?${params.toString()}`);
     const payload = await res.json();
 
     let items = [];
-    if (Array.isArray(payload)) {
-      items = payload;
-    } else if (payload && Array.isArray(payload.data)) {
-      items = payload.data;
-    } else if (payload?.data?.items && Array.isArray(payload.data.items)) {
+    if (payload?.data?.items && Array.isArray(payload.data.items)) {
       items = payload.data.items;
-    } else if (payload?.data?.content && Array.isArray(payload.data.content)) {
-      items = payload.data.content;
-    } else if (payload?.items && Array.isArray(payload.items)) {
-      items = payload.items;
+      totalElements = payload.data.totalElements ?? items.length;
+      totalPages = payload.data.totalPages ?? 1;
+      currentPage = payload.data.page ?? currentPage;
+    } else if (payload?.data && Array.isArray(payload.data)) {
+      items = payload.data;
+      totalElements = items.length;
+      totalPages = Math.ceil(totalElements / pageSize) || 1;
+    } else if (Array.isArray(payload)) {
+      items = payload;
+      totalElements = items.length;
+      totalPages = Math.ceil(totalElements / pageSize) || 1;
     }
 
-    allExams = items;
-    populateSubjectFilter(allExams);
-    applyCatalogFilter();
+    // Client-side subject filter fallback if dropdown selected
+    if (filterSubject) {
+      items = items.filter(ex => getCleanSubjectName(ex.subject?.name || ex.subjectName) === filterSubject);
+    }
+
+    renderCatalog(items);
+    renderPagination();
   } catch (err) {
-    console.error('Lỗi khi tải danh sách đề thi:', err);
+    console.error('Lỗi khi tải danh sách đề thi phân trang:', err);
     if (dom.examsGrid) {
       dom.examsGrid.innerHTML = `
         <div class="col-span-full py-12 text-center bg-white border-2 border-[#2d2d2d] rounded-2xl p-6 sketch-shadow">
@@ -215,85 +384,205 @@ async function fetchExams() {
   }
 }
 
-function populateSubjectFilter(exams) {
-  if (!dom.filterSubject) return;
-  const currentVal = dom.filterSubject.value;
+function updateFilterUI() {
+  // Toggle search clear button
+  if (dom.btnClearSearch) {
+    if (filterSearch) {
+      dom.btnClearSearch.removeAttribute('hidden');
+    } else {
+      dom.btnClearSearch.setAttribute('hidden', '');
+    }
+  }
 
-  const subjectSet = new Set();
-  exams.forEach(ex => {
-    const clean = getCleanSubjectName(ex.subjectName);
-    if (clean) subjectSet.add(clean);
-  });
+  // Check if any filter is active
+  const hasActiveFilters = Boolean(filterSearch || filterSubject || filterGrade || filterType || filterSort !== 'default');
+  if (dom.btnClearFilters) {
+    if (hasActiveFilters) {
+      dom.btnClearFilters.removeAttribute('hidden');
+    } else {
+      dom.btnClearFilters.setAttribute('hidden', '');
+    }
+  }
 
-  const subjects = Array.from(subjectSet).sort();
-  dom.filterSubject.innerHTML = '<option value="">Tất cả môn học</option>';
-  subjects.forEach(sub => {
-    const opt = document.createElement('option');
-    opt.value = sub;
-    opt.textContent = sub;
-    dom.filterSubject.appendChild(opt);
-  });
+  // Update grade chip active classes
+  if (dom.filterGradeGroup) {
+    dom.filterGradeGroup.querySelectorAll('.exam-filter-chip').forEach(btn => {
+      const g = btn.dataset.grade || '';
+      if (g === filterGrade) {
+        btn.classList.add('is-active');
+      } else {
+        btn.classList.remove('is-active');
+      }
+    });
+  }
 
-  if (currentVal && subjects.includes(currentVal)) {
-    dom.filterSubject.value = currentVal;
+  // Update type chip active classes
+  if (dom.filterTypeGroup) {
+    dom.filterTypeGroup.querySelectorAll('.exam-filter-chip').forEach(btn => {
+      const t = btn.dataset.type || '';
+      if (t === filterType) {
+        btn.classList.add('is-active');
+      } else {
+        btn.classList.remove('is-active');
+      }
+    });
   }
 }
 
-function applyCatalogFilter() {
-  const searchTerm = (dom.searchInput?.value || '').trim().toLowerCase();
-  const selectedSubject = dom.filterSubject?.value || '';
+function renderPagination() {
+  if (!dom.paginationBar) return;
 
-  const filtered = allExams.filter(exam => {
-    const title = (exam.name || '').toLowerCase();
-    const code = (exam.code || '').toLowerCase();
-    const desc = (exam.description || '').toLowerCase();
-    const cleanSub = getCleanSubjectName(exam.subjectName);
+  if (totalElements === 0) {
+    dom.paginationBar.hidden = true;
+    dom.paginationBar.style.display = 'none';
+    return;
+  }
 
-    const matchesSearch = !searchTerm || title.includes(searchTerm) || code.includes(searchTerm) || desc.includes(searchTerm);
-    const matchesSubject = !selectedSubject || cleanSub === selectedSubject;
+  dom.paginationBar.hidden = false;
+  dom.paginationBar.style.display = 'flex';
 
-    return matchesSearch && matchesSubject;
-  });
+  if (dom.paginationCurrentPage) dom.paginationCurrentPage.textContent = currentPage + 1;
+  if (dom.paginationTotalPages) dom.paginationTotalPages.textContent = totalPages || 1;
+  if (dom.paginationTotalItems) dom.paginationTotalItems.textContent = totalElements;
 
-  renderCatalog(filtered);
+  // Prev / Next button states
+  if (dom.btnPagePrev) {
+    dom.btnPagePrev.disabled = (currentPage === 0);
+  }
+  if (dom.btnPageNext) {
+    dom.btnPageNext.disabled = (currentPage >= totalPages - 1);
+  }
+
+  // Render page buttons
+  if (dom.paginationNumbers) {
+    dom.paginationNumbers.innerHTML = '';
+    const pagesToRender = getPageNumbersToDisplay(currentPage + 1, totalPages);
+
+    pagesToRender.forEach(p => {
+      if (p === '...') {
+        const span = document.createElement('span');
+        span.className = 'px-1.5 text-xs font-mono font-bold text-[#76716a] select-none';
+        span.textContent = '...';
+        dom.paginationNumbers.appendChild(span);
+      } else {
+        const pageIdx = p - 1;
+        const isActive = (pageIdx === currentPage);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `w-8 h-8 rounded-xl font-['Space_Grotesk'] font-bold text-xs border-2 border-[#2d2d2d] flex items-center justify-center transition-all cursor-pointer ${
+          isActive 
+            ? 'bg-[#b71422] text-white sketch-shadow-sm scale-105' 
+            : 'bg-[#fdfbf7] hover:bg-white text-[#1b1c1c] active:translate-y-0.5'
+        }`;
+        btn.textContent = p;
+        btn.addEventListener('click', () => goToPage(pageIdx));
+        dom.paginationNumbers.appendChild(btn);
+      }
+    });
+  }
+}
+
+function getPageNumbersToDisplay(current, total) {
+  if (total <= 5) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  const pages = [];
+  if (current <= 3) {
+    pages.push(1, 2, 3, 4, '...', total);
+  } else if (current >= total - 2) {
+    pages.push(1, '...', total - 3, total - 2, total - 1, total);
+  } else {
+    pages.push(1, '...', current - 1, current, current + 1, '...', total);
+  }
+  return pages;
+}
+
+function goToPage(targetPage) {
+  if (targetPage < 0 || targetPage >= totalPages || targetPage === currentPage) return;
+  currentPage = targetPage;
+  
+  // Smooth scroll up to list header
+  document.getElementById('exam-filter-hub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  fetchExams();
+}
+
+function resetAllFilters() {
+  filterGrade = '';
+  filterType = '';
+  filterSubject = '';
+  filterSearch = '';
+  filterSort = 'default';
+  currentPage = 0;
+
+  if (dom.searchInput) dom.searchInput.value = '';
+  if (dom.filterSubject) dom.filterSubject.value = '';
+  if (dom.sortExamSelect) dom.sortExamSelect.value = 'default';
+
+  fetchExams();
 }
 
 function renderCatalog(examList) {
   if (!dom.examsGrid) return;
   dom.examsGrid.innerHTML = '';
 
+  // Update result count with GSAP pop animation
+  if (dom.examResultsCount) {
+    dom.examResultsCount.textContent = totalElements;
+    gsap.fromTo(dom.examResultsCount, 
+      { scale: 1.35, color: '#b71422' }, 
+      { scale: 1, color: '#b71422', duration: 0.25, ease: 'back.out(2)' }
+    );
+  }
+
   if (examList.length === 0) {
     dom.examsGrid.innerHTML = `
-      <div class="col-span-full py-12 text-center bg-white border-2 border-[#2d2d2d] rounded-2xl p-8 sketch-shadow">
-        <span class="material-symbols-outlined text-[48px] text-[#76716a] mb-2">manage_search</span>
+      <div class="col-span-full py-12 px-6 text-center bg-white border-2 border-[#2d2d2d] rounded-2xl sketch-shadow flex flex-col items-center">
+        <div class="w-16 h-16 rounded-2xl bg-[#fee2e2] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined text-[36px] text-[#b71422]">find_in_page</span>
+        </div>
         <h3 class="font-headline font-bold text-lg text-[#1b1c1c]">Không tìm thấy đề thi phù hợp</h3>
-        <p class="text-xs text-[#76716a] mt-1">Hãy thử tìm với từ khóa khác hoặc bỏ chọn bộ lọc môn học.</p>
+        <p class="font-body text-xs text-[#5b403e] mt-1 max-w-md">
+          Không có đề thi nào khớp với các tiêu chí bộ lọc bạn đang chọn. Thử chọn khối lớp khác hoặc xóa bớt tiêu chí lọc.
+        </p>
+        <button type="button" id="btn-empty-reset" class="mt-4 px-4 py-2 bg-[#b71422] text-white border-2 border-[#2d2d2d] rounded-xl font-headline font-bold text-xs sketch-shadow-sm hover:opacity-90 inline-flex items-center gap-1.5 transition-transform active:translate-y-0.5">
+          <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+          Đặt lại bộ lọc
+        </button>
       </div>
     `;
+
+    document.getElementById('btn-empty-reset')?.addEventListener('click', resetAllFilters);
     return;
   }
 
   examList.forEach(exam => {
-    const cleanSubject = getCleanSubjectName(exam.subjectName);
-    const duration = exam.durationMinutes || 45;
-    const questionsCount = exam.questionCount || 40;
+    const meta = parseExamMetadata(exam);
+    const title = exam.title || exam.name || 'Đề thi Khoa học Tự nhiên';
+    const cleanSubject = getCleanSubjectName(exam.subject?.name || exam.subjectName);
+    const duration = exam.duration || exam.durationMinutes || 45;
+    const questionsCount = exam.stats?.questionCount || exam.questionCount || exam.questions?.length || 40;
 
     const card = document.createElement('div');
-    card.className = 'group bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 sketch-shadow flex flex-col justify-between hover:-translate-y-1.5 transition-all duration-200 cursor-pointer';
+    card.className = 'exam-card-item group bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 sketch-shadow flex flex-col justify-between hover:-translate-y-1.5 transition-all duration-200 cursor-pointer';
 
     card.innerHTML = `
       <div>
-        <div class="flex items-center justify-between gap-2 mb-3">
-          <span class="px-2.5 py-1 rounded-lg bg-[#e8f5e9] border border-[#00864c] text-[#006a3b] font-mono text-[11px] font-bold">
-            ${cleanSubject}
-          </span>
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-lg ${meta.gradeColor.bg} border-2 ${meta.gradeColor.border} ${meta.gradeColor.text} font-mono text-[11px] font-bold">
+              ${meta.gradeLabel}
+            </span>
+            <span class="px-2 py-0.5 rounded-lg bg-[#fff9c4] border border-[#d97706] text-[#b45309] font-mono text-[11px] font-bold">
+              ${meta.typeLabel}
+            </span>
+          </div>
           <span class="px-2 py-0.5 rounded bg-gray-100 border border-[#2d2d2d] font-mono text-[11px] font-bold text-[#5b403e]">
             ${exam.code || 'BIO-EXAM'}
           </span>
         </div>
 
         <h3 class="font-headline text-lg font-bold text-[#1b1c1c] leading-snug group-hover:text-[#b71422] transition-colors line-clamp-2">
-          ${exam.name || 'Đề thi Khoa học Tự nhiên'}
+          ${title}
         </h3>
 
         <p class="font-body text-xs text-[#5b403e] mt-2 line-clamp-2 leading-relaxed">
@@ -303,15 +592,15 @@ function renderCatalog(examList) {
 
       <div class="mt-6 pt-4 border-t-2 border-dashed border-[#dcd5cb]">
         <div class="flex items-center justify-between text-xs font-mono font-medium text-[#76716a] mb-4">
-          <span class="flex items-center gap-1">
+          <span class="flex items-center gap-1" title="Thời gian làm bài">
             <span class="material-symbols-outlined text-[16px] text-[#b71422]">timer</span>
             ${duration} phút
           </span>
-          <span class="flex items-center gap-1">
+          <span class="flex items-center gap-1" title="Số lượng câu hỏi">
             <span class="material-symbols-outlined text-[16px] text-[#006a3b]">assignment</span>
             ${questionsCount} câu
           </span>
-          <span class="flex items-center gap-1">
+          <span class="flex items-center gap-1" title="Thang điểm">
             <span class="material-symbols-outlined text-[16px] text-[#d97706]">grade</span>
             Thang 10
           </span>
@@ -330,6 +619,15 @@ function renderCatalog(examList) {
 
     dom.examsGrid.appendChild(card);
   });
+
+  // Animate cards entrance with GSAP stagger
+  const renderedCards = dom.examsGrid.querySelectorAll('.exam-card-item');
+  if (renderedCards.length > 0) {
+    gsap.fromTo(renderedCards, 
+      { opacity: 0, y: 18, scale: 0.98 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.35, stagger: 0.035, ease: 'power2.out', clearProps: 'transform' }
+    );
+  }
 }
 
 // =========================================================================
@@ -1413,14 +1711,77 @@ function closeHistoryModal() {
 // EVENT LISTENERS BINDING
 // =========================================================================
 function initEventListeners() {
-  // Search
-  dom.searchInput?.addEventListener('input', () => applyCatalogFilter());
+  // Search input with debounce & clear
+  dom.searchInput?.addEventListener('input', (e) => {
+    filterSearch = (e.target.value || '').trim();
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      currentPage = 0;
+      fetchExams();
+    }, 300);
+  });
+
+  dom.btnClearSearch?.addEventListener('click', () => {
+    if (dom.searchInput) dom.searchInput.value = '';
+    filterSearch = '';
+    currentPage = 0;
+    fetchExams();
+  });
 
   // Subject Filter
-  dom.filterSubject?.addEventListener('change', () => applyCatalogFilter());
+  dom.filterSubject?.addEventListener('change', (e) => {
+    filterSubject = e.target.value;
+    currentPage = 0;
+    fetchExams();
+  });
+
+  // Sort Filter
+  dom.sortExamSelect?.addEventListener('change', (e) => {
+    filterSort = e.target.value;
+    currentPage = 0;
+    fetchExams();
+  });
+
+  // Grade Filter Chips
+  dom.filterGradeGroup?.addEventListener('click', (e) => {
+    const chip = e.target.closest('.exam-filter-chip');
+    if (!chip) return;
+    filterGrade = chip.dataset.grade || '';
+    currentPage = 0;
+    gsap.fromTo(chip, { scale: 0.92 }, { scale: 1, duration: 0.2, ease: 'back.out(3)' });
+    fetchExams();
+  });
+
+  // Exam Type Filter Chips
+  dom.filterTypeGroup?.addEventListener('click', (e) => {
+    const chip = e.target.closest('.exam-filter-chip');
+    if (!chip) return;
+    filterType = chip.dataset.type || '';
+    currentPage = 0;
+    gsap.fromTo(chip, { scale: 0.92 }, { scale: 1, duration: 0.2, ease: 'back.out(3)' });
+    fetchExams();
+  });
+
+  // Pagination Page Prev / Next / Page Size
+  dom.btnPagePrev?.addEventListener('click', () => goToPage(currentPage - 1));
+  dom.btnPageNext?.addEventListener('click', () => goToPage(currentPage + 1));
+  dom.paginationPageSize?.addEventListener('change', (e) => {
+    pageSize = parseInt(e.target.value, 10) || 9;
+    currentPage = 0;
+    fetchExams();
+  });
+
+  // Clear Filters Button
+  dom.btnClearFilters?.addEventListener('click', resetAllFilters);
 
   // Reload Button
-  dom.btnReload?.addEventListener('click', () => fetchExams());
+  dom.btnReload?.addEventListener('click', () => {
+    if (dom.reloadIcon) {
+      gsap.to(dom.reloadIcon, { rotation: '+=360', duration: 0.6, ease: 'power2.inOut' });
+    }
+    fetchExamSummary();
+    fetchExams();
+  });
 
   // History Button & Modal
   dom.btnOpenHistory?.addEventListener('click', openHistoryModal);
@@ -1499,6 +1860,9 @@ function initEventListeners() {
 // INITIALIZATION
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+  setupNavbarAuth();
+  setupBiologyNav();
   initEventListeners();
+  fetchExamSummary();
   fetchExams();
 });

@@ -142,12 +142,26 @@ function insertAdminNav(user) {
 function insertPricingNav() {
   const nav = document.querySelector('header nav:not([hidden])');
   if (!nav) return;
-  if (nav.querySelector('a[href="/pricing"]')) return;
+  const onPage = location.pathname.includes('pricing');
+  const existing = nav.querySelector('a[href="/pricing"]');
+  if (existing) {
+    if (onPage) {
+      existing.setAttribute('aria-current', 'page');
+      existing.className = 'px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]';
+      const icon = existing.querySelector('.material-symbols-outlined');
+      if (icon) icon.className = 'material-symbols-outlined text-[16px] text-white';
+    }
+    return;
+  }
 
   const link = document.createElement('a');
   link.href = '/pricing';
-  link.className = 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all border-2 border-transparent';
-  link.innerHTML = '<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">loyalty</span>Gói cước</span>';
+  link.className = onPage
+    ? 'px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]'
+    : 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all border-2 border-transparent';
+  if (onPage) link.setAttribute('aria-current', 'page');
+  const iconColor = onPage ? 'text-white' : 'text-primary';
+  link.innerHTML = `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[16px] ${iconColor}">loyalty</span>Gói cước</span>`;
   nav.appendChild(link);
 }
 
