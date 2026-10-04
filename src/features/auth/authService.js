@@ -367,6 +367,24 @@ export const AuthService = {
   },
 
   /**
+   * Cập nhật thông tin cá nhân PATCH /api/users/me
+   * và đồng bộ vào storage người dùng hiện tại
+   */
+  async updateProfile(payload) {
+    const response = await authFetch('/api/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+    const data = await parseApiResponse(response);
+    if (data) {
+      const user = mapAuthUser(data, getCurrentUser() || {});
+      setCurrentUser(user);
+      return user;
+    }
+    return getCurrentUser();
+  },
+
+  /**
    * Làm mới Access Token POST /api/auth/refresh (single-flight)
    */
   async refreshToken() {
@@ -392,16 +410,21 @@ export const AuthService = {
 
 function mapAuthUser(data, fallback = {}) {
   const source = data || {};
+  const fullName = source.fullName || fallback.fullName || source.name || fallback.name;
   return {
     ...fallback,
     id: source.id ?? fallback.id,
     email: source.email || fallback.email,
-    name: source.fullName || source.name || fallback.name || (source.email || fallback.email || '').split('@')[0],
+    name: fullName || (source.email || fallback.email || '').split('@')[0],
+    fullName: fullName,
     phone: source.phone ?? fallback.phone,
     role: normalizeRole(source.role) || normalizeRole(fallback.role) || 'STUDENT',
     gender: source.gender ?? fallback.gender,
     avatarUrl: source.avatarUrl ?? fallback.avatarUrl,
     grade: source.grade != null ? String(source.grade) : (fallback.grade || '8'),
+    dateOfBirth: source.dateOfBirth ?? fallback.dateOfBirth ?? null,
+    createdAt: source.createdAt ?? fallback.createdAt ?? null,
+    emailVerified: source.emailVerified ?? fallback.emailVerified ?? false,
     currentStreak: source.currentStreak ?? fallback.currentStreak ?? 0,
     longestStreak: source.longestStreak ?? fallback.longestStreak ?? 0,
     lastCheckInDate: source.lastCheckInDate ?? fallback.lastCheckInDate ?? null,

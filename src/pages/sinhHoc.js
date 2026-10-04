@@ -1,12 +1,16 @@
-/**
- * BioVerse — Biology models catalog (sinh-hoc.html)
- * Loads paginated BIOLOGY models from GET /api/models/catalog.
- */
-
+import gsap from 'gsap';
 import { setupNavbarAuth } from '../utils/authNavbar.js';
 import { setupBiologyNav } from '../utils/siteNav.js';
 import { ChatBox } from '../components/chatBox.js';
 import { getCatalog, getCategories } from '../api/bioModelApi.js';
+import {
+  getRecentModels,
+  clearRecentModels,
+  removeRecentModel,
+  formatTimeAgoVi,
+  recordViewedModel
+} from '../features/model/recentModels.js';
+import { confirmModal, showToast } from '../components/modal.js';
 
 const PAGE_SIZE = 12;
 const SUBJECT = 'BIOLOGY';
@@ -17,7 +21,8 @@ const state = {
   category: null,
   q: '',
   totalPages: 0,
-  totalElements: 0
+  totalElements: 0,
+  items: []
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -31,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   readFiltersFromUrl();
   bindControls();
+  bindRecentControls();
+  renderRecentModels();
   loadCategories();
   loadCatalog();
 });
@@ -202,7 +209,17 @@ async function loadCatalog() {
       return;
     }
 
-    grid.innerHTML = items.map(renderCard).join('');
+    state.items = items;
+    grid.innerHTML = items.map((m, idx) => renderCard(m, idx)).join('');
+    grid.querySelectorAll('[data-model-idx]').forEach((article) => {
+      article.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          const idx = Number(article.dataset.modelIdx);
+          const item = state.items[idx];
+          if (item) recordViewedModel(item);
+        });
+      });
+    });
     renderPagination(pager, state.totalPages);
   } catch (err) {
     grid.innerHTML = '';
@@ -226,18 +243,18 @@ function renderSkeletons(grid) {
   `).join('');
 }
 
-function renderCard(model) {
+function renderCard(model, index = 0) {
   const href = labHref(model);
   const grade = model.grade ? `Lớp ${model.grade}` : 'THCS';
   const badge = model.badgeText || '3D';
   const action = model.actionText || 'Khám phá ngay';
   const icon = model.actionIcon || '3d_rotation';
   const thumb = model.thumbnailUrl
-    ? `<img src="${escapeAttr(model.thumbnailUrl)}" alt="${escapeAttr(model.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">`
+    ? `<img src="${escapeAttr(model.thumbnailUrl)}" alt="${escapeAttr(model.name)}" class="max-w-full max-h-full w-auto h-auto object-contain p-2 group-hover:scale-105 transition-transform duration-300" loading="lazy">`
     : `<span class="material-symbols-outlined text-[48px] text-[#00864c]">view_in_ar</span>`;
 
   return `
-    <article class="group bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative">
+    <article data-model-idx="${index}" class="group bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow hover:-translate-y-1 transition-all flex flex-col justify-between relative">
       <div class="absolute -top-2.5 right-3 bg-[#dcfce7] border border-[#2d2d2d] px-2 py-0.5 rounded text-[10px] font-['Space_Grotesk'] font-bold text-[#166534]">${escapeHtml(grade)}</div>
       <a href="${escapeAttr(href)}" class="catalog-thumb mb-2.5">
         ${thumb}
@@ -322,3 +339,286 @@ function escapeHtml(value) {
 function escapeAttr(value) {
   return escapeHtml(value);
 }
+
+let isRecentCollapsed = false;
+
+function bindRecentControls() {
+  const section = document.getElementById('recent-models-section');
+  const carousel = document.getElementById('recent-models-carousel');
+  const btnPrev = document.getElementById('btn-recent-prev');
+  const btnNext = document.getElementById('btn-recent-next');
+  const btnCollapse = document.getElementById('btn-toggle-recent-collapse');
+  const btnClear = document.getElementById('btn-clear-recent-models');
+
+  if (btnPrev && carousel) {
+    btnPrev.addEventListener('click', () => {
+      const target = Math.max(0, carousel.scrollLeft - 260);
+      gsap.to(carousel, {
+        scrollLeft: target,
+        duration: 0.4,
+        ease: 'power2.out'
+      });
+    });
+  }
+
+  if (btnNext && carousel) {
+    btnNext.addEventListener('click', () => {
+      const target = carousel.scrollLeft + 260;
+      gsap.to(carousel, {
+        scrollLeft: target,
+        duration: 0.4,
+        ease: 'power2.out'
+      });
+    });
+  }
+
+  if (btnCollapse) {
+    btnCollapse.addEventListener('click', () => {
+      isRecentCollapsed = !isRecentCollapsed;
+      const body = document.getElementById('recent-models-body');
+      const icon = document.getElementById('recent-collapse-icon');
+      const text = document.getElementById('recent-collapse-text');
+
+      if (!body) return;
+
+      if (isRecentCollapsed) {
+        gsap.to(body, {
+          height: 0,
+          opacity: 0,
+          duration: 0.35,
+          ease: 'power2.inOut',
+          overflow: 'hidden',
+          onComplete: () => {
+            body.style.display = 'none';
+          }
+        });
+        if (icon) icon.textContent = 'expand_more';
+        if (text) text.textContent = 'Mở rộng';
+      } else {
+        body.style.display = 'block';
+        gsap.fromTo(body,
+          { height: 0, opacity: 0 },
+          {
+            height: 'auto',
+            opacity: 1,
+            duration: 0.35,
+            ease: 'power2.out',
+            clearProps: 'overflow,height'
+          }
+        );
+        if (icon) icon.textContent = 'expand_less';
+        if (text) text.textContent = 'Thu gọn';
+      }
+    });
+  }
+
+  if (btnClear) {
+    btnClear.addEventListener('click', async () => {
+      const recent = getRecentModels();
+      if (!recent.length) {
+        showToast('Hiện chưa có mô hình nào trong nhật ký quan sát.', 'info');
+        return;
+      }
+
+      const ok = await confirmModal({
+        title: 'Xóa nhật ký quan sát 3D?',
+        message: 'Bạn có chắc muốn dọn sạch danh sách các mô hình 3D đã xem qua gần đây không?',
+        type: 'confirm',
+        confirmText: 'Xóa nhật ký',
+        cancelText: 'Giữ lại',
+        isDestructive: true,
+        washiTag: 'NHẬT KÝ 3D'
+      });
+
+      if (ok) {
+        const cards = carousel ? carousel.querySelectorAll('article, a') : [];
+        if (cards.length) {
+          gsap.to(cards, {
+            scale: 0.75,
+            opacity: 0,
+            y: 12,
+            stagger: 0.03,
+            duration: 0.22,
+            ease: 'power2.in',
+            onComplete: () => {
+              clearRecentModels();
+              if (section) {
+                gsap.to(section, {
+                  opacity: 0,
+                  y: -10,
+                  duration: 0.25,
+                  onComplete: () => {
+                    section.hidden = true;
+                    section.style.opacity = '1';
+                    section.style.transform = 'none';
+                  }
+                });
+              }
+              showToast('Đã dọn sạch nhật ký quan sát.', 'info');
+            }
+          });
+        } else {
+          clearRecentModels();
+          if (section) section.hidden = true;
+          showToast('Đã dọn sạch nhật ký quan sát.', 'info');
+        }
+      }
+    });
+  }
+
+  window.addEventListener('bioverse_recent_models_updated', () => {
+    renderRecentModels(true);
+  });
+}
+
+function renderRecentModels(animate = false) {
+  const section = document.getElementById('recent-models-section');
+  const countEl = document.getElementById('recent-models-count');
+  const carouselEl = document.getElementById('recent-models-carousel');
+  const navControls = document.getElementById('recent-nav-controls');
+
+  if (!section || !carouselEl) return;
+
+  const list = getRecentModels();
+
+  if (!list.length) {
+    section.hidden = true;
+    return;
+  }
+
+  const wasHidden = section.hidden;
+  section.hidden = false;
+
+  if (countEl) {
+    countEl.textContent = `${list.length} mẫu vật`;
+  }
+
+  // Toggle navigation buttons: only show when there are more than 3 models
+  if (navControls) {
+    navControls.style.display = list.length > 3 ? 'flex' : 'none';
+  }
+
+  const cardsHtml = list.map((model, idx) => renderRecentCard(model, idx)).join('');
+  const discoveryCardHtml = list.length <= 4 ? renderDiscoveryCard() : '';
+  carouselEl.innerHTML = cardsHtml + discoveryCardHtml;
+
+  // Individual card remove handler
+  carouselEl.querySelectorAll('.btn-remove-single-recent').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const modelId = btn.dataset.removeId;
+      const card = btn.closest('article');
+      if (card) {
+        gsap.to(card, {
+          scale: 0.7,
+          opacity: 0,
+          y: -8,
+          duration: 0.22,
+          ease: 'power2.in',
+          onComplete: () => {
+            removeRecentModel(modelId);
+            showToast('Đã xóa mẫu vật khỏi nhật ký.', 'info');
+          }
+        });
+      } else {
+        removeRecentModel(modelId);
+      }
+    });
+  });
+
+  const cards = carouselEl.querySelectorAll('.recent-specimen-card');
+
+  // GSAP animation
+  if (wasHidden || animate) {
+    gsap.fromTo(section,
+      { opacity: 0, y: -14, scale: 0.99 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' }
+    );
+  }
+
+  if (cards.length) {
+    gsap.fromTo(cards,
+      { opacity: 0, y: 12, scale: 0.96 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.35, stagger: 0.05, ease: 'power2.out' }
+    );
+  }
+}
+
+function renderRecentCard(model, index = 0) {
+  const href = labHref(model);
+  const grade = model.grade ? `Lớp ${model.grade}` : 'THCS';
+  const badge = model.badgeText || '3D';
+  const timeAgo = formatTimeAgoVi(model.viewedAt);
+  
+  // Anti-squish: object-contain with max dimensions ensures original anatomical proportions are preserved
+  const thumb = model.thumbnailUrl
+    ? `<img src="${escapeAttr(model.thumbnailUrl)}" alt="${escapeAttr(model.name)}" class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow-sm" loading="lazy" />`
+    : `<div class="w-full h-full flex flex-col items-center justify-center text-[#00864c]"><span class="material-symbols-outlined text-[40px]">view_in_ar</span><span class="text-[10px] font-bold font-['Space_Grotesk'] mt-1">MÔ HÌNH 3D</span></div>`;
+
+  return `
+    <article class="recent-specimen-card group w-52 sm:w-56 flex-shrink-0 snap-start bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-3 sketch-shadow-sm hover:-translate-y-1 hover:shadow-[4px_4px_0px_#2d2d2d] transition-all flex flex-col justify-between relative select-none">
+      
+      <!-- Quick Remove Button -->
+      <button type="button" data-remove-id="${escapeAttr(model.id || model.slug)}"
+        class="btn-remove-single-recent absolute top-2 right-2 w-7 h-7 rounded-lg bg-white/90 hover:bg-[#fee2e2] text-[#76716a] hover:text-[#b71422] border-2 border-[#2d2d2d] flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 sketch-shadow-sm z-20 cursor-pointer"
+        title="Xóa mẫu vật này khỏi nhật ký">
+        <span class="material-symbols-outlined text-[15px] pointer-events-none">close</span>
+      </button>
+
+      <!-- Thumbnail Stage (Zero Distortion, Object-Contain) -->
+      <a href="${escapeAttr(href)}" class="specimen-thumb-box h-36 mb-2.5 overflow-hidden rounded-xl border-2 border-[#2d2d2d] bg-[#f8fafc] flex items-center justify-center relative block group/stage">
+        ${thumb}
+        <span class="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded bg-white/95 border border-[#2d2d2d] text-[10px] font-['Space_Grotesk'] font-bold text-[#00864c]">
+          ${escapeHtml(badge)}
+        </span>
+        <span class="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded bg-[#fff9c4] border border-[#2d2d2d] text-[10px] font-['Space_Grotesk'] font-bold text-[#92400e]">
+          ${escapeHtml(grade)}
+        </span>
+      </a>
+
+      <!-- Specimen Info -->
+      <div class="mb-3">
+        <div class="flex items-center justify-between text-[11px] mb-1">
+          <span class="font-['Space_Grotesk'] font-bold text-[#00864c] uppercase tracking-wider line-clamp-1">
+            ${escapeHtml(model.category || 'Sinh học')}
+          </span>
+          <span class="font-['Be_Vietnam_Pro'] text-[#76716a] text-[11px] flex-shrink-0 flex items-center gap-0.5">
+            <span class="material-symbols-outlined text-[12px]">schedule</span>
+            ${escapeHtml(timeAgo)}
+          </span>
+        </div>
+        <h3 class="font-['Epilogue'] text-sm sm:text-[15px] text-[#2d2d2d] font-bold line-clamp-1 leading-snug group-hover:text-[#00864c] transition-colors" title="${escapeAttr(model.name)}">
+          ${escapeHtml(model.name)}
+        </h3>
+      </div>
+
+      <!-- Action Button -->
+      <a href="${escapeAttr(href)}" class="w-full py-2 bg-[#fdfbf7] group-hover:bg-[#00864c] group-hover:text-white border-2 border-[#2d2d2d] rounded-xl font-['Space_Grotesk'] text-xs font-bold flex items-center justify-center gap-1.5 sketch-shadow-sm transition-all active:scale-95">
+        <span class="material-symbols-outlined text-[16px]">view_in_ar</span>
+        <span>Mở lại mẫu vật</span>
+      </a>
+    </article>
+  `;
+}
+
+function renderDiscoveryCard() {
+  return `
+    <a href="#catalog-grid" class="w-48 sm:w-52 flex-shrink-0 snap-start border-2 border-dashed border-[#2d2d2d]/30 hover:border-[#00864c] rounded-2xl p-3.5 flex flex-col items-center justify-center text-center bg-[#fdfbf7]/70 hover:bg-[#f0fdf4] transition-all group cursor-pointer sketch-shadow-sm">
+      <div class="w-11 h-11 rounded-xl bg-white border-2 border-[#2d2d2d] flex items-center justify-center mb-2.5 group-hover:scale-110 group-hover:rotate-3 transition-transform sketch-shadow-sm">
+        <span class="material-symbols-outlined text-[24px] text-[#00864c]">travel_explore</span>
+      </div>
+      <h4 class="font-['Epilogue'] text-sm font-bold text-[#2d2d2d] group-hover:text-[#00864c] transition-colors mb-0.5">
+        Khám phá thêm
+      </h4>
+      <p class="font-['Be_Vietnam_Pro'] text-[11px] text-[#76716a] leading-tight mb-3">
+        Xem kho mô hình giải phẫu KHTN
+      </p>
+      <div class="px-2.5 py-1 rounded-lg bg-white border border-[#2d2d2d] text-[11px] font-['Space_Grotesk'] font-bold text-[#2d2d2d] group-hover:bg-[#00864c] group-hover:text-white group-hover:border-[#00864c] transition-colors flex items-center gap-1">
+        <span>Xem tất cả</span>
+        <span class="material-symbols-outlined text-[13px]">arrow_downward</span>
+      </div>
+    </a>
+  `;
+}
+

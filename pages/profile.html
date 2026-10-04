@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ Sơ Cá Nhân - BioVerse</title>
+  <meta name="description" content="Xem và cập nhật thông tin cá nhân, theo dõi chuỗi học tập, điểm tích lũy XP và quản lý bảo mật tài khoản BioVerse.">
+  <link rel="icon" type="image/png" href="/logo-icon.png">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+    .washi-tape-mint {
+      background: linear-gradient(135deg, rgba(72, 187, 120, 0.45) 0%, rgba(72, 187, 120, 0.6) 100%);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .washi-tape-coral {
+      background: linear-gradient(135deg, rgba(255, 112, 112, 0.45) 0%, rgba(255, 112, 112, 0.65) 100%);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","surface-container-low":"#f6f3f2","on-surface":"#1b1c1c","on-background":"#1b1c1c","error-container":"#ffdad6","tertiary-container":"#00864c","on-tertiary":"#ffffff","on-primary-fixed-variant":"#930014","on-error-container":"#93000a","surface-container-high":"#eae7e7","primary-fixed-dim":"#ffb3ae","primary-fixed":"#ffdad7","surface-container":"#f0eded","surface-variant":"#e4e2e1","background":"#fcf9f8","inverse-on-surface":"#f3f0f0","on-tertiary-fixed":"#00210f","secondary-fixed-dim":"#a9c7ff","primary-container":"#db3237","surface-bright":"#fcf9f8","on-primary-fixed":"#410004","on-secondary-fixed-variant":"#0a4689","surface-dim":"#dcd9d9","inverse-primary":"#ffb3ae","outline-variant":"#e4beba","tertiary":"#006a3b","on-error":"#ffffff","on-primary-container":"#fffbff","tertiary-fixed-dim":"#6bdc96","primary":"#b71422","on-tertiary-container":"#f6fff4","secondary":"#2e5ea2","on-surface-variant":"#5b403e","surface":"#fcf9f8","on-tertiary-fixed-variant":"#00522c","error":"#ba1a1a","surface-container-lowest":"#ffffff","on-secondary":"#ffffff","surface-tint":"#ba1724","on-secondary-fixed":"#001b3d","inverse-surface":"#303030","tertiary-fixed":"#88f9b0","secondary-container":"#89b4fe","surface-container-highest":"#e4e2e1","on-secondary-container":"#064487","outline":"#8f6f6d","secondary-fixed":"#d6e3ff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-mobile":"1rem","space-xl":"3rem","margin":"2rem","space-lg":"2rem","space-sm":"0.75rem","space-md":"1.25rem","gutter":"1.5rem","gutter-mobile":"1rem","space-xs":"0.375rem"},"fontFamily":{"sans":["Be Vietnam Pro","sans-serif"],"body":["Be Vietnam Pro","sans-serif"],"body-sm":["Be Vietnam Pro","sans-serif"],"body-md":["Be Vietnam Pro","sans-serif"],"body-lg":["Be Vietnam Pro","sans-serif"],"label":["Space Grotesk","Be Vietnam Pro","sans-serif"],"label-sm":["Be Vietnam Pro","sans-serif"],"label-md":["Be Vietnam Pro","sans-serif"],"label-lg":["Be Vietnam Pro","sans-serif"],"headline":["Epilogue","Be Vietnam Pro","sans-serif"],"headline-sm":["Epilogue","Be Vietnam Pro","sans-serif"],"headline-md":["Epilogue","Be Vietnam Pro","sans-serif"],"headline-lg":["Epilogue","Be Vietnam Pro","sans-serif"],"title-md":["Epilogue","Be Vietnam Pro","sans-serif"],"headline-xl":["Epilogue","Be Vietnam Pro","sans-serif"],"headline-lg-mobile":["Epilogue","Be Vietnam Pro","sans-serif"],"headline-xl-mobile":["Epilogue","Be Vietnam Pro","sans-serif"],"mono":["Space Grotesk","monospace"],"metric":["Space Grotesk","sans-serif"]},"fontSize":{"headline-sm":["22px",{"lineHeight":"30px","fontWeight":"700"}],"body-sm":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","fontWeight":"700"}],"label-md":["14px",{"lineHeight":"18px","fontWeight":"600"}],"headline-md":["28px",{"lineHeight":"36px","fontWeight":"700"}],"label-sm":["12px",{"lineHeight":"16px","fontWeight":"600"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"title-md":["20px",{"lineHeight":"28px","fontWeight":"600"}],"headline-xl":["44px",{"lineHeight":"52px","fontWeight":"800"}],"label-lg":["16px",{"lineHeight":"20px","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"headline-xl-mobile":["32px",{"lineHeight":"40px","fontWeight":"800"}]}}}}
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen flex flex-col bg-[#fdfbf7]">
+
+  <!-- Top Navigation Bar -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d] backdrop-blur-sm">
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="home" href="/" title="BioVerse - Khám phá Khoa học – Kiến tạo tương lai">
+          <div class="w-10 h-10 rounded-lg bg-white border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center p-1 transform -rotate-2 group-hover:rotate-0 transition-transform overflow-hidden">
+            <img src="/logo-icon.png" alt="BioVerse Logo" class="w-full h-full object-contain" />
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Sổ tay STEM THCS</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-2">
+          <a class="bv-nav-link" data-path="home" href="/">Khám Phá</a>
+          <a class="bv-nav-link" data-path="lessons-3d" href="/sinh-hoc">Sinh Học</a>
+          <a class="bv-nav-link" data-path="reaction-anim" href="/phan-ung">Phân tử</a>
+          <a class="bv-nav-link" data-path="study-corner" title="Luyện đề trắc nghiệm" href="/exams">Góc Học Tập</a>
+          <a class="bv-nav-link" data-path="stem-qa" href="/">Hỏi Đáp STEM</a>
+          <a class="bv-nav-link" data-path="pricing" href="/pricing">
+            <span class="inline-flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">loyalty</span>
+              Gói cước
+            </span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-space-md" id="header-user-cluster">
+        <div class="hidden md:flex items-center gap-space-xs px-space-md py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm transform rotate-1">
+          <span class="material-symbols-outlined text-[#ed8936] text-[18px]">award_star</span>
+          <span id="header-user-xp" class="font-label-sm text-label-sm text-on-surface">0 XP</span>
+        </div>
+        <div class="hidden flex-col items-end" id="header-user-text-cluster" style="display: none !important;">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Đang tải...</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a id="header-avatar-link" href="/profile" title="Hồ sơ cá nhân" style="display: none !important;" class="hidden w-8 h-8 rounded-full bg-primary hover:opacity-90 items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm overflow-hidden">
+          <span class="material-symbols-outlined text-white text-[20px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 mt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
+
+    <!-- Breadcrumb & Page Banner Header -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <nav class="flex items-center gap-2 font-label-sm text-xs text-on-surface-variant mb-1" aria-label="Breadcrumb">
+          <a href="/" class="hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">home</span>
+            Trang chủ
+          </a>
+          <span>/</span>
+          <span class="text-primary font-bold">Hồ sơ cá nhân</span>
+        </nav>
+        <h1 class="font-headline-lg text-2xl sm:text-3xl text-on-surface flex items-center gap-2">
+          <span>Sổ Tay Nhà Khoa Học</span>
+          <span class="text-primary" aria-hidden="true">🔬</span>
+        </h1>
+        <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
+          Quản lý tài khoản, nhật ký tiến trình nghiên cứu STEM và bảo mật BioVerse
+        </p>
+      </div>
+
+      <!-- Quick back button -->
+      <a href="/" class="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-[#2d2d2d] bg-white sketch-shadow-xs font-label-sm text-xs font-bold hover:bg-[#f6f3f2] hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+        Trở về Khám phá
+      </a>
+    </div>
+
+    <!-- BENTO 2-COLUMN LAYOUT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- ==========================================
+           LEFT COLUMN: BIOVERSE SCIENTIST ID PASSPORT
+           ========================================== -->
+      <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24" id="profile-identity-column">
+        <div class="profile-passport-card p-6 relative">
+          <!-- Decorative washi tapes -->
+          <div class="absolute -top-3 left-8 w-24 h-5 washi-tape-mint transform -rotate-3 border-x border-[#2d2d2d]/30 pointer-events-none"></div>
+          <div class="absolute -top-3 right-8 w-20 h-5 washi-tape-coral transform rotate-2 border-x border-[#2d2d2d]/30 pointer-events-none"></div>
+
+          <!-- Passport Header Tag -->
+          <div class="flex items-center justify-between pb-4 mb-5 border-b-2 border-[#2d2d2d]/15">
+            <span class="font-label-sm text-[11px] font-extrabold uppercase tracking-wider text-[#b45309] bg-[#fff9c4] px-2.5 py-0.5 rounded-full border border-[#2d2d2d]">
+              🪪 Thẻ Nghiên Cứu Sinh
+            </span>
+            <span class="font-label-sm text-[11px] text-on-surface-variant font-semibold">
+              ID: STEM-VN
+            </span>
+          </div>
+
+          <!-- Avatar Showcase with Interactive Overlay & Unsaved Badge -->
+          <!-- Avatar Showcase with Interactive Choice & Hover Overlay -->
+          <div class="flex flex-col items-center text-center">
+            <div class="relative group" id="avatar-container" title="Bấm để xem ảnh hoặc chỉnh sửa">
+              
+              <!-- Main Avatar Circle (Click to open Action Chooser) -->
+              <div id="avatar-circle-display" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-[#2d2d2d] sketch-shadow-sm bg-[#e8f5e9] overflow-hidden flex items-center justify-center relative cursor-pointer hover:border-primary transition-colors">
+                <img id="profile-avatar-img" src="/logo-icon.png" alt="Avatar" class="w-full h-full object-cover hidden" />
+                <div id="profile-avatar-fallback" class="w-full h-full flex flex-col items-center justify-center bg-primary text-white font-headline-lg text-4xl">
+                  <span>?</span>
+                </div>
+              </div>
+
+              <!-- Quick Action Overlay on Desktop Hover -->
+              <div class="absolute inset-0 rounded-full bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1.5 backdrop-blur-[2px] pointer-events-none group-hover:pointer-events-auto">
+                <button type="button" id="btn-quick-view-avatar" class="px-2.5 py-1 rounded-full bg-white text-on-surface font-label-sm text-[11px] font-bold border border-[#2d2d2d] sketch-shadow-xs hover:bg-[#fff9c4] hover:scale-105 transition-all flex items-center gap-1 cursor-pointer" title="Xem ảnh kích thước lớn">
+                  <span class="material-symbols-outlined text-[13px]">visibility</span>
+                  <span>Xem</span>
+                </button>
+                <button type="button" id="btn-quick-edit-avatar" class="px-2.5 py-1 rounded-full bg-[#ff4d4d] text-white font-label-sm text-[11px] font-bold border border-[#2d2d2d] sketch-shadow-xs hover:bg-[#e03131] hover:scale-105 transition-all flex items-center gap-1 cursor-pointer" title="Chỉnh sửa / Đổi ảnh mới">
+                  <span class="material-symbols-outlined text-[13px]">photo_camera</span>
+                  <span>Đổi ảnh</span>
+                </button>
+              </div>
+
+              <!-- Hidden input for file picker -->
+              <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp" class="hidden" />
+
+              <!-- Camera edit badge (Click to open Action Chooser) -->
+              <button type="button" id="avatar-camera-badge" class="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-[#ff4d4d] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center text-white cursor-pointer hover:scale-110 active:scale-95 transition-transform" title="Tùy chọn ảnh đại diện">
+                <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+              </button>
+            </div>
+
+            <!-- Upload status indicator -->
+            <span id="avatar-upload-status" class="font-label-sm text-xs text-on-surface-variant mt-2 text-center hidden">
+              Đang tải ảnh lên...
+            </span>
+
+            <!-- User Name & Badges -->
+            <h2 id="profile-display-name" class="font-headline-md text-xl sm:text-2xl text-on-surface font-black tracking-tight mt-3">
+              Đang tải...
+            </h2>
+
+            <div class="flex flex-wrap items-center justify-center gap-1.5 mt-1.5 mb-2">
+              <span id="profile-badge-role" class="px-2.5 py-0.5 rounded-full border-2 border-[#2d2d2d] bg-[#fff9c4] font-label-sm text-xs font-bold sketch-shadow-xs transform -rotate-1">
+                Học Sinh THCS
+              </span>
+              <span id="profile-badge-verified" class="hidden px-2 py-0.5 rounded-full border border-[#2d2d2d] bg-[#e8f5e9] text-[#00864c] font-label-sm text-xs font-semibold items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]">verified</span>
+                Đã xác thực
+              </span>
+            </div>
+
+            <p id="profile-display-email" class="font-body-md text-xs text-on-surface-variant flex items-center justify-center gap-1 mb-4">
+              <span class="material-symbols-outlined text-[16px]">mail</span>
+              <span>...</span>
+            </p>
+
+            <!-- STEM Honors & 3 Pinned Badges Showcase (UI/UX Pro Max) -->
+            <div class="w-full pt-3.5 border-t border-[#2d2d2d]/15" id="profile-badges-section">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-base" aria-hidden="true">🎖️</span>
+                  <div>
+                    <h4 class="font-extrabold text-xs text-on-surface uppercase tracking-wider leading-none">
+                      Danh Hiệu Tiêu Biểu
+                    </h4>
+                    <p class="text-[9.5px] text-on-surface-variant font-medium mt-0.5">3 Huy hiệu đã ghim lên thẻ</p>
+                  </div>
+                </div>
+                <!-- Interactive Button to open the Book of Badges -->
+                <button type="button" id="btn-open-badge-book-pill" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-[#fff9c4] text-on-surface border-2 border-[#2d2d2d] sketch-shadow-xs font-bold text-[11px] transition-transform hover:scale-105 cursor-pointer shadow-xs" title="Mở Sổ Tay Danh Hiệu STEM">
+                  <span>📖</span>
+                  <span id="badges-unlocked-counter">0/12 Đạt</span>
+                </button>
+              </div>
+
+              <!-- Exactly 3 Pinned Badges Slots (Danh sách theo chiều ngang, mỗi huy hiệu 1 hàng rõ nét) -->
+              <div class="flex flex-col gap-2.5 my-2.5" id="pinned-badges-grid">
+                <!-- 3 pinned badge horizontal rows injected by JS -->
+              </div>
+
+              <!-- Action Bar to Open Book of Badges -->
+              <button type="button" id="btn-open-badge-book" class="w-full mt-2 p-2.5 rounded-2xl border-2 border-[#2d2d2d] bg-gradient-to-r from-[#fff9c4] via-[#fef08a] to-[#fff9c4] hover:brightness-95 flex items-center justify-between transition-all sketch-shadow-xs cursor-pointer group">
+                <div class="flex items-center gap-2.5 text-left">
+                  <div class="w-8 h-8 rounded-xl bg-white border border-[#2d2d2d] flex items-center justify-center text-lg shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
+                    📖
+                  </div>
+                  <div>
+                    <div class="font-black text-xs text-on-surface uppercase tracking-wider flex items-center gap-1">
+                      <span>Sổ Tay Danh Hiệu</span>
+                      <span class="text-[10px] text-primary">✨</span>
+                    </div>
+                    <p class="text-[10px] text-on-surface-variant font-medium">
+                      Xem 12 huy hiệu & đổi ghim
+                    </p>
+                  </div>
+                </div>
+                <span class="flex-shrink-0 inline-flex items-center gap-0.5 px-2.5 py-1 rounded-xl bg-[#2d2d2d] text-white font-bold text-[11px] group-hover:bg-primary transition-colors">
+                  <span>Mở</span>
+                  <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ==========================================
+           RIGHT COLUMN: NOTEBOOK TABS & WORKSPACE
+           ========================================== -->
+      <section class="lg:col-span-8 space-y-5" id="profile-content-column">
+        
+        <!-- Unified Modern Segmented Tab Bar -->
+        <nav class="profile-tabs-bar w-full" id="tab-navigation" role="tablist">
+          <button type="button" id="tab-btn-overview" data-tab="tab-overview" class="tab-btn tab-segment-btn active" role="tab" title="Tổng quan hồ sơ năng lực">
+            <span class="material-symbols-outlined text-[19px]">monitoring</span>
+            <span class="tab-label">Tổng quan</span>
+          </button>
+          <button type="button" id="tab-btn-info" data-tab="tab-info" class="tab-btn tab-segment-btn" role="tab" title="Thông tin cá nhân & chỉnh sửa">
+            <span class="material-symbols-outlined text-[19px]">badge</span>
+            <span class="tab-label">Thông tin</span>
+          </button>
+          <button type="button" id="tab-btn-badges" data-tab="tab-badges" class="tab-btn tab-segment-btn" role="tab" title="Kho danh hiệu STEM">
+            <span class="material-symbols-outlined text-[19px]">military_tech</span>
+            <span class="tab-label">Danh hiệu</span>
+            <span id="tab-badge-counter-pill" class="tab-pill">
+              0/12
+            </span>
+          </button>
+          <button type="button" id="tab-btn-streak" data-tab="tab-streak" class="tab-btn tab-segment-btn" role="tab" title="Chuỗi ngày học tập & tiến trình">
+            <span class="material-symbols-outlined text-[19px]">local_fire_department</span>
+            <span class="tab-label">Chuỗi ngày</span>
+          </button>
+        </nav>
+
+        <!-- TAB 0 (MẶC ĐỊNH): TỔNG QUAN – HỒ SƠ NĂNG LỰC -->
+        <!-- TAB 0 (MẶC ĐỊNH): TỔNG QUAN – HỒ SƠ NĂNG LỰC (UI/UX PRO MAX) -->
+        <div id="tab-overview" class="tab-pane block">
+          <div class="profile-panel-card p-5 sm:p-7 relative font-body space-y-5">
+            
+            <!-- 1. Header Bar: Bold Identity & Live Status -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b-2 border-[#2d2d2d]/10">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-primary/10 border-2 border-[#2d2d2d] flex items-center justify-center text-primary sketch-shadow-xs flex-shrink-0">
+                  <span class="material-symbols-outlined text-[24px]">analytics</span>
+                </div>
+                <div>
+                  <h3 class="font-headline font-black text-xl sm:text-2xl text-on-surface tracking-tight leading-none">
+                    Hồ Sơ Năng Lực
+                  </h3>
+                  <p class="font-body text-xs sm:text-[13px] text-on-surface-variant font-medium mt-1">
+                    Bảng tổng hợp chỉ số học tập, kỷ lục và tiến trình nghiên cứu STEM
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 self-start sm:self-auto">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ecfdf5] border-1.5 border-[#059669]/40 text-xs font-bold text-[#059669] shadow-2xs">
+                  <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10b981] opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#10b981]"></span>
+                  </span>
+                  <span>Đang hoạt động</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- 2. 4 Precision Metric Cards (Bento Metric Grid) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5" id="overview-metrics">
+              
+              <!-- Metric 1: Chuỗi Hiện Tại -->
+              <div class="overview-metric" data-accent="orange">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="overview-metric-icon bg-gradient-to-br from-orange-100 to-amber-100 text-orange-600">
+                    🔥
+                  </div>
+                  <span class="overview-metric-tag text-orange-700 bg-orange-50 border border-orange-200">
+                    Hiện tại
+                  </span>
+                </div>
+                <div class="mt-3">
+                  <div class="flex items-baseline gap-1">
+                    <span id="stat-current-streak" class="overview-metric-value" data-countup>0</span>
+                    <span class="overview-metric-unit">ngày</span>
+                  </div>
+                  <p class="overview-metric-label">Chuỗi ngày học liên tục</p>
+                </div>
+              </div>
+
+              <!-- Metric 2: Kỷ Lục Chuỗi -->
+              <div class="overview-metric" data-accent="amber">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="overview-metric-icon bg-gradient-to-br from-amber-100 to-yellow-100 text-amber-600">
+                    🏅
+                  </div>
+                  <span class="overview-metric-tag text-amber-800 bg-amber-50 border border-amber-200">
+                    Kỷ lục
+                  </span>
+                </div>
+                <div class="mt-3">
+                  <div class="flex items-baseline gap-1">
+                    <span id="stat-longest-streak" class="overview-metric-value" data-countup>0</span>
+                    <span class="overview-metric-unit">ngày</span>
+                  </div>
+                  <p class="overview-metric-label">Kỷ lục chuỗi cao nhất</p>
+                </div>
+              </div>
+
+              <!-- Metric 3: Điểm Kinh Nghiệm -->
+              <div class="overview-metric" data-accent="emerald">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="overview-metric-icon bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600">
+                    ⭐
+                  </div>
+                  <span class="overview-metric-tag text-emerald-800 bg-emerald-50 border border-emerald-200">
+                    Tích lũy
+                  </span>
+                </div>
+                <div class="mt-3">
+                  <div class="flex items-baseline gap-1">
+                    <span id="stat-total-xp" class="overview-metric-value" data-countup>0</span>
+                    <span class="overview-metric-unit">XP</span>
+                  </div>
+                  <p class="overview-metric-label">Điểm kinh nghiệm</p>
+                </div>
+              </div>
+
+              <!-- Metric 4: Cấp Học -->
+              <div class="overview-metric" data-accent="sky">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="overview-metric-icon bg-gradient-to-br from-sky-100 to-blue-100 text-sky-600">
+                    📚
+                  </div>
+                  <span class="overview-metric-tag text-sky-800 bg-sky-50 border border-sky-200">
+                    Khối THCS
+                  </span>
+                </div>
+                <div class="mt-3">
+                  <div class="flex items-baseline gap-1">
+                    <span class="overview-metric-unit">Lớp</span>
+                    <span id="stat-current-grade" class="overview-metric-value">8</span>
+                  </div>
+                  <p class="overview-metric-label">Chương trình học tập</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Level Progression & Milestone Station -->
+            <div class="p-4 sm:p-5 rounded-2xl border-2 border-[#2d2d2d] bg-gradient-to-br from-[#ffffff] via-[#fffdf9] to-[#faf6ed] sketch-shadow-xs relative overflow-hidden">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-200 via-amber-300 to-yellow-400 border-2 border-[#2d2d2d] flex items-center justify-center text-xl flex-shrink-0 shadow-2xs">
+                    ⚡
+                  </div>
+                  <div>
+                    <div class="font-mono text-[10px] font-black uppercase tracking-widest text-[#76716a]">
+                      CẤP ĐỘ NGHIÊN CỨU STEM
+                    </div>
+                    <h4 id="overview-level-title" class="font-headline font-black text-lg sm:text-xl text-[#1b1c1c] leading-tight">
+                      Nhà Thí Nghiệm Tài Ba
+                    </h4>
+                  </div>
+                </div>
+
+                <div class="self-start sm:self-auto">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fffbeb] border border-[#f59e0b]/40 text-xs font-bold text-[#b45309] shadow-2xs">
+                    <span>Cần thêm</span>
+                    <span id="overview-level-remaining" class="font-headline font-black text-primary tabular-nums">0 XP</span>
+                    <span>để thăng cấp</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Sleek Progress Track (Emerald to Cyan Discovery Gradient) -->
+              <div class="mt-2 relative">
+                <div class="h-3.5 rounded-full bg-[#eae5db] border-1.5 border-[#2d2d2d] overflow-hidden p-0.5 shadow-inner">
+                  <div id="overview-level-bar" class="h-full rounded-full bg-gradient-to-r from-[#10b981] via-[#059669] to-[#0284c7] transition-all duration-700 shadow-sm" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- Track Milestones -->
+              <div class="mt-2.5 flex items-center justify-between text-xs font-bold tabular-nums">
+                <div class="flex items-center gap-1 text-[#059669]">
+                  <span class="material-symbols-outlined text-[15px]">verified</span>
+                  <span id="overview-level-current">0 XP</span>
+                </div>
+                <div id="overview-level-pct" class="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-white border border-[#2d2d2d]/25 text-[#1b1c1c] shadow-2xs">
+                  Tiến độ: 0%
+                </div>
+                <div class="flex items-center gap-1 text-[#716a62]">
+                  <span id="overview-level-target">1.000 XP</span>
+                  <span class="material-symbols-outlined text-[15px]">flag</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Interactive Action Tiles (3 Clean Bento Cards) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button type="button" class="overview-shortcut group" data-goto-tab="tab-badges">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-[#fff9c4] border border-[#2d2d2d] flex items-center justify-center text-xl flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                    🎖️
+                  </div>
+                  <div class="text-left">
+                    <div class="font-headline font-black text-xs sm:text-sm text-on-surface group-hover:text-primary transition-colors">
+                      Kho Danh Hiệu
+                    </div>
+                    <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">
+                      12 huy hiệu STEM
+                    </div>
+                  </div>
+                </div>
+                <span class="w-7 h-7 rounded-lg bg-[#f6f3f2] group-hover:bg-[#2d2d2d] group-hover:text-white border border-[#2d2d2d]/25 flex items-center justify-center transition-all flex-shrink-0">
+                  <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                </span>
+              </button>
+
+              <button type="button" class="overview-shortcut group" data-goto-tab="tab-streak">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-[#ffedd5] border border-[#2d2d2d] flex items-center justify-center text-xl flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                    🔥
+                  </div>
+                  <div class="text-left">
+                    <div class="font-headline font-black text-xs sm:text-sm text-on-surface group-hover:text-primary transition-colors">
+                      Chuỗi Học Tập
+                    </div>
+                    <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">
+                      Lịch sử & nhịp học
+                    </div>
+                  </div>
+                </div>
+                <span class="w-7 h-7 rounded-lg bg-[#f6f3f2] group-hover:bg-[#2d2d2d] group-hover:text-white border border-[#2d2d2d]/25 flex items-center justify-center transition-all flex-shrink-0">
+                  <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                </span>
+              </button>
+
+              <button type="button" class="overview-shortcut group" data-goto-tab="tab-info">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-[#e0f2fe] border border-[#2d2d2d] flex items-center justify-center text-xl flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                    📝
+                  </div>
+                  <div class="text-left">
+                    <div class="font-headline font-black text-xs sm:text-sm text-on-surface group-hover:text-primary transition-colors">
+                      Hồ Sơ Cá Nhân
+                    </div>
+                    <div class="text-[11px] text-on-surface-variant font-medium mt-0.5">
+                      Chỉnh sửa thông tin
+                    </div>
+                  </div>
+                </div>
+                <span class="w-7 h-7 rounded-lg bg-[#f6f3f2] group-hover:bg-[#2d2d2d] group-hover:text-white border border-[#2d2d2d]/25 flex items-center justify-center transition-all flex-shrink-0">
+                  <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                </span>
+              </button>
+            </div>
+
+            <!-- 5. Scientific Motto Plaque -->
+            <div class="p-3.5 sm:p-4 rounded-xl border-2 border-[#2d2d2d]/20 bg-gradient-to-r from-[#fffdf7] via-[#fffbf0] to-[#fbf8f0] flex items-center gap-3.5 relative overflow-hidden">
+              <div class="w-10 h-10 rounded-xl bg-primary/10 border-1.5 border-[#2d2d2d]/25 flex items-center justify-center text-xl flex-shrink-0 shadow-2xs">
+                🔬
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-body text-xs sm:text-[13px] text-[#2d2d2d] font-semibold italic leading-relaxed">
+                  “Khoa học không chỉ là lý thuyết, mà là hành trình tự tay thí nghiệm và khám phá.”
+                </p>
+                <div class="mt-1 flex items-center gap-2 text-[10.5px] font-bold text-primary">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  <span>Châm ngôn nghiên cứu sinh BioVerse STEM THCS</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 1: THÔNG TIN CÁ NHÂN (XEM & CHỈNH SỬA) -->
+        <div id="tab-info" class="tab-pane hidden">
+          <div class="profile-panel-card p-6 sm:p-7 relative">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b-2 border-[#2d2d2d]/15">
+              <div>
+                <h3 class="font-headline-sm text-xl text-on-surface font-extrabold flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[24px]">edit_note</span>
+                  <span>Chỉnh Sửa Hồ Sơ Cá Nhân</span>
+                </h3>
+                <p class="font-body-sm text-xs text-on-surface-variant mt-0.5">
+                  Cập nhật thông tin để hệ thống cá nhân hóa đề ôn luyện và phòng thí nghiệm 3D
+                </p>
+              </div>
+              <span class="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#f6f3f2] border border-[#2d2d2d] font-label-sm text-xs font-semibold text-on-surface-variant">
+                <span class="material-symbols-outlined text-[14px] text-[#00864c]">verified_user</span>
+                Bảo mật SSL
+              </span>
+            </div>
+
+            <form id="profile-edit-form" class="space-y-6">
+              
+              <!-- SECTION 1: THÔNG TIN CƠ BẢN -->
+              <div class="profile-subcard space-y-4">
+                <h4 class="font-label-md text-xs font-extrabold uppercase tracking-wider text-on-surface flex items-center gap-1.5 pb-2 border-b border-[#2d2d2d]/10">
+                  <span class="material-symbols-outlined text-primary text-[16px]">person</span>
+                  <span>Thông Tin Học Sinh</span>
+                </h4>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Full Name -->
+                  <div>
+                    <label for="input-fullname" class="block font-label-md text-xs text-on-surface font-bold mb-1.5">
+                      Họ và tên học sinh <span class="text-primary">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="text" id="input-fullname" required maxlength="100" placeholder="VD: Nguyễn Văn An"
+                        class="w-full px-3.5 py-2.5 rounded-xl border-2 border-[#2d2d2d] bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-body-md text-sm text-on-surface sketch-shadow-xs transition-all" />
+                    </div>
+                  </div>
+
+                  <!-- Email (Readonly) -->
+                  <div>
+                    <label for="input-email" class="block font-label-md text-xs text-on-surface font-bold mb-1.5 flex items-center justify-between">
+                      <span>Địa chỉ Email</span>
+                      <span class="text-[10px] text-on-surface-variant font-normal">Cố định</span>
+                    </label>
+                    <div class="relative">
+                      <input type="email" id="input-email" readonly disabled
+                        class="w-full px-3.5 py-2.5 rounded-xl border-2 border-[#2d2d2d]/50 bg-[#eeeae4] font-body-md text-sm text-on-surface-variant cursor-not-allowed select-none opacity-85" />
+                      <span class="material-symbols-outlined absolute right-3 top-2.5 text-[18px] text-on-surface-variant">lock</span>
+                    </div>
+                  </div>
+
+                  <!-- Phone Number -->
+                  <div>
+                    <label for="input-phone" class="block font-label-md text-xs text-on-surface font-bold mb-1.5">
+                      Số điện thoại liên hệ
+                    </label>
+                    <div class="relative">
+                      <input type="tel" id="input-phone" maxlength="15" placeholder="VD: 0912345678"
+                        class="w-full px-3.5 py-2.5 rounded-xl border-2 border-[#2d2d2d] bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-body-md text-sm text-on-surface sketch-shadow-xs transition-all" />
+                      <span class="material-symbols-outlined absolute right-3 top-2.5 text-[18px] text-on-surface-variant">phone_iphone</span>
+                    </div>
+                  </div>
+
+                  <!-- Date of Birth -->
+                  <div>
+                    <label for="input-dob" class="block font-label-md text-xs text-on-surface font-bold mb-1.5">
+                      Ngày sinh
+                    </label>
+                    <div class="relative">
+                      <input type="date" id="input-dob"
+                        class="w-full px-3.5 py-2 rounded-xl border-2 border-[#2d2d2d] bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-body-md text-sm text-on-surface sketch-shadow-xs transition-all" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SECTION 2: KHỐI LỚP & GIỚI TÍNH -->
+              <div class="profile-subcard space-y-4">
+                <h4 class="font-label-md text-xs font-extrabold uppercase tracking-wider text-on-surface flex items-center gap-1.5 pb-2 border-b border-[#2d2d2d]/10">
+                  <span class="material-symbols-outlined text-primary text-[16px]">school</span>
+                  <span>Khối Lớp & Giới Tính</span>
+                </h4>
+
+                <!-- Grade Selection Cards -->
+                <div>
+                  <label class="block font-label-md text-xs text-on-surface font-bold mb-2">
+                    Khối lớp THCS đang học <span class="text-primary">*</span>
+                  </label>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="grade-selector-group">
+                    <label class="cursor-pointer">
+                      <input type="radio" name="profile-grade" value="6" class="grade-radio-input hidden peer" />
+                      <div class="grade-card-item p-2.5 text-center">
+                        <div class="text-lg">🌱</div>
+                        <div class="font-label-sm text-xs font-bold mt-0.5">Lớp 6</div>
+                        <div class="text-[10px] text-on-surface-variant">Mầm Non</div>
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="profile-grade" value="7" class="grade-radio-input hidden peer" />
+                      <div class="grade-card-item p-2.5 text-center">
+                        <div class="text-lg">🌿</div>
+                        <div class="font-label-sm text-xs font-bold mt-0.5">Lớp 7</div>
+                        <div class="text-[10px] text-on-surface-variant">Khám Phá</div>
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="profile-grade" value="8" class="grade-radio-input hidden peer" checked />
+                      <div class="grade-card-item p-2.5 text-center">
+                        <div class="text-lg">🔬</div>
+                        <div class="font-label-sm text-xs font-bold mt-0.5">Lớp 8</div>
+                        <div class="text-[10px] text-on-surface-variant">Thực Nghiệm</div>
+                      </div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="profile-grade" value="9" class="grade-radio-input hidden peer" />
+                      <div class="grade-card-item p-2.5 text-center">
+                        <div class="text-lg">⚡</div>
+                        <div class="font-label-sm text-xs font-bold mt-0.5">Lớp 9</div>
+                        <div class="text-[10px] text-on-surface-variant">Chuyên Sâu</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Gender Selection Pills -->
+                <div class="pt-2">
+                  <label class="block font-label-md text-xs text-on-surface font-bold mb-2">
+                    Giới tính
+                  </label>
+                  <div class="flex flex-wrap items-center gap-2.5" id="gender-selector-group">
+                    <label class="cursor-pointer">
+                      <input type="radio" name="profile-gender" value="MALE" class="gender-radio-input hidden" />
+                      <div class="gender-pill-btn">Nam 👦</div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="profile-gender" value="FEMALE" class="gender-radio-input hidden" />
+                      <div class="gender-pill-btn">Nữ 👧</div>
+                    </label>
+                    <label class="cursor-pointer">
+                      <input type="radio" name="profile-gender" value="OTHER" class="gender-radio-input hidden" />
+                      <div class="gender-pill-btn">Khác ✨</div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ACTION BAR -->
+              <div class="pt-4 border-t-2 border-[#2d2d2d]/15 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div id="profile-unsaved-hint" class="hidden text-xs text-[#b45309] font-bold items-center gap-1.5 bg-[#fff9c4] px-3.5 py-1.5 rounded-xl border-2 border-[#2d2d2d] sketch-shadow-xs">
+                  <span class="material-symbols-outlined text-[16px]">info</span>
+                  <span>Bạn có thông tin cá nhân chưa lưu!</span>
+                </div>
+                <div class="flex items-center justify-end gap-3 w-full sm:w-auto ml-auto">
+                  <button type="button" id="btn-reset-profile" class="px-4 py-2 rounded-xl border-2 border-[#2d2d2d] bg-white hover:bg-[#f6f3f2] font-label-md text-xs font-bold sketch-shadow-xs transition-all cursor-pointer">
+                    Khôi phục ban đầu
+                  </button>
+                  <button type="submit" id="btn-save-profile" class="px-5 py-2.5 rounded-xl border-2 border-[#2d2d2d] bg-[#ff4d4d] hover:bg-[#e03131] text-white font-label-md text-xs font-bold sketch-shadow-sm hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <span class="material-symbols-outlined text-[16px]">save</span>
+                    <span>Lưu Thay Đổi</span>
+                  </button>
+                </div>
+              </div>
+
+            </form>
+
+            <!-- SECTION 3: BẢO MẬT TÀI KHOẢN (Gọn gàng với nút mở Popup) -->
+            <div class="mt-8 pt-6 border-t-2 border-[#2d2d2d]/15">
+              <div class="p-4 sm:p-5 rounded-2xl bg-[#fffdf5] border-2 border-[#2d2d2d] sketch-shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-start sm:items-center gap-3.5">
+                  <div class="w-11 h-11 rounded-xl bg-primary/10 border-2 border-[#2d2d2d] flex items-center justify-center text-primary sketch-shadow-xs flex-shrink-0">
+                    <span class="material-symbols-outlined text-[24px]">shield_lock</span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h4 class="font-headline-sm text-sm sm:text-base text-on-surface font-extrabold">Bảo Mật & Mật Khẩu</h4>
+                      <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#e8f5e9] text-[#00864c] border border-[#2d2d2d]/20">Bảo mật 2 lớp</span>
+                    </div>
+                    <p class="font-body-sm text-xs text-on-surface-variant mt-0.5">
+                      Đổi mật khẩu tài khoản an toàn với mã xác thực OTP gửi qua email.
+                    </p>
+                  </div>
+                </div>
+
+                <button type="button" id="btn-open-password-modal" class="px-4 py-2.5 rounded-xl border-2 border-[#2d2d2d] bg-white hover:bg-[#fff9c4] text-on-surface font-label-md text-xs sm:text-sm font-bold sketch-shadow-xs hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap self-start sm:self-auto">
+                  <span class="material-symbols-outlined text-[18px] text-primary">key</span>
+                  <span>Đổi Mật Khẩu</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB: KHO DANH HIỆU & THÀNH TỰU KHOA HỌC STEM (SCALABLE BENTO GALLERY) -->
+        <div id="tab-badges" class="tab-pane hidden">
+          <div class="profile-panel-card p-6 sm:p-7 relative space-y-6">
+            <!-- Header Banner -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b-2 border-[#2d2d2d]/15">
+              <div>
+                <h3 class="text-xl sm:text-2xl text-on-surface font-extrabold flex items-center gap-2">
+                  <span class="text-2xl">🎖️</span>
+                  <span>Kho Tàng Danh Hiệu STEM</span>
+                </h3>
+                <p class="text-xs sm:text-sm text-on-surface-variant mt-1 leading-relaxed">
+                  Chinh phục các cột mốc nghiên cứu, khám phá bài học 3D và duy trì ngọn lửa học tập
+                </p>
+              </div>
+
+              <!-- Actions & Overall Completion Badge -->
+              <div class="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
+                <button type="button" id="btn-open-book-from-tab" class="px-3.5 py-2.5 rounded-2xl bg-[#fff9c4] hover:bg-[#fff59d] text-on-surface border-2 border-[#2d2d2d] sketch-shadow-xs font-bold text-xs flex items-center gap-2 transition-all hover:scale-105 cursor-pointer" title="Lật mở cuốn sổ tay thành tựu 3D">
+                  <span class="text-base">📖</span>
+                  <span>Mở Sổ Tay 3D</span>
+                </button>
+                <div class="flex items-center gap-2.5 p-2 rounded-2xl bg-[#fdfbf7] border-2 border-[#2d2d2d] sketch-shadow-xs">
+                  <div class="w-10 h-10 rounded-xl bg-[#e8f5e9] border-2 border-[#2d2d2d] flex items-center justify-center text-lg font-bold">
+                    🏆
+                  </div>
+                  <div>
+                    <div class="text-[10px] font-semibold text-on-surface-variant">Tổng thành tựu</div>
+                    <div class="font-mono text-sm font-bold text-on-surface" id="badges-gallery-stat-count">0 / 12 Huy hiệu</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress Meter & Next Milestone Hint -->
+            <div class="p-4 rounded-2xl bg-[#e8f5e9] border-2 border-[#2d2d2d] sketch-shadow-xs space-y-2.5">
+              <div class="flex items-center justify-between text-xs font-bold text-on-surface">
+                <span class="flex items-center gap-1.5">
+                  <span class="text-sm">🌟</span>
+                  <span>Tiến trình hoàn thành bộ sưu tập</span>
+                </span>
+                <span id="badges-gallery-percent" class="font-mono font-bold text-[#00864c]">0%</span>
+              </div>
+              <div class="w-full h-3 rounded-full bg-white border border-[#2d2d2d] overflow-hidden p-0.5">
+                <div id="badges-gallery-progress-bar" class="h-full rounded-full bg-[#00864c] transition-all duration-700" style="width: 0%;"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-on-surface-variant font-medium">
+                <span id="badges-gallery-motivate">Tiếp tục thực hành và tích lũy XP để mở khóa danh hiệu tiếp theo!</span>
+                <span class="font-mono font-semibold" id="badges-gallery-xp-bonus">Thưởng: +0 XP</span>
+              </div>
+            </div>
+
+            <!-- Filter Pills Bar -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="badges-filter-bar">
+              <button type="button" class="badge-filter-btn active" data-filter="all">Tất cả (12)</button>
+              <button type="button" class="badge-filter-btn" data-filter="unlocked">Đã đạt được</button>
+              <button type="button" class="badge-filter-btn" data-filter="locked">Chưa mở khóa</button>
+              <button type="button" class="badge-filter-btn" data-filter="starter">🌱 Khởi đầu</button>
+              <button type="button" class="badge-filter-btn" data-filter="streak">🔥 Chuỗi ngày</button>
+              <button type="button" class="badge-filter-btn" data-filter="lab">🔬 Phòng lab 3D</button>
+              <button type="button" class="badge-filter-btn" data-filter="xp">⭐ Cấp độ XP</button>
+            </div>
+
+            <!-- Scalable Bento Grid of Full Badges (2 columns for spacious, readable cards) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="badges-gallery-grid">
+              <!-- Full rich cards injected dynamically by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: HUY HIỆU & TIẾN TRÌNH HỌC TẬP -->
+        <div id="tab-streak" class="tab-pane hidden space-y-5">
+          <div class="profile-panel-card p-6 sm:p-7 relative">
+            <div class="flex items-center justify-between pb-4 mb-5 border-b-2 border-[#2d2d2d]/15">
+              <h3 class="font-headline-sm text-xl text-on-surface font-extrabold flex items-center gap-2">
+                <span class="text-2xl">🔥</span>
+                <span>Chuỗi Học Tập Liên Tiếp</span>
+              </h3>
+              <span id="streak-today-status-badge" class="px-3 py-1 rounded-full border border-[#2d2d2d] font-label-sm text-xs bg-[#fff9c4]">
+                Đang kiểm tra...
+              </span>
+            </div>
+
+            <p class="font-body-md text-xs sm:text-sm text-on-surface-variant mb-5">
+              Mỗi ngày đăng nhập vào BioVerse và khám phá ít nhất 1 bài học 3D, phòng lab hoặc làm bài trắc nghiệm để duy trì chuỗi ngọn lửa khoa học!
+            </p>
+
+            <!-- Streak Flame Banner -->
+            <div class="bg-gradient-to-r from-[#fff7ed] to-[#ffedd5] border-2 border-[#2d2d2d] rounded-2xl p-5 sketch-shadow-xs flex flex-col sm:flex-row items-center justify-between gap-5 mb-5">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-[#ffedd5] border-2 border-[#2d2d2d] flex items-center justify-center text-3xl sketch-shadow-xs transform -rotate-3">
+                  🔥
+                </div>
+                <div>
+                  <div class="font-headline-lg text-2xl sm:text-3xl font-black text-on-surface">
+                    <span id="detail-streak-days">0</span> ngày liên tiếp
+                  </div>
+                  <div class="font-body-sm text-xs sm:text-sm text-on-surface-variant">
+                    Kỷ lục tốt nhất: <strong id="detail-longest-streak" class="text-primary font-bold">0 ngày</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Last Checkin Date -->
+              <div class="text-center sm:text-right bg-white/70 px-4 py-2 rounded-xl border border-[#2d2d2d]/20">
+                <span class="font-label-sm text-[11px] text-on-surface-variant uppercase block">Lần học gần nhất</span>
+                <span id="detail-last-checkin" class="font-label-md text-xs sm:text-sm font-bold text-on-surface">Hôm nay</span>
+              </div>
+            </div>
+
+            <!-- Weekly Streak Days (Được sửa lại với ngày thực tế) -->
+            <div class="p-4 sm:p-5 rounded-2xl bg-[#fdfbf7] border-2 border-[#2d2d2d] sketch-shadow-xs mb-5">
+              <div class="flex items-center justify-between gap-2 mb-3.5">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[20px] text-primary">event_repeat</span>
+                  <h4 class="font-headline-sm text-sm sm:text-base text-on-surface font-extrabold">
+                    Nhịp Học Trong Tuần Này
+                  </h4>
+                </div>
+                <span id="weekly-streak-range-label" class="font-label-sm text-xs font-bold text-on-surface-variant bg-white px-2.5 py-1 rounded-lg border border-[#2d2d2d]/25">
+                  Đang tải...
+                </span>
+              </div>
+              
+              <div class="grid grid-cols-7 gap-2 sm:gap-2.5 text-center" id="weekly-streak-days">
+                <!-- Injected dynamically by JS -->
+              </div>
+            </div>
+
+            <!-- UI/UX PRO MAX: STEM STUDY ACTIVITY CALENDAR & MATRIX -->
+            <div class="heatmap-calendar-card mb-5">
+              <!-- Heatmap Header & Month Navigation -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-4 border-b-2 border-[#2d2d2d]/15">
+                <div class="flex items-center gap-3">
+                  <div class="w-11 h-11 rounded-xl bg-[#e8f5e9] border-2 border-[#2d2d2d] flex items-center justify-center text-[#00864c] sketch-shadow-xs flex-shrink-0">
+                    <span class="material-symbols-outlined text-[24px]">calendar_month</span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h4 class="font-headline-sm text-base sm:text-lg text-on-surface font-black">
+                        Lịch Sử Học Tập & Chuyên Cần
+                      </h4>
+                      <span id="heatmap-total-active-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e8f5e9] text-[#00864c] border border-[#00864c]/40 font-label tabular-nums">
+                        0 ngày học
+                      </span>
+                    </div>
+                    <p class="font-body-sm text-xs text-on-surface-variant mt-0.5">
+                      Ma trận đóng góp học tập khoa học BioVerse theo từng tuần và tháng
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Navigation Controls (No-Wrap, Anti-Break with Month & Year Selectors) -->
+                <div class="flex items-center gap-1.5 flex-nowrap flex-shrink-0 self-start sm:self-auto">
+                  <button type="button" id="btn-heatmap-prev-month" title="Xem tháng trước" class="heatmap-month-nav-btn" aria-label="Tháng trước">
+                    <span class="material-symbols-outlined text-[19px]">chevron_left</span>
+                  </button>
+
+                  <!-- Two Elegant Dropdown Buttons (Month & Year) with Chevrons -->
+                  <div class="flex items-center gap-1.5 flex-nowrap">
+                    <!-- Month Grid Picker (Custom Panel tương tự Year Picker) -->
+                    <div class="heatmap-month-picker-wrapper">
+                      <button type="button" id="heatmap-month-trigger" class="heatmap-select-btn" title="Chọn tháng" aria-label="Chọn tháng" aria-haspopup="dialog" aria-expanded="false">
+                        <span class="heatmap-select-prefix">Thg</span>
+                        <span id="heatmap-month-display">10</span>
+                        <span class="material-symbols-outlined heatmap-select-icon">expand_more</span>
+                      </button>
+                      <!-- Month Grid Panel -->
+                      <div id="heatmap-month-panel" class="heatmap-month-panel" role="dialog" aria-label="Chọn tháng" hidden>
+                        <div class="heatmap-month-panel-header">
+                          <div class="flex items-center gap-1.5">
+                            <span class="month-panel-th-badge">Thg</span>
+                            <span class="month-panel-title">Chọn tháng</span>
+                          </div>
+                          <span id="month-panel-year-indicator" class="month-panel-year-badge">Năm 2026</span>
+                        </div>
+                        <div id="month-panel-grid" class="heatmap-month-grid">
+                          <!-- JS sẽ render grid 4 cột × 3 hàng (số 1 - 12) -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Year Grid Picker (Custom Panel thay vì dropdown dài) -->
+                    <div class="heatmap-year-picker-wrapper">
+                      <button type="button" id="heatmap-year-trigger" class="heatmap-select-btn" title="Chọn năm" aria-label="Chọn năm" aria-haspopup="dialog" aria-expanded="false">
+                        <span id="heatmap-year-display">2026</span>
+                        <span class="material-symbols-outlined heatmap-select-icon">expand_more</span>
+                      </button>
+                      <!-- Year Grid Panel -->
+                      <div id="heatmap-year-panel" class="heatmap-year-panel" role="dialog" aria-label="Chọn năm" hidden>
+                        <div class="heatmap-year-panel-header">
+                          <button type="button" id="year-panel-prev" class="year-panel-nav" aria-label="Nhóm năm trước">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                          </button>
+                          <span id="year-panel-range" class="year-panel-range">2015 – 2026</span>
+                          <button type="button" id="year-panel-next" class="year-panel-nav" aria-label="Nhóm năm sau">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                          </button>
+                        </div>
+                        <div id="year-panel-grid" class="heatmap-year-grid">
+                          <!-- JS sẽ render grid 4 cột × 3 hàng (12 năm mỗi trang) -->
+                        </div>
+                      </div>
+                    </div>
+                    <span id="heatmap-month-label" class="sr-only">Tháng 10, 2026</span>
+                  </div>
+
+                  <button type="button" id="btn-heatmap-next-month" title="Xem tháng sau" class="heatmap-month-nav-btn" aria-label="Tháng sau">
+                    <span class="material-symbols-outlined text-[19px]">chevron_right</span>
+                  </button>
+                  <button type="button" id="btn-heatmap-today" title="Về tháng hiện tại" class="heatmap-today-btn">
+                    Hôm nay
+                  </button>
+                </div>
+              </div>
+
+              <!-- 7-Column Responsive Month Matrix (Dàn đều 100% không gian) -->
+              <div class="w-full">
+                <!-- Weekday Headers (T2 -> CN) -->
+                <div class="heatmap-weekdays-grid">
+                  <span class="heatmap-weekday-head">Thứ 2</span>
+                  <span class="heatmap-weekday-head">Thứ 3</span>
+                  <span class="heatmap-weekday-head">Thứ 4</span>
+                  <span class="heatmap-weekday-head">Thứ 5</span>
+                  <span class="heatmap-weekday-head">Thứ 6</span>
+                  <span class="heatmap-weekday-head">Thứ 7</span>
+                  <span class="heatmap-weekday-head text-primary">Chủ Nhật</span>
+                </div>
+
+                <!-- Days Matrix Grid (Dàn đều 7 cột) -->
+                <div id="heatmap-matrix-grid" class="heatmap-days-matrix-grid">
+                  <!-- Injected dynamically by JS -->
+                </div>
+              </div>
+
+              <!-- 4 Monthly Metric Cards (Chuẩn Style Hệ Thống BioVerse Bento Grid) -->
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5 mt-4 pt-4 border-t-2 border-[#2d2d2d]/10">
+                <!-- Metric 1: Ngày Đăng Nhập -->
+                <div class="overview-metric" data-accent="emerald">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="overview-metric-icon bg-emerald-50 text-emerald-700">
+                      📅
+                    </div>
+                    <span class="overview-metric-tag text-[#047857] bg-[#ecfdf5] border-[#a7f3d0]">
+                      Tháng này
+                    </span>
+                  </div>
+                  <div class="mt-3">
+                    <div class="flex items-baseline gap-1">
+                      <span id="heatmap-month-active-days" class="overview-metric-value" data-countup>0</span>
+                      <span id="heatmap-month-total-days-sub" class="overview-metric-unit">/ 31 ngày</span>
+                    </div>
+                    <p class="overview-metric-label">Ngày đăng nhập</p>
+                  </div>
+                </div>
+
+                <!-- Metric 2: Tỷ Lệ Chuyên Cần -->
+                <div class="overview-metric" data-accent="sky">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="overview-metric-icon bg-sky-50 text-sky-700">
+                      📊
+                    </div>
+                    <span class="overview-metric-tag text-[#0369a1] bg-[#f0f9ff] border-[#bae6fd]">
+                      Chuyên cần
+                    </span>
+                  </div>
+                  <div class="mt-3">
+                    <div class="flex items-baseline gap-1">
+                      <span id="heatmap-month-attendance-rate" class="overview-metric-value" data-countup>0%</span>
+                    </div>
+                    <p class="overview-metric-label">Tỷ lệ ngày học</p>
+                  </div>
+                </div>
+
+                <!-- Metric 3: Chuỗi Liên Tục -->
+                <div class="overview-metric" data-accent="orange">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="overview-metric-icon bg-orange-50 text-orange-700">
+                      🔥
+                    </div>
+                    <span class="overview-metric-tag text-[#c2410c] bg-[#fff7ed] border-[#fed7aa]">
+                      Kỷ lục
+                    </span>
+                  </div>
+                  <div class="mt-3">
+                    <div class="flex items-baseline gap-1">
+                      <span id="heatmap-month-max-streak" class="overview-metric-value" data-countup>0</span>
+                      <span class="overview-metric-unit">ngày</span>
+                    </div>
+                    <p class="overview-metric-label">Chuỗi dài nhất</p>
+                  </div>
+                </div>
+
+                <!-- Metric 4: XP Chuyên Cần -->
+                <div class="overview-metric" data-accent="amber">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="overview-metric-icon bg-amber-50 text-amber-700">
+                      ⭐
+                    </div>
+                    <span class="overview-metric-tag text-[#b45309] bg-[#fffbeb] border-[#fde68a]">
+                      Tích lũy
+                    </span>
+                  </div>
+                  <div class="mt-3">
+                    <div class="flex items-baseline gap-1">
+                      <span id="heatmap-month-total-xp" class="overview-metric-value" data-countup>+0</span>
+                      <span class="overview-metric-unit">XP</span>
+                    </div>
+                    <p class="overview-metric-label">Điểm kinh nghiệm</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Level & XP Progress -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+              <!-- Level Progress -->
+              <div class="p-5 rounded-2xl bg-[#fff9c4] border-2 border-[#2d2d2d] sketch-shadow-xs">
+                <div class="flex items-center gap-2 mb-2 text-[#d97706]">
+                  <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
+                  <h4 class="font-headline-sm text-base font-bold text-on-surface">Cấp Độ Nghiên Cứu</h4>
+                </div>
+                <div class="font-headline-lg text-2xl font-extrabold text-primary mb-1" id="account-level-title">
+                  Tập Sự STEM
+                </div>
+                <div class="w-full bg-white/90 border border-[#2d2d2d] rounded-full h-3 overflow-hidden my-3">
+                  <div id="level-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500" style="width: 45%;"></div>
+                </div>
+                <div class="flex justify-between font-label-sm text-[11px] text-on-surface-variant font-bold">
+                  <span id="level-current-xp">0 XP</span>
+                  <span id="level-target-xp">2.000 XP</span>
+                </div>
+              </div>
+
+              <!-- Quick Badges Achieved -->
+              <div class="p-5 rounded-2xl bg-white border-2 border-[#2d2d2d] sketch-shadow-xs space-y-2.5">
+                <h4 class="font-headline-sm text-base font-bold text-on-surface flex items-center gap-1.5 mb-2">
+                  <span>🎖️</span>
+                  <span>Huy Hiệu Tiêu Biểu</span>
+                </h4>
+                <div class="flex items-center gap-2.5 p-2 rounded-xl bg-[#f6f3f2] border border-[#2d2d2d]/20">
+                  <span class="text-xl">🌱</span>
+                  <div>
+                    <div class="font-label-md text-xs font-bold">Tiên Phong BioVerse</div>
+                    <div class="font-body-sm text-[10px] text-on-surface-variant">Gia nhập cộng đồng STEM</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2.5 p-2 rounded-xl bg-[#f6f3f2] border border-[#2d2d2d]/20">
+                  <span class="text-xl">🔬</span>
+                  <div>
+                    <div class="font-label-md text-xs font-bold">Nhà Giải Phẫu Nhí</div>
+                    <div class="font-body-sm text-[10px] text-on-surface-variant">Khám phá mô hình 3D</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+      </section>
+    </div>
+
+    <!-- Avatar Crop & Resize Modal -->
+    <div id="avatar-crop-modal" class="avatar-crop-modal" hidden role="dialog" aria-modal="true" aria-labelledby="crop-modal-title">
+      <div class="avatar-crop-card">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 mb-3 border-b-2 border-[#2d2d2d]/20">
+          <div>
+            <h3 id="crop-modal-title" class="font-headline-sm text-lg font-bold text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">crop</span>
+              <span>Chỉnh Sửa & Cắt Ảnh Đại Diện</span>
+            </h3>
+            <p class="font-body-xs text-xs text-on-surface-variant mt-0.5">
+              Kéo để di chuyển, cuộn chuột hoặc dùng thanh trượt để phóng to/thu nhỏ
+            </p>
+          </div>
+          <button type="button" id="avatar-crop-cancel-btn" class="w-8 h-8 rounded-full border-2 border-[#2d2d2d] bg-[#f6f3f2] hover:bg-[#ffdad6] text-[#2d2d2d] hover:text-[#b71422] flex items-center justify-center font-bold transition-colors cursor-pointer" title="Đóng">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <!-- Crop Canvas Workspace Stage -->
+        <div class="flex-1 flex flex-col items-center justify-center min-h-0 py-1">
+          <div class="avatar-crop-stage-wrap">
+            <canvas id="avatar-crop-canvas" width="600" height="600"></canvas>
+            <div class="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none px-3 py-1 rounded-full bg-black/70 text-white text-[11px] font-label-sm whitespace-nowrap backdrop-blur-[2px]">
+              Ảnh sẽ được cắt theo hình tròn hiển thị
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="mt-3 pt-3 border-t border-[#2d2d2d]/20 space-y-3">
+          <!-- Zoom Slider & Quick Buttons -->
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-[20px] text-on-surface-variant select-none">zoom_out</span>
+            <input type="range" id="avatar-crop-zoom" min="1" max="4" step="0.01" value="1" 
+              class="flex-1 accent-primary h-2 bg-[#eae7e7] rounded-lg cursor-pointer" />
+            <span class="material-symbols-outlined text-[20px] text-on-surface-variant select-none">zoom_in</span>
+
+            <div class="flex items-center gap-1.5 ml-2 border-l border-[#2d2d2d]/20 pl-2.5">
+              <button type="button" id="avatar-crop-rotate-btn" title="Xoay ảnh 90 độ theo chiều kim đồng hồ"
+                class="px-2.5 py-1.5 rounded-lg border-2 border-[#2d2d2d] bg-[#fdfbf7] hover:bg-[#fff9c4] text-xs font-bold font-label-sm flex items-center gap-1 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[16px]">rotate_right</span>
+                <span class="hidden sm:inline">Xoay</span>
+              </button>
+              <button type="button" id="avatar-crop-reset-btn" title="Đặt lại vị trí ban đầu"
+                class="px-2.5 py-1.5 rounded-lg border-2 border-[#2d2d2d] bg-[#fdfbf7] hover:bg-[#e0f2fe] text-xs font-bold font-label-sm flex items-center gap-1 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                <span class="hidden sm:inline">Đặt lại</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons & Mini Preview -->
+          <div class="flex items-center justify-between pt-1">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-full border-2 border-[#2d2d2d] overflow-hidden bg-white sketch-shadow-xs flex-shrink-0">
+                <canvas id="avatar-crop-mini-preview" width="80" height="80" class="w-full h-full object-cover"></canvas>
+              </div>
+              <span class="text-xs text-on-surface-variant font-medium">Xem trước</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" id="avatar-crop-close-btn" class="px-4 py-2 rounded-xl border-2 border-[#2d2d2d] bg-white hover:bg-[#f6f3f2] font-label-md text-xs font-bold transition-all cursor-pointer">
+                Hủy
+              </button>
+              <button type="button" id="avatar-crop-apply-btn" class="px-5 py-2 rounded-xl border-2 border-[#2d2d2d] bg-primary hover:bg-[#b71422] text-white font-label-md text-xs font-bold sketch-shadow-sm hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer" title="Lưu trực tiếp vào tài khoản">
+                <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                <span>Xác Nhận & Đổi Luôn</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 1. AVATAR ACTION MODAL: Chọn Xem Avatar hay Chỉnh Sửa -->
+    <div id="avatar-action-modal" class="avatar-action-modal" hidden role="dialog" aria-modal="true" aria-labelledby="avatar-action-title">
+      <div class="avatar-action-card relative">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-[#2d2d2d]/20">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-primary border border-[#2d2d2d]"></span>
+            <h3 id="avatar-action-title" class="font-headline-sm text-lg font-bold text-on-surface">
+              Tùy Chọn Ảnh Đại Diện
+            </h3>
+          </div>
+          <button type="button" id="avatar-action-close-btn" class="w-8 h-8 rounded-full border-2 border-[#2d2d2d] bg-[#f6f3f2] hover:bg-[#ffdad6] text-[#2d2d2d] hover:text-[#b71422] flex items-center justify-center font-bold transition-colors cursor-pointer" title="Đóng">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-3.5">
+          <!-- Option 1: Xem Avatar -->
+          <button type="button" id="modal-opt-view-avatar" class="avatar-action-option group">
+            <div class="w-12 h-12 rounded-2xl bg-[#e0f2fe] border-2 border-[#2d2d2d] flex items-center justify-center text-[#0284c7] sketch-shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform">
+              <span class="material-symbols-outlined text-2xl">visibility</span>
+            </div>
+            <div class="flex-1">
+              <div class="font-headline-sm text-sm font-bold text-on-surface">Xem Ảnh Đại Diện</div>
+              <div class="font-body-sm text-xs text-on-surface-variant">Phóng to xem ảnh sắc nét kích thước đầy đủ</div>
+            </div>
+            <span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </button>
+
+          <!-- Option 2: Chỉnh Sửa / Upload Mới (Có 2 cách: Kéo thả hoặc Upload) -->
+          <div class="p-4 rounded-2xl border-2 border-[#2d2d2d] bg-[#fdfbf7] sketch-shadow-xs space-y-3">
+            <div class="flex items-center gap-2.5 pb-2 border-b border-[#2d2d2d]/10">
+              <div class="w-8 h-8 rounded-xl bg-[#fee2e2] border-2 border-[#2d2d2d] flex items-center justify-center text-primary flex-shrink-0">
+                <span class="material-symbols-outlined text-[18px]">photo_camera</span>
+              </div>
+              <div>
+                <span class="font-label-md text-xs font-bold text-on-surface block">Chỉnh Sửa & Tải Ảnh Mới</span>
+                <span class="text-[11px] text-on-surface-variant">Kéo thả ảnh hoặc chọn từ thiết bị</span>
+              </div>
+            </div>
+
+            <!-- Dropzone in modal -->
+            <div id="modal-avatar-dropzone" class="avatar-dropzone flex flex-col items-center justify-center p-4 text-center cursor-pointer border-2 border-dashed border-[#2d2d2d] hover:border-primary rounded-xl bg-white transition-all">
+              <span class="material-symbols-outlined text-3xl text-primary mb-1">cloud_upload</span>
+              <p class="font-label-md text-xs font-bold text-on-surface mb-0.5">
+                Kéo & thả ảnh vào đây, hoặc <span class="text-primary underline">bấm để chọn tệp</span>
+              </p>
+              <p class="font-body-xs text-[11px] text-on-surface-variant">
+                Hỗ trợ JPG, PNG, WebP tối đa 5MB • Sẽ cắt ảnh tròn chuẩn
+              </p>
+              <input type="file" id="modal-avatar-file-input" accept="image/png,image/jpeg,image/webp" class="hidden" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-[#2d2d2d]/15 flex justify-end">
+          <button type="button" id="avatar-action-cancel-btn" class="px-4 py-2 rounded-xl border-2 border-[#2d2d2d] bg-white hover:bg-[#f6f3f2] font-label-md text-xs font-bold transition-all cursor-pointer">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. AVATAR LIGHTBOX MODAL: Xem Ảnh Đại Diện Toàn Màn Hình -->
+    <div id="avatar-lightbox-modal" class="avatar-lightbox-modal" hidden role="dialog" aria-modal="true" aria-labelledby="lightbox-title">
+      <div class="avatar-lightbox-card relative">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b-2 border-[#2d2d2d]/20">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[22px]">account_circle</span>
+            <h3 id="lightbox-title" class="font-headline-sm text-lg font-bold text-on-surface">
+              Ảnh Đại Diện Cá Nhân
+            </h3>
+          </div>
+          <button type="button" id="avatar-lightbox-close-btn" class="w-8 h-8 rounded-full border-2 border-[#2d2d2d] bg-[#f6f3f2] hover:bg-[#ffdad6] text-[#2d2d2d] hover:text-[#b71422] flex items-center justify-center font-bold transition-colors cursor-pointer" title="Đóng">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <div class="flex flex-col items-center justify-center py-2">
+          <!-- Large Avatar Display -->
+          <div class="w-60 h-60 sm:w-64 sm:h-64 rounded-full border-4 border-[#2d2d2d] sketch-shadow-md overflow-hidden bg-[#e8f5e9] flex items-center justify-center relative">
+            <img id="avatar-lightbox-img" src="/logo-icon.png" alt="Ảnh đại diện phóng to" class="w-full h-full object-cover hidden" />
+            <div id="avatar-lightbox-fallback" class="w-full h-full flex flex-col items-center justify-center bg-primary text-white font-headline-lg text-6xl">
+              <span>?</span>
+            </div>
+          </div>
+          <h4 id="avatar-lightbox-name" class="font-headline-md text-lg font-extrabold text-on-surface mt-4">
+            Đang tải...
+          </h4>
+          <span id="avatar-lightbox-role" class="px-3 py-0.5 rounded-full border border-[#2d2d2d] bg-[#fff9c4] font-label-sm text-xs font-bold mt-1">
+            Học Sinh THCS
+          </span>
+        </div>
+
+        <div class="mt-4 pt-4 border-t-2 border-[#2d2d2d]/15 flex items-center justify-between gap-3">
+          <button type="button" id="avatar-lightbox-btn-edit" class="px-4 py-2 rounded-xl border-2 border-[#2d2d2d] bg-white hover:bg-[#fdfbf7] font-label-md text-xs font-bold sketch-shadow-xs transition-all flex items-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+            <span>Đổi ảnh này</span>
+          </button>
+          <button type="button" id="avatar-lightbox-btn-close" class="px-5 py-2 rounded-xl border-2 border-[#2d2d2d] bg-[#2d2d2d] hover:bg-black text-white font-label-md text-xs font-bold sketch-shadow-xs transition-all cursor-pointer">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-surface-container-high border-t-[2.5px] border-[#2d2d2d] py-6 text-center">
+    <div class="max-w-6xl mx-auto px-margin flex flex-col sm:flex-row items-center justify-between gap-4 font-label-sm text-xs text-on-surface-variant">
+      <div>
+        © 2026 BioVerse Platform — Sổ Tay Khoa Học THCS STEM.
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/" class="hover:underline">Trang chủ</a>
+        <a href="/sinh-hoc" class="hover:underline">Sinh học 3D</a>
+        <a href="/pricing" class="hover:underline">Gói cước</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 3. STEM BADGE DETAIL MODAL -->
+  <div id="badge-detail-modal" class="avatar-lightbox-modal" hidden role="dialog" aria-modal="true" aria-labelledby="badge-modal-title">
+    <div class="avatar-action-card relative max-w-sm">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-[#2d2d2d]/15">
+        <div class="flex items-center gap-2">
+          <span class="text-xl" id="badge-modal-category-icon">🎖️</span>
+          <span id="badge-modal-category" class="font-label-sm text-xs font-bold uppercase tracking-wider text-on-surface-variant">Huy Hiệu STEM</span>
+        </div>
+        <button type="button" id="badge-modal-close-btn" class="w-8 h-8 rounded-full border-2 border-[#2d2d2d] bg-[#f6f3f2] hover:bg-[#ffdad6] text-[#2d2d2d] hover:text-[#b71422] flex items-center justify-center font-bold cursor-pointer transition-colors" title="Đóng">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col items-center text-center py-4">
+        <div id="badge-modal-icon-wrap" class="w-20 h-20 rounded-2xl border-3 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center text-4xl mb-3 bg-[#e8f5e9]">
+          <span id="badge-modal-icon">🌱</span>
+        </div>
+        <h3 id="badge-modal-title" class="font-headline-sm text-lg font-black text-on-surface">Tân Binh BioVerse</h3>
+        <span id="badge-modal-status" class="mt-1 px-3 py-0.5 rounded-full font-label-sm text-[11px] font-bold border border-[#2d2d2d] bg-[#e8f5e9] text-[#00864c]">
+          ✅ Đã Đạt Được
+        </span>
+        <p id="badge-modal-desc" class="font-body-sm text-xs text-on-surface-variant mt-3 px-2 leading-relaxed">
+          Gia nhập cộng đồng nghiên cứu STEM BioVerse.
+        </p>
+        <div id="badge-modal-progress-wrap" class="w-full mt-3.5 p-2.5 rounded-xl border border-[#2d2d2d]/20 bg-[#fdfbf7] flex items-center justify-between font-label-sm text-xs">
+          <span class="text-on-surface-variant font-medium">Tiến trình:</span>
+          <span id="badge-modal-progress-val" class="font-bold text-primary">Đã hoàn thành</span>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-[#2d2d2d]/15 flex justify-end">
+        <button type="button" id="badge-modal-ok-btn" class="px-5 py-2 rounded-xl border-2 border-[#2d2d2d] bg-[#2d2d2d] text-white font-label-md text-xs font-bold sketch-shadow-xs hover:bg-black transition-all cursor-pointer">
+          Đã hiểu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. STEM BOOK OF ACHIEVEMENTS MODAL (SỔ TAY DANH HIỆU 3D ĐANG MỞ RA) -->
+  <div id="badge-book-modal" class="badge-book-modal" hidden role="dialog" aria-modal="true" aria-labelledby="badge-book-title">
+    <div class="sketch-book-container">
+      <!-- Close Book Button (Top Floating) -->
+      <button type="button" id="badge-book-close-btn" class="absolute -top-3.5 right-0 sm:-right-3 z-40 w-10 h-10 rounded-full border-2 border-[#2d2d2d] bg-[#fff9c4] hover:bg-[#ffdad6] text-[#2d2d2d] hover:text-[#b71422] flex items-center justify-center font-bold sketch-shadow-xs cursor-pointer transition-all hover:scale-110" title="Gấp sổ tay lại">
+        <span class="material-symbols-outlined text-[22px]">close</span>
+      </button>
+
+      <!-- Hardcover Base -->
+      <div class="sketch-book-cover">
+        <!-- Spine & Bookmark Ribbon -->
+        <div class="sketch-book-spine"></div>
+        <div class="book-bookmark-ribbon" id="book-ribbon"></div>
+
+        <!-- Book Header Bar: Title, Pin Status & Category Tabs -->
+        <div class="relative z-30 pb-3 mb-2.5 border-b-2 border-white/20 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-white">
+          <div class="flex items-center gap-2.5">
+            <span class="text-3xl">📓</span>
+            <div>
+              <h3 id="badge-book-title" class="font-headline-sm text-base sm:text-lg font-black tracking-wide text-[#fff9c4] flex items-center gap-2">
+                <span>SỔ TAY DANH HIỆU STEM</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-white/20 text-white font-mono border border-white/30" id="book-unlocked-badge-count">0/12 Đạt</span>
+              </h3>
+              <p class="text-[11px] text-white/80">
+                Lật mở các trang thành tựu • Chọn tối đa 3 huy hiệu ghim lên thẻ căn cước
+              </p>
+            </div>
+          </div>
+
+          <!-- Pinned Badges Tracker Pill -->
+          <div class="flex items-center gap-2 self-start md:self-auto">
+            <div class="px-3 py-1.5 rounded-xl bg-black/40 border border-white/25 flex items-center gap-2 text-xs">
+              <span>📌 Đã ghim:</span>
+              <span class="font-mono font-bold text-[#ffedd5]" id="book-pinned-count-display">0/3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Bookmark Tabs (All, Starter, Streak, Lab, XP) -->
+        <div class="relative z-30 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none mb-2" id="book-filter-tabs">
+          <button type="button" class="book-filter-tab active" data-filter="all">📖 Tất cả (12)</button>
+          <button type="button" class="book-filter-tab" data-filter="starter">🌱 Khởi đầu</button>
+          <button type="button" class="book-filter-tab" data-filter="streak">🔥 Chuỗi ngày</button>
+          <button type="button" class="book-filter-tab" data-filter="lab">🔬 Phòng lab 3D</button>
+          <button type="button" class="book-filter-tab" data-filter="xp">⭐ Cấp độ XP</button>
+        </div>
+
+        <!-- Mobile Tab Switcher (Visible only on < 768px) -->
+        <div class="md:hidden flex items-center gap-2 mb-2.5 relative z-30">
+          <button type="button" id="btn-mobile-book-tab-left" class="flex-1 py-1.5 px-3 rounded-lg border-2 border-[#2d2d2d] bg-[#fff9c4] font-bold text-xs text-on-surface text-center shadow-sm">
+            🏆 Đã đạt được (<span id="mobile-unlocked-count">0</span>)
+          </button>
+          <button type="button" id="btn-mobile-book-tab-right" class="flex-1 py-1.5 px-3 rounded-lg border-2 border-[#2d2d2d] bg-white/70 font-bold text-xs text-on-surface text-center shadow-sm">
+            🔒 Chưa mở khóa (<span id="mobile-locked-count">0</span>)
+          </button>
+        </div>
+
+        <!-- Two-Page Open Book Spread -->
+        <div class="sketch-book-spread" id="sketch-book-spread">
+          <!-- TRANG TRÁI (LEFT PAGE): ĐÃ ĐẠT ĐƯỢC -->
+          <div class="book-page-left" id="book-page-left">
+            <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b-2 border-[#2d2d2d]/15">
+              <div>
+                <div class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Chương I</div>
+                <h4 class="font-extrabold text-sm sm:text-base text-on-surface flex items-center gap-1.5">
+                  <span>🏆</span>
+                  <span>Thành Tựu Đã Đạt</span>
+                  <span class="font-mono text-xs px-2 py-0.5 rounded-full bg-[#e8f5e9] text-[#00864c] border border-[#2d2d2d]/30 font-bold" id="book-left-count">0</span>
+                </h4>
+              </div>
+              <div class="text-[11px] text-[#00864c] font-bold flex items-center gap-1">
+                <span>✨ Đã hoàn thành</span>
+              </div>
+            </div>
+
+            <!-- Unlocked badges list -->
+            <div class="space-y-2.5 overflow-y-auto max-h-[380px] sm:max-h-[420px] pr-1.5 scrollbar-thin" id="book-unlocked-list">
+              <!-- Unlocked badges injected by JS -->
+            </div>
+          </div>
+
+          <!-- TRANG PHẢI (RIGHT PAGE): CHƯA MỞ KHÓA -->
+          <div class="book-page-right" id="book-page-right">
+            <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b-2 border-[#2d2d2d]/15">
+              <div>
+                <div class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Chương II</div>
+                <h4 class="font-extrabold text-sm sm:text-base text-on-surface flex items-center gap-1.5">
+                  <span>🎯</span>
+                  <span>Thử Thách Chưa Mở</span>
+                  <span class="font-mono text-xs px-2 py-0.5 rounded-full bg-[#f6f3f2] text-on-surface-variant border border-[#2d2d2d]/30 font-bold" id="book-right-count">0</span>
+                </h4>
+              </div>
+              <div class="text-[11px] text-on-surface-variant font-medium flex items-center gap-1">
+                <span>🔒 Đang phấn đấu</span>
+              </div>
+            </div>
+
+            <!-- Locked badges list -->
+            <div class="space-y-2.5 overflow-y-auto max-h-[380px] sm:max-h-[420px] pr-1.5 scrollbar-thin" id="book-locked-list">
+              <!-- Locked badges injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Footer Bar -->
+        <div class="mt-3.5 p-2.5 sm:px-4 rounded-xl bg-black/35 border border-white/20 flex items-center gap-2.5 text-white/90 text-xs">
+          <span class="text-base flex-shrink-0">💡</span>
+          <span class="font-medium">Ghim 3 danh hiệu sáng nhất để giới thiệu bản thân trên thẻ học sinh BioVerse!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CHANGE PASSWORD POPUP MODAL -->
+  <div id="change-password-modal" class="avatar-lightbox-modal" hidden role="dialog" aria-modal="true" aria-labelledby="change-pass-modal-title">
+    <div class="avatar-action-card relative max-w-lg w-full" style="max-height: 92vh; overflow-y: auto;">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3.5 mb-4 border-b-2 border-[#2d2d2d]/15">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 border-2 border-[#2d2d2d] flex items-center justify-center text-primary sketch-shadow-xs flex-shrink-0">
+            <span class="material-symbols-outlined text-[20px]">shield</span>
+          </div>
+          <div>
+            <h3 id="change-pass-modal-title" class="font-headline-sm text-base sm:text-lg font-black text-on-surface">
+              Đổi Mật Khẩu & Bảo Mật
+            </h3>
+            <p class="font-body-sm text-[11px] text-on-surface-variant">
+              Xác thực an toàn bằng mã OTP gửi về email tài khoản
+            </p>
+          </div>
+        </div>
+        <button type="button" id="btn-close-password-modal" class="w-8 h-8 rounded-full border-2 border-[#2d2d2d] bg-[#f6f3f2] hover:bg-[#ffdad6] text-[#2d2d2d] hover:text-[#b71422] flex items-center justify-center font-bold cursor-pointer transition-colors" title="Đóng">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <!-- Password Change Form -->
+      <form id="change-password-form" class="space-y-4">
+        <!-- Current Password -->
+        <div>
+          <label for="input-curr-pass" class="block font-label-md text-xs text-on-surface font-bold mb-1.5">
+            Mật khẩu hiện tại <span class="text-primary">*</span>
+          </label>
+          <div class="relative">
+            <input type="password" id="input-curr-pass" required placeholder="Nhập mật khẩu đang dùng"
+              class="w-full px-3.5 py-2.5 rounded-xl border-2 border-[#2d2d2d] bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-body-md text-sm text-on-surface sketch-shadow-xs pr-11 transition-all" />
+            <button type="button" class="btn-toggle-pass absolute right-3 top-2.5 text-on-surface-variant hover:text-on-surface" data-target="input-curr-pass">
+              <span class="material-symbols-outlined text-[18px]">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- New Password & Confirm Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="input-new-pass" class="block font-label-md text-xs text-on-surface font-bold mb-1.5">
+              Mật khẩu mới <span class="text-primary">*</span>
+            </label>
+            <div class="relative">
+              <input type="password" id="input-new-pass" required minlength="8" placeholder="Ít nhất 8 ký tự"
+                class="w-full px-3.5 py-2.5 rounded-xl border-2 border-[#2d2d2d] bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-body-md text-sm text-on-surface sketch-shadow-xs pr-11 transition-all" />
+              <button type="button" class="btn-toggle-pass absolute right-3 top-2.5 text-on-surface-variant hover:text-on-surface" data-target="input-new-pass">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label for="input-confirm-pass" class="block font-label-md text-xs text-on-surface font-bold mb-1.5">
+              Xác nhận mật khẩu mới <span class="text-primary">*</span>
+            </label>
+            <div class="relative">
+              <input type="password" id="input-confirm-pass" required minlength="8" placeholder="Nhập lại mật khẩu mới"
+                class="w-full px-3.5 py-2.5 rounded-xl border-2 border-[#2d2d2d] bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-body-md text-sm text-on-surface sketch-shadow-xs pr-11 transition-all" />
+              <button type="button" class="btn-toggle-pass absolute right-3 top-2.5 text-on-surface-variant hover:text-on-surface" data-target="input-confirm-pass">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OTP Step Card -->
+        <div class="p-3.5 rounded-xl bg-[#fff9c4] border-2 border-[#2d2d2d] sketch-shadow-xs space-y-2.5">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <div>
+              <span class="font-label-md text-xs font-bold text-on-surface block">Mã xác thực OTP qua Email</span>
+              <span class="font-body-sm text-[11px] text-on-surface-variant">Bấm nút để nhận mã OTP gửi tới email tài khoản</span>
+            </div>
+            <button type="button" id="btn-request-otp" class="px-3.5 py-1.5 rounded-lg border-2 border-[#2d2d2d] bg-white hover:bg-[#f6f3f2] font-label-sm text-xs font-bold sketch-shadow-xs whitespace-nowrap transition-all cursor-pointer">
+              Gửi mã OTP
+            </button>
+          </div>
+
+          <!-- OTP Input Field -->
+          <div class="relative">
+            <input type="text" id="input-otp" maxlength="8" placeholder="Nhập mã OTP (VD: 123456)"
+              class="w-full px-4 py-2 rounded-lg border-2 border-[#2d2d2d] bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-label-md tracking-wider text-center text-lg" />
+          </div>
+          <div id="otp-countdown-hint" class="font-label-sm text-xs text-[#b45309] hidden text-center">
+            Mã có hiệu lực trong 5 phút. Có thể gửi lại sau <span id="otp-timer">60</span>s.
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-3.5 border-t-2 border-[#2d2d2d]/15 flex items-center justify-end gap-2.5">
+          <button type="button" id="btn-cancel-password-modal" class="px-4 py-2 rounded-xl border-2 border-[#2d2d2d] bg-white hover:bg-[#f6f3f2] font-label-md text-xs font-bold sketch-shadow-xs transition-all cursor-pointer">
+            Hủy bỏ
+          </button>
+          <button type="submit" id="btn-submit-pass" class="px-5 py-2 rounded-xl border-2 border-[#2d2d2d] bg-[#2e5ea2] hover:bg-[#1e40af] text-white font-label-md text-xs sm:text-sm font-bold sketch-shadow-xs hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">verified_user</span>
+            <span>Xác Nhận Đổi Mật Khẩu</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script type="module" src="/src/pages/profile.js"></script>
+</body>
+</html>
