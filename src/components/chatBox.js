@@ -54,6 +54,14 @@ export class ChatBox {
   }
 
   init() {
+    // 0. Clean up any legacy hardcoded floating BioBot buttons that might linger on pages
+    document.querySelectorAll('.fixed.bottom-6.right-6, [aria-label="Mở trợ lý ảo AI BioBot"]').forEach(el => {
+      if (el.classList.contains('fixed') || el.closest('.fixed.bottom-6.right-6')) {
+        const target = el.closest('.fixed.bottom-6.right-6') || el;
+        target.remove();
+      }
+    });
+
     // 1. Create structure
     this.wrapper = document.createElement('div');
     this.wrapper.className = 'bv-chatbox-wrapper';

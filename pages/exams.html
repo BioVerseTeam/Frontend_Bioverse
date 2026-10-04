@@ -23,6 +23,21 @@
     /* Custom radio styling for exam options */
     .answer-card {
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer !important;
+      position: relative;
+      user-select: none;
+    }
+    .answer-card::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: inherit;
+      pointer-events: auto;
+      z-index: -1;
+    }
+    .answer-card * {
+      cursor: inherit !important;
+      pointer-events: none;
     }
     .answer-card:hover:not(.disabled) {
       transform: translateY(-2px);
@@ -47,6 +62,20 @@
     /* Palette button animations */
     .palette-btn {
       transition: all 0.15s ease;
+      cursor: pointer !important;
+      position: relative;
+    }
+    .palette-btn::before {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: inherit;
+      pointer-events: auto;
+      z-index: -1;
+    }
+    .palette-btn * {
+      cursor: inherit !important;
+      pointer-events: none;
     }
     .palette-btn:hover {
       transform: scale(1.08);
@@ -177,11 +206,12 @@
             <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Sổ tay STEM THCS</span>
           </div>
         </a>
-        <nav class="hidden lg:flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]">
-          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="home" href="/">Khám Phá</a>
-          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="lessons-3d" href="/sinh-hoc">Sinh Học</a>
-          <a aria-current="page" class="px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]" data-path="study-corner" title="Luyện đề trắc nghiệm" href="/exams">Góc Học Tập</a>
-          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="stem-qa" href="/">Hỏi Đáp STEM</a>
+        <nav class="hidden lg:flex items-center gap-2">
+          <a class="bv-nav-link" data-path="home" href="/">Khám Phá</a>
+          <a class="bv-nav-link" data-path="lessons-3d" href="/sinh-hoc">Sinh Học</a>
+          <a class="bv-nav-link" data-path="reaction-anim" href="/phan-ung">Phân tử</a>
+          <a aria-current="page" class="bv-nav-link" data-path="study-corner" title="Luyện đề trắc nghiệm" href="/exams">Góc Học Tập</a>
+          <a class="bv-nav-link" data-path="stem-qa" href="/">Hỏi Đáp STEM</a>
         </nav>
       </div>
       <div id="header-user-cluster" class="flex items-center gap-space-md">
@@ -456,12 +486,17 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-between sm:justify-end gap-4">
+          <div class="flex items-center justify-between sm:justify-end gap-3">
             <!-- Đồng hồ đếm ngược -->
             <div id="exam-timer-box" class="flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-mono font-bold text-base text-[#1b1c1c]">
               <span class="material-symbols-outlined text-[#b71422] text-[20px] animate-pulse">timer</span>
               <span id="exam-countdown">45:00</span>
             </div>
+
+            <!-- Nút Bật/Tắt Toàn Màn Hình -->
+            <button type="button" id="btn-toggle-fullscreen" class="p-2 bg-white hover:bg-gray-100 text-[#2d2d2d] border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm transition-transform active:translate-y-0.5 flex items-center justify-center cursor-pointer" title="Mở toàn màn hình">
+              <span class="material-symbols-outlined text-[20px]" id="fullscreen-icon">fullscreen</span>
+            </button>
 
             <!-- Nút Nộp Bài -->
             <button type="button" id="btn-submit-exam" class="px-5 py-2.5 bg-[#b71422] hover:bg-[#db3237] text-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-headline text-sm font-bold inline-flex items-center gap-1.5 transition-transform active:translate-y-0.5">
