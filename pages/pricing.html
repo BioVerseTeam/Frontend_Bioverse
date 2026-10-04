@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bảng giá & Gói cước - BioVerse</title>
   <meta name="description" content="Khám phá các gói cước BioVerse Premium để trải nghiệm toàn bộ kho mô hình 3D, phòng thí nghiệm ảo và trợ lý AI không giới hạn.">
+  <link rel="icon" type="image/png" href="/logo-icon.png">
   <link rel="stylesheet" href="/src/sketchbook.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,41 +16,48 @@
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
   <script id="tailwind-config">
-    tailwind.config = {darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","on-surface":"#1b1c1c","primary-container":"#db3237","primary":"#b71422","on-surface-variant":"#5b403e","tertiary":"#006a3b"},"fontFamily":{"headline-sm":["Epilogue"],"body-md":["Be Vietnam Pro"],"label-md":["Space Grotesk"],"label-sm":["Space Grotesk"]}}}};
+    tailwind.config={darkMode:"class",theme:{extend:{"colors":{"on-primary":"#ffffff","surface-container-low":"#f6f3f2","on-surface":"#1b1c1c","on-background":"#1b1c1c","error-container":"#ffdad6","tertiary-container":"#00864c","on-tertiary":"#ffffff","on-primary-fixed-variant":"#930014","on-error-container":"#93000a","surface-container-high":"#eae7e7","primary-fixed-dim":"#ffb3ae","primary-fixed":"#ffdad7","surface-container":"#f0eded","surface-variant":"#e4e2e1","background":"#fcf9f8","inverse-on-surface":"#f3f0f0","on-tertiary-fixed":"#00210f","secondary-fixed-dim":"#a9c7ff","primary-container":"#db3237","surface-bright":"#fcf9f8","on-primary-fixed":"#410004","on-secondary-fixed-variant":"#0a4689","surface-dim":"#dcd9d9","inverse-primary":"#ffb3ae","outline-variant":"#e4beba","tertiary":"#006a3b","on-error":"#ffffff","on-primary-container":"#fffbff","tertiary-fixed-dim":"#6bdc96","primary":"#b71422","on-tertiary-container":"#f6fff4","secondary":"#2e5ea2","on-surface-variant":"#5b403e","surface":"#fcf9f8","on-tertiary-fixed-variant":"#00522c","error":"#ba1a1a","surface-container-lowest":"#ffffff","on-secondary":"#ffffff","surface-tint":"#ba1724","on-secondary-fixed":"#001b3d","inverse-surface":"#303030","tertiary-fixed":"#88f9b0","secondary-container":"#89b4fe","surface-container-highest":"#e4e2e1","on-secondary-container":"#064487","outline":"#8f6f6d","secondary-fixed":"#d6e3ff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-mobile":"1rem","space-xl":"3rem","margin":"2rem","space-lg":"2rem","space-sm":"0.75rem","space-md":"1.25rem","gutter":"1.5rem","gutter-mobile":"1rem","space-xs":"0.375rem"},"fontFamily":{"headline-sm":["Epilogue"],"body-sm":["Be Vietnam Pro"],"body-md":["Be Vietnam Pro"],"headline-lg":["Epilogue"],"label-md":["Space Grotesk"],"headline-md":["Epilogue"],"label-sm":["Space Grotesk"],"body-lg":["Be Vietnam Pro"],"title-md":["Epilogue"],"headline-xl":["Epilogue"],"label-lg":["Space Grotesk"],"headline-lg-mobile":["Epilogue"],"headline-xl-mobile":["Epilogue"]},"fontSize":{"headline-sm":["22px",{"lineHeight":"30px","fontWeight":"700"}],"body-sm":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","fontWeight":"700"}],"label-md":["14px",{"lineHeight":"18px","fontWeight":"700"}],"headline-md":["28px",{"lineHeight":"36px","fontWeight":"700"}],"label-sm":["12px",{"lineHeight":"16px","fontWeight":"600"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"title-md":["20px",{"lineHeight":"28px","fontWeight":"600"}],"headline-xl":["44px",{"lineHeight":"52px","fontWeight":"800"}],"label-lg":["16px",{"lineHeight":"20px","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"headline-xl-mobile":["32px",{"lineHeight":"40px","fontWeight":"800"}]}}}}
   </script>
 </head>
 <body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen flex flex-col">
   <!-- Top Navigation -->
   <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
-    <div class="h-20 w-full px-4 md:px-8 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <a class="flex items-center gap-2 group" href="/">
-          <div class="w-10 h-10 rounded-lg bg-primary-container border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
-            <span class="material-symbols-outlined text-on-primary text-[24px]">view_in_ar</span>
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="home" href="/" title="BioVerse - Khám phá Khoa học – Kiến tạo tương lai">
+          <div class="w-10 h-10 rounded-lg bg-white border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center p-1 transform -rotate-2 group-hover:rotate-0 transition-transform overflow-hidden">
+            <img src="/logo-icon.png" alt="BioVerse Logo" class="w-full h-full object-contain" />
           </div>
           <div class="flex flex-col">
-            <span class="font-['Epilogue'] text-xl font-black tracking-tight text-primary uppercase">BioVerse</span>
-            <span class="font-['Space_Grotesk'] text-xs text-on-surface-variant font-bold tracking-wide">Sổ tay STEM</span>
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Sổ tay STEM THCS</span>
           </div>
         </a>
+        <nav class="hidden lg:flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]">
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="home" href="/">Khám Phá</a>
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="lessons-3d" href="/sinh-hoc">Sinh Học</a>
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="study-corner" title="Luyện đề trắc nghiệm" href="/exams">Góc Học Tập</a>
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="stem-qa" href="/">Hỏi Đáp STEM</a>
+          <a aria-current="page" class="px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]" data-path="pricing" href="/pricing">
+            <span class="inline-flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-white">loyalty</span>
+              Gói cước
+            </span>
+          </a>
+        </nav>
       </div>
 
-      <nav class="hidden md:flex items-center gap-4 text-sm font-bold">
-        <a href="/" class="hover:text-primary transition-colors">Trang chủ</a>
-        <a href="/sinh-hoc" class="hover:text-primary transition-colors">Mô hình 3D</a>
-        <a href="/phan-ung" class="hover:text-primary transition-colors">Phản ứng Hoá học</a>
-        <a href="/exams" class="hover:text-primary transition-colors">Đề thi khảo thí</a>
-        <a href="/pricing" class="text-primary underline decoration-2 underline-offset-4">Gói cước</a>
-      </nav>
-
-      <div id="header-user-cluster" class="flex items-center gap-3">
-        <div class="hidden sm:flex flex-col items-end">
-          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Đang tải...</span>
-          <span id="header-user-badge" class="font-label-sm text-[11px] px-2 py-0.5 rounded-full border border-[#2d2d2d] bg-[#ffdad6] font-bold">Free Access</span>
+      <div class="flex items-center gap-space-md">
+        <div class="hidden md:flex items-center gap-space-xs px-space-md py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm transform rotate-1">
+          <span class="material-symbols-outlined text-[#ed8936] text-[18px]">award_star</span>
+          <span id="header-user-xp" class="font-label-sm text-label-sm text-on-surface">0 XP</span>
         </div>
-        <a id="header-login-btn" href="/login" class="neo-btn neo-btn-primary rounded-xl px-4 py-2 text-sm flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[18px]">login</span>
-          Đăng nhập
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
         </a>
       </div>
     </div>

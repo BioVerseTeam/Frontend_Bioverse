@@ -1,6 +1,8 @@
 import { getPublicPlans, getMySubscription, createCheckout, getPaymentStatus } from '../api/subscriptionApi.js';
 import { AuthService } from '../features/auth/authService.js';
 import { alertModal, confirmModal, showToast } from '../components/modal.js';
+import { setupNavbarAuth } from '../utils/authNavbar.js';
+import { setupBiologyNav } from '../utils/siteNav.js';
 
 const FALLBACK_PLANS = [
   {
@@ -50,40 +52,24 @@ function formatVND(amount) {
 }
 
 async function initNavbar() {
-  const nameEl = document.getElementById('header-user-name');
-  const badgeEl = document.getElementById('header-user-badge');
-  const loginBtn = document.getElementById('header-login-btn');
+  setupNavbarAuth();
+  setupBiologyNav();
+  await updateSubscriptionBanner();
+}
 
+async function updateSubscriptionBanner() {
   const user = AuthService.getUser();
-  if (!user) {
-    if (nameEl) nameEl.textContent = 'Khách thăm';
-    if (badgeEl) {
-      badgeEl.textContent = 'Trải nghiệm Free';
-      badgeEl.className = 'font-label-sm text-[11px] px-2 py-0.5 rounded-full border border-[#2d2d2d] bg-[#f9f7f2] font-bold text-gray-700';
-    }
-    if (loginBtn) {
-      loginBtn.hidden = false;
-      loginBtn.href = '/login?next=/pricing';
-    }
-    return;
-  }
-
-  if (nameEl) nameEl.textContent = user.fullName || user.email;
-  if (loginBtn) {
-    loginBtn.textContent = 'Trang cá nhân';
-    loginBtn.href = '/?view=student';
-  }
-
+  if (!user) return;
   try {
     const subStatus = await getMySubscription();
-    if (badgeEl) {
-      if (subStatus?.isPremium && !subStatus?.isFreeAccessMode) {
-        badgeEl.textContent = `Premium (${subStatus.daysRemaining || 0} ngày)`;
-        badgeEl.className = 'font-label-sm text-[11px] px-2 py-0.5 rounded-full border border-[#2d2d2d] bg-[#2e7d32] text-white font-bold';
-      } else {
-        badgeEl.textContent = 'Free Access Toàn bộ';
-        badgeEl.className = 'font-label-sm text-[11px] px-2 py-0.5 rounded-full border border-[#2d2d2d] bg-[#e8f5e9] text-[#2e7d32] font-bold';
-      }
+    const banner = document.getElementById('free-access-banner');
+    if (subStatus?.isPremium && !subStatus?.isFreeAccessMode && banner) {
+      const bannerTitle = banner.querySelector('h2');
+      const bannerDesc = banner.querySelector('p');
+      const bannerTag = banner.querySelector('.uppercase');
+      if (bannerTag) bannerTag.textContent = 'Gói Đang Hoạt Động';
+      if (bannerTitle) bannerTitle.textContent = `Tài khoản của bạn đã được kích hoạt gói Premium (${subStatus.daysRemaining || 0} ngày)`;
+      if (bannerDesc) bannerDesc.textContent = 'Bạn đang sở hữu toàn quyền mở khóa kho 3D, phòng thí nghiệm ảo và trợ lý AI không giới hạn.';
     }
   } catch (err) {
     console.warn('Could not load subscription status:', err);
