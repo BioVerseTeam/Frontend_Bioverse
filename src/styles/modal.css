@@ -187,7 +187,7 @@
 .bv-modal-type-info .bv-modal-tag { background-color: #d6e3ff; color: #064487; }
 
 .bv-modal-title {
-  font-family: 'Epilogue', cursive, sans-serif;
+  font-family: 'Epilogue', 'Be Vietnam Pro', -apple-system, sans-serif;
   font-size: 20px;
   font-weight: 800;
   color: #1b1c1c;
@@ -291,12 +291,12 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 10000;
+  z-index: 9999999 !important;
   display: flex;
   flex-direction: column;
   gap: 12px;
   pointer-events: none;
-  max-width: 380px;
+  max-width: 420px;
   width: calc(100% - 48px);
 }
 

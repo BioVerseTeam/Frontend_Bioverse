@@ -43,25 +43,68 @@ export function setupNavbarAuth() {
     || document.querySelector('header .admin-topbar-identity')
     || userContainer;
 
-  // Hero greeting element (on home page)
-  const heroGreetingName = document.getElementById('hero-user-name') || document.querySelector('h1 span.text-primary.underline');
+  const isProfilePage = window.location.pathname.includes('/profile') || window.location.pathname.endsWith('profile.html');
+
+  if (isProfilePage) {
+    if (nameEl && nameEl.parentElement) {
+      nameEl.parentElement.style.display = 'none';
+    }
+    if (avatarLink) {
+      avatarLink.style.display = 'none';
+    }
+  }
 
   if (isLoggedIn && user) {
-    if (nameEl) {
-      nameEl.textContent = user.name || user.email?.split('@')[0] || 'Nhà nghiên cứu';
-    }
-    if (gradeEl) {
-      gradeEl.textContent = isAdmin(user) ? 'Quản Trị Viên' : `Lớp ${user.grade || '8'} • Sinh học`;
-    }
+    const renderUserIdentity = (targetUser) => {
+      if (!targetUser) return;
+      if (isProfilePage) {
+        if (nameEl && nameEl.parentElement) {
+          nameEl.parentElement.style.display = 'none';
+        }
+        if (avatarLink) {
+          avatarLink.style.display = 'none';
+        }
+        return;
+      }
+      if (nameEl) {
+        nameEl.textContent = targetUser.name || targetUser.fullName || targetUser.email?.split('@')[0] || 'Nhà nghiên cứu';
+      }
+      if (gradeEl) {
+        gradeEl.textContent = isAdmin(targetUser) ? 'Quản Trị Viên' : `Lớp ${targetUser.grade || '8'} • Sinh học`;
+      }
+      if (avatarLink) {
+        avatarLink.href = '/profile';
+        avatarLink.title = `Hồ sơ cá nhân: ${targetUser.name || targetUser.fullName || targetUser.email}`;
+        if (targetUser.avatarUrl) {
+          avatarLink.innerHTML = `<img src="${targetUser.avatarUrl}" alt="Avatar" class="w-full h-full rounded-full object-cover border border-[#2d2d2d]" />`;
+        } else {
+          avatarLink.innerHTML = `<span class="material-symbols-outlined text-white text-[20px]">person</span>`;
+        }
+      }
+    };
+
+    renderUserIdentity(user);
+
+    const heroGreetingName = document.getElementById('hero-user-name');
     if (heroGreetingName) {
-      heroGreetingName.textContent = `${user.name || 'bạn'}!`;
+      heroGreetingName.textContent = `${user.name || user.fullName || 'bạn'}!`;
+    }
+
+    // Make user name cluster clickable to profile
+    if (nameEl && nameEl.parentElement && !nameEl.parentElement.dataset.profileBound) {
+      nameEl.parentElement.dataset.profileBound = 'true';
+      nameEl.parentElement.classList.add('cursor-pointer', 'hover:opacity-80', 'transition-opacity');
+      nameEl.parentElement.title = 'Xem & chỉnh sửa hồ sơ cá nhân';
+      nameEl.parentElement.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+          window.location.href = '/profile';
+        }
+      });
     }
 
     // Replace login link with account popover / logout button
     if (avatarLink && !document.getElementById('btn-navbar-logout')) {
-      avatarLink.title = `Đã đăng nhập: ${user.email}`;
-      avatarLink.removeAttribute('href');
-      avatarLink.classList.add('cursor-pointer', 'admin-avatar');
+      avatarLink.classList.add('cursor-pointer');
 
       // Add logout button right next to avatar
       const logoutBtn = document.createElement('button');
@@ -94,14 +137,23 @@ export function setupNavbarAuth() {
 
     // Refresh profile in background — GET /me also records today's streak
     AuthService.getProfile().then(freshUser => {
-      if (freshUser && nameEl) {
-        nameEl.textContent = freshUser.name || freshUser.email?.split('@')[0] || 'Nhà nghiên cứu';
-      }
       if (freshUser) {
+        renderUserIdentity(freshUser);
         renderHeaderStreak(freshUser);
         window.dispatchEvent(new CustomEvent('bioverse_streak_updated', { detail: freshUser }));
       }
     }).catch(() => {});
+
+    // Listen to real-time profile updates from profile page
+    if (!window._navbarProfileListenerBound) {
+      window._navbarProfileListenerBound = true;
+      window.addEventListener('bioverse_profile_updated', (e) => {
+        const updatedUser = e.detail;
+        if (updatedUser) {
+          renderUserIdentity(updatedUser);
+        }
+      });
+    }
 
   } else {
     // Not logged in
@@ -114,6 +166,7 @@ export function setupNavbarAuth() {
     if (avatarLink) {
       avatarLink.href = '/login';
       avatarLink.title = 'Bấm để đăng nhập';
+      avatarLink.innerHTML = `<span class="material-symbols-outlined text-white text-[20px]">person</span>`;
     }
     renderHeaderStreak(null);
   }

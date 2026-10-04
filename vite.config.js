@@ -27,6 +27,7 @@ const CLEAN_ROUTES = {
   '/admin-academic': '/pages/admin-academic.html',
   '/pricing': '/pages/pricing.html',
   '/checkout': '/pages/checkout.html',
+  '/profile': '/pages/profile.html',
   '/admin-plans': '/pages/admin-plans.html',
   '/admin-payments': '/pages/admin-payments.html',
 };
@@ -55,6 +56,7 @@ const HTML_REDIRECTS = {
   '/admin-academic.html': '/admin-academic',
   '/pricing.html': '/pricing',
   '/checkout.html': '/checkout',
+  '/profile.html': '/profile',
   '/admin-plans.html': '/admin-plans',
   '/admin-payments.html': '/admin-payments',
   // Built multi-page assets live under /pages/*.html — redirect if opened directly.
@@ -79,6 +81,7 @@ const HTML_REDIRECTS = {
   '/pages/admin-academic.html': '/admin-academic',
   '/pages/pricing.html': '/pricing',
   '/pages/checkout.html': '/checkout',
+  '/pages/profile.html': '/profile',
   '/pages/admin-plans.html': '/admin-plans',
   '/pages/admin-payments.html': '/admin-payments',
 };
@@ -129,6 +132,7 @@ export default defineConfig({
         phanUng: resolve(__dirname, 'pages/phan-ung.html'),
         pricing: resolve(__dirname, 'pages/pricing.html'),
         checkout: resolve(__dirname, 'pages/checkout.html'),
+        profile: resolve(__dirname, 'pages/profile.html'),
         admin: resolve(__dirname, 'pages/admin.html'),
         adminModels: resolve(__dirname, 'pages/admin-models.html'),
         adminCategories: resolve(__dirname, 'pages/admin-categories.html'),

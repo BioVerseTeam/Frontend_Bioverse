@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. Render real dynamic homepage data
   renderHomeData();
+  syncCatalogTotal();
 
   // 4. Listen for progress updates (from other tabs or intra-page interactions)
   window.addEventListener('storage', (e) => {
@@ -46,8 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('BioVerse Home Page initialized with real dynamic data & progress tracking.');
 });
 
-export function renderHomeData() {
-  const data = getHomePageData();
+export function renderHomeData(totalBioOverride = null) {
+  const data = getHomePageData(totalBioOverride);
 
   // 1. Hero greeting
   const heroGreetingName = document.getElementById('hero-user-name');
@@ -124,7 +125,7 @@ export function renderHomeData() {
     }
   }
 
-  // 9. Resume Lesson Card ("BÀI HỌC DỞ DANG")
+  // 9. Resume Lesson Card ("BÀI HỌC DỞ DANG" - Sinh Học 3D)
   if (data.lastLesson) {
     const lesson = data.lastLesson;
     const tagEl = document.getElementById('resume-lesson-tag');
@@ -136,33 +137,68 @@ export function renderHomeData() {
     const linkEl = document.getElementById('resume-lesson-link');
     const btnTextEl = document.getElementById('resume-lesson-btn-text');
 
+    const completed = lesson.completedModels ?? 0;
+    const total = lesson.totalModels ?? 8;
+    const percent = lesson.progress ?? 0;
+
     if (tagEl) {
-      tagEl.textContent = lesson.isDefault ? 'BÀI HỌC GỢI Ý' : 'BÀI HỌC DỞ DANG';
+      if (completed === 0) {
+        tagEl.textContent = 'BÀI HỌC GỢI Ý';
+      } else if (completed >= total) {
+        tagEl.textContent = 'ĐÃ HOÀN THÀNH';
+      } else {
+        tagEl.textContent = 'BÀI HỌC DỞ DANG';
+      }
     }
     if (iconEl) {
       iconEl.textContent = lesson.icon || 'biotech';
     }
     if (subjectEl) {
-      subjectEl.textContent = `${lesson.subject} ${lesson.grade || 8} • Bài thực hành`;
+      subjectEl.textContent = `SINH HỌC ${lesson.grade || 8} • BÀI THỰC HÀNH 3D`;
     }
     if (titleEl) {
       titleEl.textContent = lesson.name;
     }
     if (barEl) {
       setTimeout(() => {
-        barEl.style.width = `${lesson.progress}%`;
+        barEl.style.width = `${percent}%`;
       }, 150);
     }
     if (percentEl) {
-      percentEl.textContent = lesson.progress > 0 ? `Đã học ${lesson.progress}%` : 'Chưa bắt đầu (0%)';
+      if (completed === 0) {
+        percentEl.textContent = `Chưa bắt đầu (0/${total} mô hình sinh học)`;
+      } else if (completed >= total) {
+        percentEl.textContent = `Đã hoàn thành 100% (${total}/${total} mô hình sinh học)`;
+      } else {
+        percentEl.textContent = `Đã học ${percent}% (${completed}/${total} mô hình sinh học)`;
+      }
     }
     if (linkEl) {
-      linkEl.href = (lesson.modelId === 'reaction' || lesson.modelId === 'chemistry')
-        ? '/phan-ung'
-        : '/sinh-hoc';
+      linkEl.href = '/sinh-hoc';
     }
     if (btnTextEl) {
-      btnTextEl.textContent = lesson.progress > 0 ? 'Học tiếp ngay' : 'Bắt đầu học ngay';
+      if (completed === 0) {
+        btnTextEl.textContent = 'Khám phá Sinh học ngay';
+      } else if (completed >= total) {
+        btnTextEl.textContent = 'Mở kho Sinh học ôn tập';
+      } else {
+        btnTextEl.textContent = 'Vào học Sinh học ngay';
+      }
     }
+  }
+}
+
+async function syncCatalogTotal() {
+  try {
+    const res = await fetch('/api/models/catalog?subject=BIOLOGY&size=1');
+    if (res.ok) {
+      const json = await res.json();
+      const total = json?.data?.totalElements;
+      if (typeof total === 'number' && total > 0) {
+        renderHomeData(total);
+      }
+    }
+  } catch (err) {
+    console.debug('Catalog total sync note:', err);
   }
 }

@@ -42,9 +42,9 @@
   --stem-phys-bg: #fffaf0;
 
   /* Typography */
-  --font-headline: 'Epilogue', cursive, -apple-system, sans-serif;
+  --font-headline: 'Epilogue', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-label: 'Space Grotesk', monospace, sans-serif;
+  --font-label: 'Space Grotesk', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, monospace, sans-serif;
 
   /* Neo-brutalist Shadows */
   --shadow-hard: 4px 4px 0px #2d2d2d;
@@ -1786,7 +1786,7 @@ header a[href*="login"] {
   aspect-ratio: 4 / 3;
   border-radius: 12px;
   border: 2px solid #2d2d2d;
-  background: #e8f5e9;
+  background: #f8fafc;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1796,11 +1796,41 @@ header a[href*="login"] {
 }
 
 .catalog-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
   object-position: center;
   display: block;
+  padding: 4px;
+}
+
+/* Specimen Thumbnail Stage (Ensures zero distortion / no vertical squishing across any aspect ratio) */
+.specimen-thumb-box {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  border-radius: 12px;
+  border: 2px solid #2d2d2d;
+  background: #f8fafc;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  text-decoration: none;
+}
+
+.specimen-thumb-box img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  margin: auto;
 }
 
 .admin-field-hint {
@@ -2217,3 +2247,1735 @@ header a[href*="login"] {
   background: #eeeae4;
   color: #76716a;
 }
+/* ==========================================================================
+   Profile Bento Layout & Interactive Components (UI/UX Pro Max)
+   ========================================================================== */
+.profile-passport-card {
+  background: #ffffff;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 24px;
+  box-shadow: 5px 5px 0 #2d2d2d;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.profile-panel-card {
+  background: #ffffff;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 24px;
+  box-shadow: 5px 5px 0 #2d2d2d;
+  position: relative;
+}
+
+.profile-subcard {
+  background: #fdfbf7;
+  border: 2px solid #2d2d2d;
+  border-radius: 18px;
+  padding: 1.25rem 1.25rem;
+  box-shadow: 3px 3px 0 rgba(45, 45, 45, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-stat-box {
+  border: 2px solid #2d2d2d;
+  border-radius: 18px;
+  padding: 12px 13px;
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-stat-box:hover {
+  transform: translateY(-2.5px);
+  box-shadow: 3.5px 3.5px 0 #2d2d2d;
+}
+
+.tab-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.65rem 1.15rem;
+  border-radius: 14px;
+  border: 2px solid #2d2d2d;
+  background: #ffffff;
+  font-family: var(--font-body, 'Be Vietnam Pro', sans-serif);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #2d2d2d;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab-nav-btn:hover {
+  background: #fdfbf7;
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0 #2d2d2d;
+}
+
+.tab-nav-btn.active {
+  background: #2d2d2d;
+  color: #ffffff;
+  box-shadow: 3.5px 3.5px 0 #ff4d4d;
+  transform: translate(-1px, -2px);
+}
+
+.grade-card-item {
+  border: 2px solid #2d2d2d;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.grade-card-item:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 3.5px 3.5px 0 #2d2d2d;
+}
+
+.grade-radio-input:checked + .grade-card-item {
+  border-color: #2d2d2d;
+  background: #fff9c4;
+  box-shadow: 4px 4px 0 #d97706;
+  transform: translate(-1px, -2px);
+  font-weight: 800;
+}
+
+.gender-pill-btn {
+  border: 2px solid #2d2d2d;
+  border-radius: 9999px;
+  background: #ffffff;
+  padding: 0.5rem 1.25rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.gender-pill-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #2d2d2d;
+}
+
+.gender-radio-input:checked + .gender-pill-btn {
+  background: #2d2d2d;
+  color: #ffffff;
+  box-shadow: 3px 3px 0 #ff4d4d;
+  transform: translate(-1px, -1px);
+}
+
+/* Avatar Dropzone & Interactive Cropper */
+.avatar-dropzone {
+  border: 2px dashed #2d2d2d;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 1rem 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 2px 2px 0 rgba(45, 45, 45, 0.08);
+}
+
+.avatar-dropzone:hover,
+.avatar-dropzone:focus-visible {
+  border-color: #ff4d4d;
+  background: #fffafa;
+  box-shadow: 3px 3px 0 #2d2d2d;
+}
+
+.avatar-dropzone.is-dragover {
+  border-color: #ff4d4d;
+  border-style: solid;
+  background: #fff1f1;
+  box-shadow: 4px 4px 0 #2d2d2d;
+  transform: scale(1.01);
+}
+
+#avatar-container.is-dragover {
+  outline: 3.5px dashed #ff4d4d !important;
+  outline-offset: 4px;
+  border-radius: 9999px;
+  transform: scale(1.05);
+  transition: transform 0.15s ease;
+}
+
+.preset-avatar-btn {
+  position: relative;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.preset-avatar-btn:hover {
+  transform: scale(1.15) rotate(3deg);
+  border-color: #ff4d4d !important;
+}
+
+.preset-avatar-btn.is-selected {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.4), 3px 3px 0 #2d2d2d !important;
+  transform: scale(1.15) !important;
+}
+
+.preset-avatar-btn.is-selected::after {
+  content: '✓';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ff4d4d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #2d2d2d;
+}
+
+/* Avatar Cropper Modal */
+.avatar-crop-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(27, 28, 28, 0.7);
+  backdrop-filter: blur(6px);
+}
+
+.avatar-crop-modal[hidden] {
+  display: none !important;
+}
+
+.avatar-crop-card {
+  width: min(520px, 100%);
+  background: #fff;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 20px;
+  box-shadow: 6px 6px 0 #2d2d2d;
+  padding: 1.25rem 1.5rem;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-crop-stage-wrap {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  border: 2px solid #2d2d2d;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #18191a;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  position: relative;
+  touch-action: none;
+  user-select: none;
+}
+
+.avatar-crop-stage-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.avatar-crop-stage-wrap canvas:active {
+  cursor: grabbing;
+}
+
+/* Avatar Lightbox & Action Chooser Modals */
+.avatar-lightbox-modal,
+.avatar-action-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(27, 28, 28, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.avatar-lightbox-modal[hidden],
+.avatar-action-modal[hidden] {
+  display: none !important;
+}
+
+.avatar-lightbox-card,
+.avatar-action-card {
+  width: min(460px, 100%);
+  background: #ffffff;
+  border: 2.5px solid #2d2d2d;
+  border-radius: 22px;
+  box-shadow: 6px 6px 0 #2d2d2d;
+  padding: 1.5rem;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-action-option {
+  border: 2px solid #2d2d2d;
+  border-radius: 16px;
+  padding: 0.9rem 1.15rem;
+  background: #fdfbf7;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.avatar-action-option:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: 4px 4px 0 #2d2d2d;
+  background: #ffffff;
+}
+
+/* STEM Scientist Badges Carousel & Gallery */
+.stem-badge-item {
+  min-width: 106px;
+  max-width: 112px;
+  flex-shrink: 0;
+  border: 2px solid #2d2d2d;
+  border-radius: 16px;
+  padding: 0.75rem 0.5rem;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+  scroll-snap-align: start;
+}
+
+.stem-badge-item.is-unlocked:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 3.5px 3.5px 0 #2d2d2d;
+}
+
+.stem-badge-item.is-locked {
+  border-style: dashed;
+  border-color: rgba(45, 45, 45, 0.4);
+  background: #f6f3f2;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.stem-badge-item.is-locked:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 2px 2px 0 rgba(45, 45, 45, 0.4);
+}
+
+/* Badge Filter Pills */
+.badge-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1.5px solid #2d2d2d;
+  background: #ffffff;
+  font-family: var(--font-body, 'Be Vietnam Pro', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: #2d2d2d;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.badge-filter-btn:hover {
+  background: #fdfbf7;
+  transform: translateY(-1px);
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+}
+
+.badge-filter-btn.active {
+  background: #2d2d2d;
+  color: #ffffff;
+  box-shadow: 2.5px 2.5px 0 #b71422;
+}
+
+/* Scalable Full Gallery Badge Card */
+.gallery-badge-card {
+  border: 2px solid #2d2d2d;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 172px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  user-select: none;
+}
+
+.gallery-badge-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 4.5px 4.5px 0 #2d2d2d;
+}
+
+.gallery-badge-card.is-locked {
+  border-style: dashed;
+  border-color: rgba(45, 45, 45, 0.45);
+  background: #fbf9f6;
+  opacity: 0.88;
+}
+
+.gallery-badge-card.is-locked:hover {
+  opacity: 1;
+}
+
+/* ===================================================================
+   3 PINNED BADGES ON PASSPORT CARD
+   =================================================================== */
+.pinned-badge-slot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  width: 100%;
+  min-height: 68px;
+  border-radius: 18px;
+  border: 2px solid #2d2d2d;
+  background: #ffffff;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background-color 0.2s ease;
+  font-family: var(--font-body, 'Be Vietnam Pro', sans-serif);
+}
+
+.pinned-badge-slot:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 #2d2d2d;
+}
+
+/* Pinned Slot Rank Badge OVERLAY on the Icon (Thứ tự 1, 2, 3 gắn trực tiếp trên icon) */
+.pinned-icon-badge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2.5px 6px;
+  border-radius: 9px;
+  border: 1.5px solid #2d2d2d;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+  font-family: var(--font-headline);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  z-index: 10;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pinned-icon-badge.order-1 {
+  background: #fef08a; /* Vàng Gold Pastel */
+  color: #1b1c1c;
+}
+
+.pinned-icon-badge.order-2 {
+  background: #e0f2fe; /* Bạc Sky Pastel */
+  color: #1b1c1c;
+}
+
+.pinned-icon-badge.order-3 {
+  background: #fed7aa; /* Đồng Bronze Pastel */
+  color: #1b1c1c;
+}
+
+.pinned-icon-badge.is-empty {
+  background: #f3f0eb;
+  border-style: dashed;
+  border-color: rgba(45, 45, 45, 0.4);
+  box-shadow: none;
+  color: #716a62;
+}
+
+.pinned-badge-slot:hover .pinned-icon-badge {
+  transform: scale(1.14) rotate(-8deg);
+}
+
+/* Pinned Badge Title Auto-Marquee on Hover (Tự động cuộn tên danh hiệu khi tràn chữ sau 3s) */
+.pinned-badge-title-wrap {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.25;
+}
+
+.pinned-badge-static {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.pinned-badge-marquee {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.pinned-badge-marquee .marquee-text {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.pinned-badge-marquee .marquee-sep {
+  margin: 0 10px;
+  opacity: 0.55;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* Khi người dùng để chuột vào slot tầm 1s, marquee tự động kích hoạt chạy từ phải sang trái và lặp vô tận */
+.pinned-badge-slot:hover .pinned-badge-title-wrap.can-marquee .pinned-badge-static,
+.pinned-badge-title-wrap.can-marquee:hover .pinned-badge-static {
+  animation: pinned-badge-static-hide 0.01s linear 1s forwards;
+}
+
+.pinned-badge-slot:hover .pinned-badge-title-wrap.can-marquee .pinned-badge-marquee,
+.pinned-badge-title-wrap.can-marquee:hover .pinned-badge-marquee {
+  animation: pinned-badge-marquee-show 0.01s linear 1s forwards,
+             pinned-badge-marquee-scroll 6s linear 1s infinite;
+}
+
+/* Mặt nạ làm mờ 2 biên khi cuộn tạo cảm giác chuyển động mượt mà và cao cấp */
+.pinned-badge-slot:hover .pinned-badge-title-wrap.can-marquee,
+.pinned-badge-title-wrap.can-marquee:hover {
+  mask-image: linear-gradient(to right, transparent 0%, black 8px, black calc(100% - 10px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8px, black calc(100% - 10px), transparent 100%);
+}
+
+@keyframes pinned-badge-static-hide {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pinned-badge-marquee-show {
+  to {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@keyframes pinned-badge-marquee-scroll {
+  0%, 8% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.pinned-badge-slot.is-empty {
+  border-style: dashed;
+  border-color: rgba(45, 45, 45, 0.35);
+  background: #fbf9f6;
+  box-shadow: none;
+}
+
+.pinned-badge-slot.is-empty:hover {
+  border-color: #2d2d2d;
+  background: #fff9c4;
+  transform: translateY(-2px);
+  box-shadow: 2px 2px 0 #2d2d2d;
+}
+
+/* ===================================================================
+   3D OPEN SKETCHBOOK MODAL (SỔ TAY DANH HIỆU STEM ĐANG MỞ RA)
+   =================================================================== */
+.badge-book-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: rgba(18, 14, 12, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  perspective: 1800px;
+  overflow-y: auto;
+}
+
+.badge-book-modal[hidden] {
+  display: none !important;
+}
+
+/* Đảm bảo thông báo lỗi / Toast luôn hiển thị nổi trên nền Sổ Tay Danh Hiệu */
+.bv-toast-container {
+  z-index: 9999999 !important;
+}
+
+.sketch-book-container {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  transform-style: preserve-3d;
+  margin: auto;
+}
+
+/* Hardcover leather base with rich burnished leather gradient & gold perimeter */
+.sketch-book-cover {
+  position: relative;
+  background: radial-gradient(circle at 50% 15%, #38241b 0%, #20140e 55%, #130a07 100%);
+  border: 3.5px solid #160e0a;
+  border-radius: 26px;
+  box-shadow: 
+    0 35px 70px -15px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+    inset 0 0 0 5px #150c08,
+    inset 0 0 0 7px rgba(212, 175, 55, 0.35),
+    inset 0 0 40px rgba(0, 0, 0, 0.75),
+    12px 14px 0px #0c0604;
+  padding: 18px 20px 20px 20px;
+  transform-style: preserve-3d;
+}
+
+/* Vintage brass corner ornaments */
+.sketch-book-cover::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 26px;
+  height: 26px;
+  border-top: 3px solid rgba(234, 179, 8, 0.65);
+  border-left: 3px solid rgba(234, 179, 8, 0.65);
+  border-top-left-radius: 16px;
+  pointer-events: none;
+}
+
+.sketch-book-cover::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border-top: 3px solid rgba(234, 179, 8, 0.65);
+  border-right: 3px solid rgba(234, 179, 8, 0.65);
+  border-top-right-radius: 16px;
+  pointer-events: none;
+}
+
+/* Center spine binding with realistic paper gutter shadow & stitched thread */
+.sketch-book-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 40px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to right,
+    rgba(40, 25, 15, 0.28) 0%,
+    rgba(40, 25, 15, 0.1) 30%,
+    rgba(15, 10, 5, 0.52) 49%,
+    rgba(15, 10, 5, 0.52) 51%,
+    rgba(40, 25, 15, 0.1) 70%,
+    rgba(40, 25, 15, 0.28) 100%
+  );
+  z-index: 25;
+  pointer-events: none;
+}
+
+/* Golden bookbinding thread stitches down the center gutter */
+.sketch-book-spine::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background-image: linear-gradient(to bottom, #ca8a04 55%, transparent 45%);
+  background-size: 2px 14px;
+  opacity: 0.65;
+}
+
+/* Bookmark satin ribbon */
+.book-bookmark-ribbon {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 76px;
+  background: linear-gradient(90deg, #881337 0%, #be123c 35%, #f43f5e 50%, #be123c 65%, #881337 100%);
+  border: 1.5px solid #1a1412;
+  border-top: none;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  z-index: 30;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), 50% 100%, 0 calc(100% - 10px));
+  pointer-events: none;
+}
+
+/* Two pages spread container with stacked book page depth layers */
+.sketch-book-spread {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: #fcf9f2;
+  border: 2.5px solid #2d2d2d;
+  min-height: 520px;
+  box-shadow: 
+    0 20px 35px -10px rgba(0, 0, 0, 0.6),
+    0 3px 0 0 #f4eedf,
+    0 3px 0 1.5px #2d2d2d,
+    0 6px 0 0 #ece4d1,
+    0 6px 0 1.5px #2d2d2d,
+    0 9px 0 0 #e3d9c3,
+    0 9px 0 1.5px #2d2d2d;
+}
+
+@media (max-width: 767px) {
+  .sketch-book-spread {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+/* Left page styling: Warm ivory archival parchment */
+.book-page-left {
+  background-color: #fbf7ee;
+  background-image: 
+    radial-gradient(rgba(45, 45, 45, 0.065) 1px, transparent 1px),
+    linear-gradient(to right, transparent 82%, rgba(45, 30, 20, 0.12) 100%);
+  background-size: 22px 22px, 100% 100%;
+  border-right: 1px solid rgba(45, 45, 45, 0.18);
+  box-shadow: inset -22px 0 28px -12px rgba(45, 30, 20, 0.16);
+  padding: 24px 20px 20px 24px;
+  position: relative;
+  transform-origin: right center;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Right page styling: Warm ivory archival parchment */
+.book-page-right {
+  background-color: #f8f4eb;
+  background-image: 
+    radial-gradient(rgba(45, 45, 45, 0.065) 1px, transparent 1px),
+    linear-gradient(to left, transparent 82%, rgba(45, 30, 20, 0.12) 100%);
+  background-size: 22px 22px, 100% 100%;
+  border-left: 1px solid rgba(45, 45, 45, 0.18);
+  box-shadow: inset 22px 0 28px -12px rgba(45, 30, 20, 0.16);
+  padding: 24px 24px 20px 20px;
+  position: relative;
+  transform-origin: left center;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Stamp-like Badge cards inside the book */
+.book-badge-stamp {
+  border: 2px solid #2d2d2d;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 12px 14px;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+  position: relative;
+}
+
+.book-badge-stamp:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 #2d2d2d;
+}
+
+.book-badge-stamp.is-pinned {
+  border-color: #2d2d2d;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  box-shadow: 3px 3px 0 #d97706;
+}
+
+.book-badge-stamp.is-locked {
+  border: 2px dashed rgba(45, 45, 45, 0.3);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: none;
+  opacity: 0.92;
+}
+
+.book-badge-stamp.is-locked:hover {
+  opacity: 1;
+  border-color: #2d2d2d;
+  background: #ffffff;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+}
+
+/* Pin Toggle Button on Badge */
+.btn-badge-pin-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #2d2d2d;
+  font-family: var(--font-body, 'Be Vietnam Pro', sans-serif);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+}
+
+.btn-badge-pin-toggle.is-active {
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  color: #ffffff;
+  border-color: #2d2d2d;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+}
+
+.btn-badge-pin-toggle.is-active:hover {
+  filter: brightness(1.1);
+}
+
+.btn-badge-pin-toggle:not(.is-active) {
+  background: #ffffff;
+  color: #2d2d2d;
+}
+
+.btn-badge-pin-toggle:not(.is-active):hover {
+  background: #fff9c4;
+  border-color: #2d2d2d;
+  transform: translateY(-1px);
+}
+
+/* Book tab bookmark pills */
+.book-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-body, 'Be Vietnam Pro', sans-serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.book-filter-tab:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.book-filter-tab.active {
+  background: #fff9c4;
+  color: #1c1917;
+  border: 2px solid #2d2d2d;
+  box-shadow: 2px 2px 0 #2d2d2d;
+}
+
+
+
+
+/* ===================================================================
+   UNIFIED SEGMENTED PROFILE TAB BAR (UI/UX Pro Max)
+   =================================================================== */
+.profile-tabs-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 6px;
+  background: #ffffff;
+  border: 2px solid #2d2d2d;
+  border-radius: 18px;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tab-segment-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: none;
+  background: transparent;
+  color: #4a453e;
+  font-family: var(--font-body, 'Be Vietnam Pro', sans-serif);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  user-select: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.tab-segment-btn:hover:not(.active) {
+  background: #fffdf5;
+  color: #1b1c1c;
+}
+
+.tab-segment-btn.active {
+  background: #2d2d2d !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  transform: none !important;
+}
+
+.tab-segment-btn .tab-label {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.tab-segment-btn .tab-pill {
+  padding: 1.5px 6px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #fff9c4;
+  color: #2d2d2d;
+  border: 1px solid rgba(45, 45, 45, 0.25);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.tab-segment-btn.active .tab-pill {
+  background: #fff9c4;
+  color: #2d2d2d;
+  border-color: transparent;
+}
+
+@media (max-width: 768px) {
+  .profile-tabs-bar {
+    padding: 4px;
+    gap: 3px;
+  }
+  .tab-segment-btn {
+    padding: 8px 4px;
+    font-size: 11.5px;
+    gap: 4px;
+  }
+  .tab-segment-btn .material-symbols-outlined {
+    font-size: 17px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .tab-segment-btn {
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 2px;
+    font-size: 10.5px;
+  }
+  .tab-segment-btn .tab-pill {
+    display: none;
+  }
+}
+
+.overview-metric {
+  --accent: #f97316;
+  --accent-light: #fff7ed;
+  position: relative;
+  padding: 12px 11px;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 118px;
+  overflow: visible;
+  cursor: default;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.overview-metric[data-accent="amber"] { --accent: #f59e0b; --accent-light: #fffbeb; }
+.overview-metric[data-accent="emerald"] { --accent: #10b981; --accent-light: #ecfdf5; }
+.overview-metric[data-accent="sky"] { --accent: #0ea5e9; --accent-light: #f0f9ff; }
+.overview-metric[data-accent="orange"] { --accent: #f97316; --accent-light: #fff7ed; }
+
+.overview-metric::before {
+  display: none;
+}
+.overview-metric:hover {
+  transform: translate(-1.5px, -2px);
+  box-shadow: 4px 4px 0 #2d2d2d;
+}
+.overview-metric-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14.5px;
+  border: 1.5px solid #2d2d2d;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+  flex-shrink: 0;
+  background: #ffffff;
+}
+.overview-metric-tag {
+  font-family: var(--font-headline);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  line-height: 1.25;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid currentColor;
+  box-shadow: none;
+  user-select: none;
+  flex-shrink: 0;
+  opacity: 0.95;
+}
+.overview-metric-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.overview-metric-value {
+  font-family: var(--font-headline);
+  font-size: 1.65rem;
+  line-height: 1.1;
+  font-weight: 900;
+  color: #1b1c1c;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+}
+.overview-metric-unit {
+  font-family: var(--font-headline);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #716a62;
+  letter-spacing: 0;
+}
+.overview-metric-label {
+  font-family: var(--font-body);
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #716a62;
+  line-height: 1.3;
+}
+
+.overview-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #2d2d2d;
+  border-radius: 14px;
+  background: #ffffff;
+  font-family: var(--font-body);
+  box-shadow: 2px 2px 0 #2d2d2d;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+.overview-shortcut:hover {
+  background: #fffdf8;
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 3.5px 3.5px 0 #2d2d2d;
+}
+.overview-shortcut:focus-visible,
+.tab-nav-btn:focus-visible {
+  outline: 3px solid #2e5ea2;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overview-metric, .overview-shortcut { transition: none; }
+}
+
+/* ===================================================================
+   UI/UX PRO MAX: STEM STUDY ACTIVITY CALENDAR & MATRIX
+   =================================================================== */
+.heatmap-calendar-card {
+  background: #ffffff;
+  border: 2px solid #2d2d2d;
+  border-radius: 24px;
+  box-shadow: 4px 4px 0 #2d2d2d;
+  padding: 1.5rem;
+}
+
+.heatmap-month-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1.5px solid #2d2d2d;
+  background: #ffffff;
+  color: #2d2d2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.heatmap-month-nav-btn:hover {
+  background: #fff9c4;
+  transform: translate(-1px, -1px);
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+}
+.heatmap-month-nav-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #2d2d2d;
+}
+
+/* Month & Year Dropdown Controls with Chevrons */
+.heatmap-select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.heatmap-select-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 10px;
+  font-family: var(--font-headline);
+  font-size: 13px;
+  font-weight: 800;
+  color: #1b1c1c;
+  padding: 6px 10px 6px 12px;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.heatmap-select-btn:hover {
+  background-color: #fff9c4;
+  transform: translate(-0.5px, -0.5px);
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+}
+.heatmap-select-btn:focus-visible {
+  outline: none;
+  border-color: #2e5ea2;
+  box-shadow: 0 0 0 2px rgba(46, 94, 162, 0.2), 2px 2px 0 #2e5ea2;
+}
+.heatmap-select-btn option {
+  background-color: #ffffff;
+  color: #1b1c1c;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.heatmap-select-prefix {
+  font-family: var(--font-headline);
+  font-size: 12px;
+  font-weight: 700;
+  color: #716a62;
+  user-select: none;
+  transition: color 0.16s ease;
+  line-height: 1;
+}
+.heatmap-select-btn:hover .heatmap-select-prefix {
+  color: #1b1c1c;
+}
+
+.heatmap-select-icon {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #57534e;
+  font-size: 18px !important;
+  line-height: 1;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s ease;
+  margin-left: 2px;
+}
+.heatmap-select-btn[aria-expanded="true"] .heatmap-select-icon {
+  transform: rotate(180deg);
+  color: #1b1c1c;
+}
+.heatmap-select-btn:hover .heatmap-select-icon {
+  color: #1b1c1c;
+}
+
+/* ── Year Grid Picker ── */
+.heatmap-year-picker-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.heatmap-year-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 120;
+  min-width: 260px;
+  background: #ffffff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  padding: 12px;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  pointer-events: none;
+  transition: none; /* GSAP handles animation */
+}
+.heatmap-year-panel[aria-hidden="false"] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.heatmap-year-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 2px 8px 2px;
+  border-bottom: 1px dashed rgba(45, 45, 45, 0.15);
+}
+
+.year-panel-range {
+  font-family: var(--font-headline);
+  font-size: 13px;
+  font-weight: 800;
+  color: #1b1c1c;
+  letter-spacing: -0.01em;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.year-panel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1.5px solid #2d2d2d;
+  background: #ffffff;
+  color: #2d2d2d;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+  cursor: pointer;
+  transition: all 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+.year-panel-nav .material-symbols-outlined {
+  font-size: 18px !important;
+}
+.year-panel-nav:hover {
+  background: #fff9c4;
+  transform: translate(-0.5px, -0.5px);
+  box-shadow: 2px 2px 0 #2d2d2d;
+}
+.year-panel-nav:active {
+  transform: translate(0.5px, 0.5px);
+  box-shadow: 0.5px 0.5px 0 #2d2d2d;
+}
+.year-panel-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.heatmap-year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.year-cell {
+  font-family: var(--font-headline);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #1b1c1c;
+  background: #fafaf9;
+  border: 1.5px solid rgba(45, 45, 45, 0.08);
+  border-radius: 9px;
+  padding: 7px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  line-height: 1.2;
+}
+.year-cell:hover {
+  background: #fff9c4;
+  border-color: #2d2d2d;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+  transform: translate(-0.5px, -0.5px);
+}
+.year-cell:active {
+  transform: translate(0.5px, 0.5px);
+  box-shadow: 0;
+}
+.year-cell.is-selected {
+  background: #2d2d2d;
+  color: #ffffff;
+  border-color: #2d2d2d;
+  box-shadow: 1.5px 1.5px 0 #1b1c1c;
+  font-weight: 800;
+}
+.year-cell.is-current {
+  border-color: #2e5ea2;
+  color: #2e5ea2;
+  font-weight: 800;
+}
+.year-cell.is-selected.is-current {
+  background: #2e5ea2;
+  color: #ffffff;
+  border-color: #2e5ea2;
+  box-shadow: 1.5px 1.5px 0 #1a3a6a;
+}
+.year-cell.is-disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Month Grid Picker ── */
+.heatmap-month-picker-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.heatmap-month-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 120;
+  min-width: 260px;
+  background: #ffffff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  padding: 12px;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  pointer-events: none;
+  transition: none;
+}
+.heatmap-month-panel[aria-hidden="false"] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.heatmap-month-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 2px 8px 2px;
+  border-bottom: 1px dashed rgba(45, 45, 45, 0.15);
+}
+
+.month-panel-th-badge {
+  font-family: var(--font-headline);
+  font-size: 11px;
+  font-weight: 800;
+  color: #2d2d2d;
+  background: #fff9c4;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 6px;
+  padding: 1px 6px;
+  line-height: 1.2;
+  box-shadow: 1px 1px 0 #2d2d2d;
+  user-select: none;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.month-panel-title {
+  font-family: var(--font-headline);
+  font-size: 12px;
+  font-weight: 800;
+  color: #1b1c1c;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.month-panel-year-badge {
+  font-family: var(--font-headline);
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #2e5ea2;
+  background: #edf3fa;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  user-select: none;
+}
+
+.heatmap-month-grid,
+#month-panel-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 6px;
+  width: 100%;
+}
+
+.month-cell {
+  font-family: var(--font-headline);
+  font-size: 13.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #1b1c1c;
+  background: #fafaf9;
+  border: 1.5px solid rgba(45, 45, 45, 0.08);
+  border-radius: 9px;
+  padding: 8px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  line-height: 1.2;
+  white-space: nowrap;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.month-cell:hover {
+  background: #fff9c4;
+  border-color: #2d2d2d;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+  transform: translate(-1px, -1px);
+  color: #1b1c1c;
+}
+.month-cell:active {
+  transform: translate(0.5px, 0.5px);
+  box-shadow: 0 0 0;
+}
+.month-cell.is-selected {
+  background: #2d2d2d !important;
+  color: #ffffff !important;
+  border-color: #2d2d2d !important;
+  box-shadow: 1.5px 1.5px 0 #1b1c1c !important;
+  font-weight: 800;
+}
+.month-cell.is-current {
+  border-color: #2e5ea2;
+  color: #2e5ea2;
+  font-weight: 800;
+}
+/* Subtle current month dot indicator */
+.month-cell.is-current::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2e5ea2;
+}
+.month-cell.is-selected.is-current {
+  background: #2e5ea2 !important;
+  color: #ffffff !important;
+  border-color: #2e5ea2 !important;
+  box-shadow: 1.5px 1.5px 0 #1a3a6a !important;
+}
+.month-cell.is-selected.is-current::after {
+  background: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .heatmap-month-panel,
+  .heatmap-year-panel {
+    min-width: 240px;
+    max-width: calc(100vw - 32px);
+    padding: 10px;
+  }
+  .month-cell,
+  .year-cell {
+    padding: 7px 2px;
+    font-size: 12px;
+  }
+}
+
+.heatmap-today-btn {
+  font-family: var(--font-label);
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #2d2d2d;
+  background: #2d2d2d;
+  color: #ffffff;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  user-select: none;
+}
+.heatmap-today-btn:hover {
+  background: #000000;
+  transform: translate(-1px, -1px);
+  box-shadow: 2.5px 2.5px 0 #2d2d2d;
+}
+
+/* Weekday column headers (7 cols) */
+.heatmap-weekdays-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.heatmap-weekday-head {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #716a62;
+  padding: 4px 0;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+/* 7-Col Activity Calendar Matrix Grid (Fixed clash with month picker) */
+.heatmap-days-matrix-grid,
+#heatmap-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.heatmap-day-card {
+  aspect-ratio: 1 / 1;
+  min-height: 46px;
+  border-radius: 11px;
+  border: 1.5px solid rgba(45, 45, 45, 0.14);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+  user-select: none;
+  box-sizing: border-box;
+  background-color: #faf8f5;
+}
+.heatmap-day-card:hover {
+  transform: translateY(-2px);
+  border-color: #2d2d2d !important;
+  box-shadow: 2px 2px 0 #2d2d2d !important;
+  z-index: 5;
+}
+.heatmap-day-card.is-today {
+  border: 2px solid #e11d48 !important;
+  box-shadow: 0 0 0 1.5px #ffffff, 0 0 0 3px #e11d48 !important;
+}
+.heatmap-day-card.is-selected {
+  outline: 2.5px solid #2e5ea2 !important;
+  outline-offset: 1.5px;
+}
+.heatmap-day-card.out-of-month {
+  opacity: 0.22;
+  background-color: #f6f3f2 !important;
+  border-color: rgba(45, 45, 45, 0.08) !important;
+  pointer-events: none;
+}
+
+.heatmap-day-number {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Attendance status styling: Binary Check-in (Đã đăng nhập / Chưa đăng nhập) */
+.day-inactive {
+  background-color: #faf8f5;
+  color: #716a62;
+  border-color: rgba(45, 45, 45, 0.12);
+}
+.day-active {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border-color: #86efac;
+}
+.day-active:hover {
+  background-color: #d1fae5;
+  border-color: #059669 !important;
+}
+
+/* ===================================================================
+   REFINED STAT METRIC CARDS (Anti-Plastic, Elegant STEM Design)
+   =================================================================== */
+.heatmap-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1.5px solid rgba(45, 45, 45, 0.1);
+}
+@media (max-width: 900px) {
+  .heatmap-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+@media (max-width: 480px) {
+  .heatmap-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.heatmap-stat-card {
+  position: relative;
+  background: #ffffff;
+  border: 1.5px solid rgba(45, 45, 45, 0.14);
+  border-radius: 16px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 2px 2px 0 rgba(45, 45, 45, 0.08);
+}
+.heatmap-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(45, 45, 45, 0.35);
+  box-shadow: 3px 3px 0 rgba(45, 45, 45, 0.16);
+}
+
+.heatmap-stat-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.heatmap-stat-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(45, 45, 45, 0.1);
+}
+.heatmap-stat-title {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: #57534e;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.heatmap-stat-main {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.heatmap-stat-num {
+  font-family: var(--font-headline);
+  font-size: 1.65rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.heatmap-stat-sub {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  letter-spacing: -0.01em;
+}
+
+.heatmap-stat-bar-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(45, 45, 45, 0.07);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 1px;
+}
+.heatmap-stat-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+

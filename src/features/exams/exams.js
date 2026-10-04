@@ -8,6 +8,7 @@
  */
 
 import { recordExamResult } from '../progress/progressService.js';
+import { AuthService } from '../auth/authService.js';
 import { setupNavbarAuth } from '../../utils/authNavbar.js';
 import { setupBiologyNav } from '../../utils/siteNav.js';
 import { gsap } from 'gsap';
@@ -232,11 +233,48 @@ function updateFullscreenIcon() {
 }
 
 // =========================================================================
-// VIEW SWITCHING
+// VIEW SWITCHING & USER CLUSTER SYNC
 // =========================================================================
+function updateTakingUserCluster() {
+  const user = AuthService.getUser();
+  const avatarImg = document.getElementById('taking-user-avatar');
+  const avatarIcon = document.getElementById('taking-user-avatar-icon');
+  const nameEl = document.getElementById('taking-user-name');
+  const gradeEl = document.getElementById('taking-user-grade');
+
+  if (user) {
+    if (nameEl) nameEl.textContent = user.name || user.fullName || user.email?.split('@')[0] || 'Học viên';
+    if (gradeEl) gradeEl.textContent = user.grade ? `Lớp ${user.grade}` : 'Thí sinh';
+    if (avatarImg && avatarIcon) {
+      if (user.avatarUrl) {
+        avatarImg.src = user.avatarUrl;
+        avatarImg.classList.remove('hidden');
+        avatarIcon.classList.add('hidden');
+      } else {
+        avatarImg.classList.add('hidden');
+        avatarIcon.classList.remove('hidden');
+      }
+    }
+  }
+
+  // Fallback from navbar avatar if already populated
+  const headerAvatarImg = document.querySelector('#header-user-cluster img');
+  if (headerAvatarImg && avatarImg && !user?.avatarUrl) {
+    avatarImg.src = headerAvatarImg.src;
+    avatarImg.classList.remove('hidden');
+    if (avatarIcon) avatarIcon.classList.add('hidden');
+  }
+}
+
 function switchView(viewName) {
   if (viewName !== 'take') {
     exitFullscreen();
+  }
+
+  const isTaking = (viewName === 'take');
+  document.body.classList.toggle('is-taking-exam', isTaking);
+  if (isTaking) {
+    updateTakingUserCluster();
   }
 
   Object.keys(views).forEach(key => {
@@ -931,7 +969,7 @@ function renderQuestionsList() {
 
     const card = document.createElement('div');
     card.id = `question-${qId}`;
-    card.className = 'bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 sketch-shadow flex flex-col gap-4 scroll-mt-28 transition-all';
+    card.className = 'taking-question-card bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 md:p-8 sketch-shadow flex flex-col gap-4 scroll-mt-24 transition-all';
 
     // Images
     const images = q.questionImageResponses || q.images || q.questionImages || [];
@@ -966,11 +1004,11 @@ function renderQuestionsList() {
       }
 
       answersHtml += `
-        <label class="answer-card flex items-start gap-3.5 p-3.5 rounded-xl border-2 border-[#2d2d2d] bg-[#fdfbf7] ${isSelected ? 'is-selected' : ''}" data-qid="${qId}" data-aid="${ans.id}">
-          <div class="radio-circle shrink-0 w-7 h-7 rounded-lg border-2 border-[#2d2d2d] flex items-center justify-center font-mono font-bold text-xs bg-white text-[#2d2d2d] transition-colors">
+        <label class="answer-card flex items-start gap-3.5 p-4 rounded-xl border-2 border-[#2d2d2d] bg-[#fdfbf7] ${isSelected ? 'is-selected' : ''}" data-qid="${qId}" data-aid="${ans.id}">
+          <div class="radio-circle shrink-0 w-8 h-8 rounded-xl border-2 border-[#2d2d2d] flex items-center justify-center font-mono font-bold text-sm bg-white text-[#2d2d2d] transition-colors">
             ${letter}
           </div>
-          <div class="flex-1 text-sm font-medium text-[#1b1c1c] pt-0.5 leading-relaxed">
+          <div class="flex-1 text-base font-medium text-[#1b1c1c] pt-0.5 leading-relaxed">
             ${ans.content || ''}
             ${ansImgHtml}
           </div>
@@ -995,7 +1033,7 @@ function renderQuestionsList() {
         </button>
       </div>
 
-      <div class="font-body text-base font-semibold text-[#1b1c1c] leading-relaxed">
+      <div class="question-text font-body text-base md:text-lg font-semibold text-[#1b1c1c] leading-relaxed">
         ${q.content || 'Nội dung câu hỏi đang được cập nhật...'}
       </div>
 
@@ -1058,7 +1096,7 @@ function renderQuestionPalette() {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.id = `palette-btn-${qId}`;
-    btn.className = 'palette-btn h-9 rounded-xl border-2 border-[#2d2d2d] font-mono text-xs font-bold flex items-center justify-center bg-[#fdfbf7] text-[#1b1c1c] sketch-shadow-sm';
+    btn.className = 'palette-btn h-10 rounded-xl border-2 border-[#2d2d2d] font-mono text-sm font-bold flex items-center justify-center bg-[#fdfbf7] text-[#1b1c1c] sketch-shadow-sm';
     btn.textContent = i + 1;
     btn.title = `Chuyển đến câu ${i + 1}`;
 
@@ -1082,7 +1120,7 @@ function updatePaletteButton(questionId) {
   const isAnswered = !!userAnswers[questionId];
   const isFlagged = flaggedQuestions.has(questionId);
 
-  btn.className = 'palette-btn h-9 rounded-xl border-2 font-mono text-xs font-bold flex items-center justify-center sketch-shadow-sm';
+  btn.className = 'palette-btn h-10 rounded-xl border-2 font-mono text-sm font-bold flex items-center justify-center sketch-shadow-sm';
 
   if (isFlagged) {
     btn.classList.add('bg-[#fef3c7]', 'text-[#b45309]', 'border-[#d97706]');
