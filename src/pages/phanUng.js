@@ -5,6 +5,7 @@
  */
 
 import { setupNavbarAuth } from '../utils/authNavbar.js';
+import { ChatBox } from '../components/chatBox.js';
 import { MoleculeScene } from '../features/reactionAnim/moleculeScene.js';
 import { AnimationEngine } from '../features/reactionAnim/animationEngine.js';
 import { REACTION_LESSONS, lessonToChemx } from '../features/reactionAnim/lessons.js';
@@ -158,6 +159,11 @@ function $(id) {
 
 function init() {
   setupNavbarAuth();
+  try {
+    new ChatBox();
+  } catch (err) {
+    console.warn('BioBot init note:', err);
+  }
   cacheEls();
   bindEvents();
   renderAll();

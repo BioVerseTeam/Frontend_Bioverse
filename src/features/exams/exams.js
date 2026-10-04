@@ -116,6 +116,8 @@ const dom = {
   btnAbort: document.getElementById('btn-abort-exam'),
   timerBox: document.getElementById('exam-timer-box'),
   countdown: document.getElementById('exam-countdown'),
+  btnToggleFullscreen: document.getElementById('btn-toggle-fullscreen'),
+  fullscreenIcon: document.getElementById('fullscreen-icon'),
   btnSubmit: document.getElementById('btn-submit-exam'),
   btnSubmitFooter: document.getElementById('btn-submit-exam-footer'),
   progressText: document.getElementById('taking-progress-text'),
@@ -175,9 +177,68 @@ const dom = {
 };
 
 // =========================================================================
+// FULLSCREEN CONTROLLER FOR EXAM TAKING
+// =========================================================================
+function enterFullscreen() {
+  const elem = document.documentElement;
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (!isFull) {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(err => console.warn('[Fullscreen] Cannot enter fullscreen:', err));
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  }
+}
+
+function exitFullscreen() {
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isFull) {
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(err => console.warn('[Fullscreen] Cannot exit fullscreen:', err));
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+}
+
+function toggleFullscreen() {
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  if (isFull) {
+    exitFullscreen();
+  } else {
+    enterFullscreen();
+  }
+}
+
+function updateFullscreenIcon() {
+  const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  const icon = document.getElementById('fullscreen-icon');
+  const btn = document.getElementById('btn-toggle-fullscreen');
+  if (icon) {
+    icon.textContent = isFull ? 'fullscreen_exit' : 'fullscreen';
+  }
+  if (btn) {
+    btn.setAttribute('title', isFull ? 'Thoát toàn màn hình' : 'Mở toàn màn hình');
+  }
+}
+
+// =========================================================================
 // VIEW SWITCHING
 // =========================================================================
 function switchView(viewName) {
+  if (viewName !== 'take') {
+    exitFullscreen();
+  }
+
   Object.keys(views).forEach(key => {
     const el = views[key];
     if (!el) return;
@@ -641,6 +702,9 @@ async function startExamTaking(exam) {
   examStartTimeIso = new Date().toISOString();
   lastAttemptId = null;
   reviewQuestionsData = null;
+
+  // Auto enter fullscreen for dedicated exam experience
+  enterFullscreen();
 
   // Header info
   if (dom.takingCode) dom.takingCode.textContent = exam.code || 'MÃ ĐỀ';
@@ -1796,10 +1860,17 @@ function initEventListeners() {
   dom.btnDoAbort?.addEventListener('click', () => {
     closeConfirmAbortModal();
     if (timerInterval) clearInterval(timerInterval);
+    exitFullscreen();
     switchView('list');
   });
   dom.modalConfirmAbort?.addEventListener('click', (e) => {
     if (e.target === dom.modalConfirmAbort) closeConfirmAbortModal();
+  });
+
+  // Fullscreen button & change listener
+  dom.btnToggleFullscreen?.addEventListener('click', toggleFullscreen);
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
+    document.addEventListener(evt, updateFullscreenIcon);
   });
 
   // Confirm Submit Modal listeners

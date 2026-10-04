@@ -100,6 +100,168 @@ h1, h2, h3, h4, .font-headline {
   box-shadow: var(--shadow-hard-lg);
 }
 
+/* ===================================================================
+   UNIVERSAL INTERACTIVE CURSOR & POINTER CONSISTENCY (NO FLICKER)
+   =================================================================== */
+button,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+a,
+select,
+summary,
+.cursor-pointer,
+.answer-card,
+.palette-btn,
+.exam-card-item {
+  cursor: pointer !important;
+}
+
+/* Ensure all child icons, spans, text nodes inside buttons inherit pointer and don't steal cursor */
+button *,
+[role="button"] *,
+[type="button"] *,
+[type="submit"] *,
+[type="reset"] *,
+a *,
+.answer-card *,
+.palette-btn * {
+  cursor: inherit !important;
+  pointer-events: none;
+}
+
+/* Re-allow pointer events on interactive form controls inside labels/containers */
+label input,
+label select,
+label textarea,
+label a,
+button input {
+  pointer-events: auto;
+}
+
+/* Disabled states */
+button:disabled,
+button[disabled],
+[role="button"][aria-disabled="true"],
+.disabled,
+:disabled {
+  cursor: not-allowed !important;
+  pointer-events: auto;
+}
+
+/* Hitbox stabilization for hover-translated buttons to prevent boundary jitter / flicker */
+.neo-btn,
+.answer-card,
+.palette-btn,
+.exam-card-item,
+button[class*="hover:-translate"]:not(header *),
+a[class*="hover:-translate"]:not(header *) {
+  position: relative;
+}
+
+.neo-btn::before,
+.answer-card::before,
+.palette-btn::before,
+.exam-card-item::before,
+button[class*="hover:-translate"]:not(header *)::before,
+a[class*="hover:-translate"]:not(header *)::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  pointer-events: auto;
+  z-index: -1;
+}
+
+/* ===================================================================
+   BIOVERSE HEADER NAVIGATION (UI/UX PRO MAX + NEO-BRUTALIST PILLS)
+   =================================================================== */
+
+/* Container: clear flex row with distinct, well-separated gap */
+header nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important; /* Clear 8px separation between hitboxes */
+  position: relative;
+}
+
+/* Nav Link Item: Well-defined pill hitbox with high-contrast tactile states */
+header nav a,
+.bv-nav-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  padding: 6px 14px !important; /* Clean, comfortable padding */
+  border-radius: 12px !important;
+  font-family: var(--font-label, 'Space Grotesk', monospace, sans-serif) !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  border: 2px solid transparent !important;
+  background-color: transparent !important;
+  color: var(--ink-subtle, #5b403e) !important;
+  box-shadow: none !important;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease !important;
+  will-change: transform;
+}
+
+/* Ensure no child element intercepts cursor or clicks */
+header nav a *,
+.bv-nav-link * {
+  pointer-events: none !important;
+  cursor: inherit !important;
+}
+
+/* Explicitly disable any pseudo-elements on nav items to prevent hitbox bleeding */
+header nav a::before,
+header nav a::after,
+.bv-nav-link::before,
+.bv-nav-link::after {
+  display: none !important;
+  content: none !important;
+  pointer-events: none !important;
+}
+
+/* Inactive state on hover: clear visual pill card so user immediately recognizes interactivity */
+header nav a:not([aria-current="page"]):hover,
+.bv-nav-link:not([aria-current="page"]):hover {
+  background-color: #ffffff !important;
+  border-color: #2d2d2d !important;
+  color: #1b1c1c !important;
+  box-shadow: 2px 2px 0px #2d2d2d !important;
+}
+
+/* Active page state: bold primary pill with neo-brutalist shadow */
+header nav a[aria-current="page"],
+.bv-nav-link[aria-current="page"] {
+  background-color: var(--primary-container, #db3237) !important;
+  border-color: #2d2d2d !important;
+  color: #ffffff !important;
+  box-shadow: 2px 2px 0px #2d2d2d !important;
+}
+
+/* Active page on hover */
+header nav a[aria-current="page"]:hover,
+.bv-nav-link[aria-current="page"]:hover {
+  background-color: #b71422 !important;
+  box-shadow: 3px 3px 0px #2d2d2d !important;
+}
+
+/* Header interactive icons (XP badge, Avatar, Brand logo) */
+header .sketch-shadow-sm,
+header .admin-avatar,
+header a[href*="login"] {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer !important;
+}
+
 /* Neo-Brutalist Buttons */
 .neo-btn {
   display: inline-flex;
@@ -111,7 +273,7 @@ h1, h2, h3, h4, .font-headline {
   border: 2.5px solid var(--ink-charcoal);
   box-shadow: var(--shadow-hard);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-  cursor: pointer;
+  cursor: pointer !important;
   text-decoration: none;
 }
 
