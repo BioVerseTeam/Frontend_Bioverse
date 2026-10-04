@@ -202,3 +202,73 @@ html {
   transform: translate(-3px, -3px);
   box-shadow: 6px 6px 0 #2d2d2d;
 }
+
+/* =========================================================================
+   IMMERSIVE EXAM TAKING STUDIO (FOCUS MODE)
+   ========================================================================= */
+/* Hide Global Navigation Header in Exam Taking Mode */
+body.is-taking-exam header {
+  display: none !important;
+}
+
+/* Remove 96px top gap, full screen canvas */
+body.is-taking-exam main {
+  padding-top: 1rem !important;
+  padding-bottom: 2.5rem !important;
+}
+
+/* Expand Container Width to 1560px for Immersive & Zoomed View */
+body.is-taking-exam #exam-main-container {
+  max-width: 1560px !important;
+  width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+@media (min-width: 640px) {
+  body.is-taking-exam #exam-main-container {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
+/* Control Bar Sticks at Top-3 directly */
+body.is-taking-exam #exam-taking-top-bar {
+  top: 0.75rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 4px 4px 0 #2d2d2d !important;
+}
+
+/* Question Palette sticky under top bar */
+body.is-taking-exam #exam-taking-palette-aside {
+  top: 5.5rem !important;
+}
+
+/* Zoomed Question Cards & Typography */
+body.is-taking-exam .taking-question-card {
+  padding: 1.75rem !important;
+  font-size: 1.05rem;
+}
+
+body.is-taking-exam .question-text {
+  font-size: 1.15rem !important; /* ~18.5px */
+  line-height: 1.75 !important;
+}
+
+body.is-taking-exam .answer-card {
+  padding: 1.05rem 1.25rem !important;
+  font-size: 1.05rem !important;
+  border-radius: 14px !important;
+}
+
+body.is-taking-exam .answer-card .radio-circle {
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  font-size: 0.95rem !important;
+  border-radius: 10px !important;
+}
+
+body.is-taking-exam .palette-btn {
+  height: 2.5rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+}

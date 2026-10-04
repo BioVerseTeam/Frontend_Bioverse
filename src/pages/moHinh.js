@@ -6,7 +6,8 @@ import gsap from 'gsap';
 import { setupNavbarAuth } from '../utils/authNavbar.js';
 import { ChatBox } from '../components/chatBox.js';
 import { getModelById, getModelBySlug } from '../api/bioModelApi.js';
-import { markModelExplored, addXP, getProgress } from '../features/progress/progressService.js';
+import { markModelExplored, addXP, getProgress, updateLastLesson } from '../features/progress/progressService.js';
+import { recordViewedModel } from '../features/model/recentModels.js';
 import { ModelViewer, resolveModelUrl, parseJsonField } from '../features/model/ModelViewer.js';
 import { looksScientific, looksVietnamese } from '../features/model/partNames.js';
 import { getEligibleGameStructures } from '../features/model/anatomyStructures.js';
@@ -407,6 +408,15 @@ function trackProgress(model) {
   const key = `model-${model.id}`;
   const seen = getProgress().modelsExplored?.includes(key);
   markModelExplored(key);
+  recordViewedModel(model);
+  updateLastLesson({
+    modelId: model.id,
+    slug: model.slug,
+    name: model.name,
+    subject: model.subject === 'CHEMISTRY' ? 'Hóa Học' : 'Sinh Học',
+    grade: model.grade || 8,
+    icon: 'biotech'
+  });
   if (!seen) addXP(40);
 }
 
