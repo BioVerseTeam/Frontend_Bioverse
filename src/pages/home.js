@@ -47,8 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('BioVerse Home Page initialized with real dynamic data & progress tracking.');
 });
 
-export function renderHomeData(totalBioOverride = null) {
-  const data = getHomePageData(totalBioOverride);
+let cachedTotalBio = null;
+let cachedTotalLabs = null;
+
+export function renderHomeData(totalBioOverride = null, totalLabsOverride = null) {
+  if (typeof totalBioOverride === 'number' && totalBioOverride > 0) {
+    cachedTotalBio = totalBioOverride;
+  }
+  if (typeof totalLabsOverride === 'number' && totalLabsOverride > 0) {
+    cachedTotalLabs = totalLabsOverride;
+  }
+
+  const effectiveBio = cachedTotalBio || totalBioOverride;
+  const effectiveLabs = cachedTotalLabs || totalLabsOverride;
+  const data = getHomePageData(effectiveBio);
 
   // 1. Hero greeting
   const heroGreetingName = document.getElementById('hero-user-name');
@@ -186,17 +198,49 @@ export function renderHomeData(totalBioOverride = null) {
       }
     }
   }
+
+  // 10. Hero Biology stats cards (dynamically bound to real catalog & lab data)
+  const modelsCountEl = document.getElementById('hero-biology-models-count');
+  if (modelsCountEl) {
+    const totalModels = effectiveBio || data.bioStats?.total || 8;
+    modelsCountEl.textContent = `${totalModels} Mô hình`;
+  }
+
+  const labsCountEl = document.getElementById('hero-biology-labs-count');
+  if (labsCountEl) {
+    const totalLabs = effectiveLabs || 6;
+    labsCountEl.textContent = `${totalLabs} Thực hành ảo`;
+  }
 }
 
 async function syncCatalogTotal() {
   try {
-    const res = await fetch('/api/models/catalog?subject=BIOLOGY&size=1');
-    if (res.ok) {
-      const json = await res.json();
+    const [catRes, labsRes] = await Promise.allSettled([
+      fetch('/api/models/catalog?subject=BIOLOGY&size=1'),
+      fetch('/api/models/labs')
+    ]);
+
+    let totalModels = null;
+    let totalLabs = null;
+
+    if (catRes.status === 'fulfilled' && catRes.value.ok) {
+      const json = await catRes.value.json();
       const total = json?.data?.totalElements;
       if (typeof total === 'number' && total > 0) {
-        renderHomeData(total);
+        totalModels = total;
       }
+    }
+
+    if (labsRes.status === 'fulfilled' && labsRes.value.ok) {
+      const json = await labsRes.value.json();
+      const labs = json?.data;
+      if (Array.isArray(labs) && labs.length > 0) {
+        totalLabs = labs.length;
+      }
+    }
+
+    if (totalModels !== null || totalLabs !== null) {
+      renderHomeData(totalModels, totalLabs);
     }
   } catch (err) {
     console.debug('Catalog total sync note:', err);

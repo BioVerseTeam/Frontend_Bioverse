@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Danh Hiệu STEM - BioVerse Admin</title>
+  <meta name="description" content="Quản lý danh hiệu khoa học STEM BioVerse: biểu tượng, điều kiện mở khóa tự động, điểm thưởng XP và hiển thị.">
+  <link rel="stylesheet" href="/src/sketchbook.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } }
+    .badge-emoji-btn {
+      width: 38px;
+      height: 38px;
+      border: 2px solid #2d2d2d;
+      border-radius: 10px;
+      background: #ffffff;
+      font-size: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 2px 2px 0px #2d2d2d;
+    }
+    .badge-emoji-btn:hover {
+      transform: scale(1.12);
+      background: #fff9c4;
+    }
+    .badge-emoji-btn.is-active {
+      background: #fed7aa;
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px #2d2d2d;
+      border-color: #b71422;
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-primary": "#ffffff",
+            "on-surface": "#1b1c1c",
+            "primary-container": "#db3237",
+            "primary": "#b71422",
+            "on-surface-variant": "#5b403e",
+            "tertiary": "#006a3b"
+          },
+          fontFamily: {
+            "headline-sm": ["Epilogue"],
+            "body-md": ["Be Vietnam Pro"],
+            "label-md": ["Space Grotesk"],
+            "label-sm": ["Space Grotesk"]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen">
+  <!-- Fixed Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d]">
+    <div class="h-20 w-full px-4 md:px-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <a class="flex items-center gap-2 group" data-path="admin" href="/admin" title="Về bàn ca điều hành">
+          <div class="w-10 h-10 rounded-lg bg-[#fff9c4] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
+            <span class="text-xl">🎖️</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Quản Lý Danh Hiệu</span>
+          </div>
+        </a>
+        <nav class="hidden lg:flex items-center gap-2 text-xs font-['Space_Grotesk'] font-bold">
+          <a href="/admin" class="px-2.5 py-1 rounded-md border border-[#2d2d2d]/30 hover:bg-[#fff9c4]">Bàn ca</a>
+          <a href="/admin-models" class="px-2.5 py-1 rounded-md border border-[#2d2d2d]/30 hover:bg-[#fff9c4]">Nhân mẫu</a>
+          <a href="/admin-categories" class="px-2.5 py-1 rounded-md border border-[#2d2d2d]/30 hover:bg-[#fff9c4]">Loại mẫu</a>
+          <a href="/admin-labs" class="px-2.5 py-1 rounded-md border border-[#2d2d2d]/30 hover:bg-[#fff9c4]">Lab</a>
+          <span class="px-2.5 py-1 rounded-md bg-[#2d2d2d] text-white">Danh hiệu STEM</span>
+        </nav>
+      </div>
+
+      <div id="header-user-cluster" class="flex items-center gap-3">
+        <div class="hidden sm:flex flex-col items-end">
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Quản trị viên</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">ADMIN</span>
+        </div>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="admin-avatar w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="w-full pt-20 min-h-[calc(100vh-80px)]">
+    <section class="w-full px-4 md:px-8 pt-6 pb-12">
+      <div class="max-w-6xl mx-auto flex flex-col gap-6">
+
+        <!-- Admin Gate Check -->
+        <div id="admin-gate" hidden class="bg-[#ffdad6] border-[2.5px] border-[#2d2d2d] rounded-2xl p-8 sketch-shadow text-center">
+          <span class="material-symbols-outlined text-[40px] text-[#b71422] mb-2">lock</span>
+          <h1 class="font-['Epilogue'] text-2xl font-bold mb-2">Cần quyền quản trị</h1>
+          <p id="admin-gate-text" class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e] mb-4">Đăng nhập tài khoản ADMIN để chỉnh sửa kho danh hiệu STEM.</p>
+          <a id="admin-gate-login" href="/login?next=/admin-badges" class="inline-flex neo-btn neo-btn-primary rounded-xl px-5 py-2.5">Đăng nhập ADMIN</a>
+        </div>
+
+        <!-- Admin Workspace -->
+        <div id="admin-workspace" hidden class="space-y-6">
+
+          <!-- Hero Banner & Overview Metrics -->
+          <div class="relative bg-white sketch-border p-5 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fef3c7] border border-[#2d2d2d] text-xs font-['Space_Grotesk'] font-bold text-[#b45309] mb-2">
+                <span>🏆</span>
+                <span>GAMIFICATION & THÀNH TỰU KHOA HỌC</span>
+              </div>
+              <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-2">
+                Kho Tàng Danh Hiệu STEM
+              </h1>
+              <p class="font-['Be_Vietnam_Pro'] text-[#5b403e] text-[14px] md:text-[15px] max-w-2xl leading-relaxed">
+                Biên soạn huy hiệu, biểu tượng emoji, cấu hình điều kiện tự động (XP, Streak, Mô hình 3D, Hồ sơ) và điểm thưởng XP. Thay đổi sẽ cập nhật tức thì trên Thẻ học sinh và Sổ tay 3D.
+              </p>
+            </div>
+
+            <!-- Quick Metrics Cards -->
+            <div class="flex items-center gap-3 shrink-0 flex-wrap">
+              <div class="p-3 bg-[#e8f5e9] border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm min-w-[90px] text-center">
+                <span class="block font-['Epilogue'] text-xl font-black text-[#166534]" id="metric-total">12</span>
+                <span class="block font-['Space_Grotesk'] text-[10px] font-bold text-[#2d2d2d] uppercase">Tổng số</span>
+              </div>
+              <div class="p-3 bg-[#e0f2fe] border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm min-w-[90px] text-center">
+                <span class="block font-['Epilogue'] text-xl font-black text-[#0369a1]" id="metric-active">12</span>
+                <span class="block font-['Space_Grotesk'] text-[10px] font-bold text-[#2d2d2d] uppercase">Đang hiện</span>
+              </div>
+              <div class="p-3 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm min-w-[90px] text-center">
+                <span class="block font-['Epilogue'] text-xl font-black text-[#a16207]" id="metric-max-xp">500 XP</span>
+                <span class="block font-['Space_Grotesk'] text-[10px] font-bold text-[#2d2d2d] uppercase">Thưởng max</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main 2-Column Grid: List & Editor -->
+          <div class="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-6 items-start">
+
+            <!-- LEFT RAIL: BADGE LIST WITH SEARCH & FILTER CHIPS -->
+            <aside class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col gap-3 min-h-[500px]">
+              <div class="admin-rail-head">
+                <div>
+                  <p class="font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-wider">Danh sách huy hiệu</p>
+                  <p id="admin-badge-count" class="font-['Space_Grotesk'] text-[11px] font-bold text-[#76716a] mt-0.5">Đang tải...</p>
+                </div>
+                <button type="button" id="admin-badge-new" class="neo-btn neo-btn-primary rounded-xl px-3 py-1.5 inline-flex items-center gap-1 text-xs font-bold" title="Tạo danh hiệu mới">
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  Thêm mới
+                </button>
+              </div>
+
+              <!-- Search Input -->
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[#76716a] text-[18px]">search</span>
+                <input id="admin-badge-search" type="search" placeholder="Tìm tên danh hiệu, mã, nhóm..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl focus:outline-none focus:bg-white font-['Be_Vietnam_Pro'] font-medium">
+              </div>
+
+              <!-- Filter Pills Bar -->
+              <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none" id="admin-badge-filters">
+                <button type="button" class="catalog-chip is-active" data-filter="all">Tất cả</button>
+                <button type="button" class="catalog-chip" data-filter="starter">🌱 Khởi đầu</button>
+                <button type="button" class="catalog-chip" data-filter="streak">🔥 Chuỗi ngày</button>
+                <button type="button" class="catalog-chip" data-filter="lab">🔬 Phòng lab</button>
+                <button type="button" class="catalog-chip" data-filter="xp">⭐ Cột mốc XP</button>
+                <button type="button" class="catalog-chip" data-filter="inactive">Ẩn</button>
+              </div>
+
+              <!-- Dynamic Badges List Container -->
+              <div id="admin-badge-list" class="flex flex-col gap-2 overflow-y-auto max-h-[600px] pr-0.5">
+                <!-- Injected via adminBadges.js -->
+              </div>
+            </aside>
+
+            <!-- RIGHT PANEL: BADGE EDITOR FORM & LIVE PREVIEW -->
+            <form id="admin-badge-form" class="admin-editor bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl sketch-shadow" data-mode="create">
+              <input type="hidden" id="badge-field-id">
+              <input type="hidden" id="badge-field-sort" value="1">
+              <input type="checkbox" id="badge-field-active" checked hidden>
+
+              <!-- Mode Strip -->
+              <div class="admin-mode-strip">
+                <div class="admin-mode-copy">
+                  <span id="admin-badge-status-badge" class="catalog-chip is-active">Thêm mới</span>
+                  <h2 id="admin-badge-form-title" class="font-['Epilogue'] text-xl font-bold">Thêm danh hiệu STEM</h2>
+                  <p id="admin-badge-form-hint" class="admin-field-hint">Thiết lập biểu tượng, tên gọi và điều kiện tự động để học sinh chinh phục.</p>
+                </div>
+                <div class="admin-mode-actions flex items-center gap-2">
+                  <button type="button" id="admin-badge-toggle" hidden class="neo-btn rounded-xl px-3.5 py-2 text-xs font-bold bg-[#fee2e2] text-[#991b1b] border-2 border-[#2d2d2d]">
+                    Ẩn danh hiệu
+                  </button>
+                  <button type="submit" id="admin-badge-save" class="neo-btn neo-btn-primary rounded-xl px-5 py-2 text-xs font-bold">
+                    Lưu danh hiệu
+                  </button>
+                </div>
+              </div>
+
+              <div class="admin-editor-body p-4 md:p-6 space-y-6">
+
+                <!-- SECTION 1: IDENTITY & APPEARANCE -->
+                <section class="admin-sheet p-4 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl space-y-4">
+                  <div class="admin-sheet-head flex items-center justify-between pb-2 border-b border-[#2d2d2d]/15">
+                    <h3 class="font-['Epilogue'] font-bold text-base flex items-center gap-2">
+                      <span>🎨</span>
+                      <span>1. Định danh & Biểu tượng</span>
+                    </h3>
+                    <div class="admin-status-pills" role="group" aria-label="Trạng thái danh hiệu">
+                      <button type="button" id="btn-status-active" class="is-active" data-badge-active="true">Đang dùng</button>
+                      <button type="button" id="btn-status-inactive" data-badge-active="false">Ẩn</button>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="admin-field md:col-span-2">
+                      <label for="badge-field-name">Tên danh hiệu *</label>
+                      <input id="badge-field-name" type="text" required maxlength="120" placeholder="VD: Tân Binh BioVerse" class="font-bold">
+                    </div>
+                    <div class="admin-field">
+                      <label for="badge-field-code">Mã danh hiệu (Code)</label>
+                      <input id="badge-field-code" type="text" maxlength="80" placeholder="badge-tan-binh" class="font-mono text-xs">
+                      <p class="admin-field-hint">Tự động sinh slug nếu để trống</p>
+                    </div>
+                  </div>
+
+                  <!-- Emoji & Quick Selector -->
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                      <div class="admin-field w-32 shrink-0">
+                        <label for="badge-field-icon">Biểu tượng (Icon) *</label>
+                        <input id="badge-field-icon" type="text" required maxlength="50" value="🌱" class="text-center text-xl font-bold">
+                      </div>
+                      <div class="flex-1">
+                        <label class="block font-['Space_Grotesk'] text-xs font-bold text-on-surface mb-1">Gợi ý emoji STEM (bấm để chọn nhanh):</label>
+                        <div class="flex items-center gap-1.5 flex-wrap" id="quick-emoji-palette">
+                          <button type="button" class="badge-emoji-btn" data-emoji="🌱">🌱</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🪪">🪪</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🔥">🔥</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="⚡">⚡</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🏆">🏆</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🔬">🔬</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🫀">🫀</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🧪">🧪</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="⭐">⭐</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🧬">🧬</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🌟">🌟</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="👑">👑</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🎯">🎯</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🚀">🚀</button>
+                          <button type="button" class="badge-emoji-btn" data-emoji="🪐">🪐</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="admin-field">
+                      <label for="badge-field-category">Tên nhóm danh mục *</label>
+                      <input id="badge-field-category" type="text" required maxlength="100" placeholder="VD: Nhập môn STEM, Chuỗi học tập...">
+                    </div>
+                    <div class="admin-field">
+                      <label for="badge-field-filterTag">Thẻ phân loại bộ lọc *</label>
+                      <select id="badge-field-filterTag" class="w-full">
+                        <option value="starter">🌱 Khởi đầu (starter)</option>
+                        <option value="streak">🔥 Chuỗi ngày (streak)</option>
+                        <option value="lab">🔬 Thực nghiệm 3D (lab)</option>
+                        <option value="xp">⭐ Cột mốc XP (xp)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="admin-field">
+                    <label for="badge-field-desc">Mô tả danh hiệu</label>
+                    <textarea id="badge-field-desc" rows="2" maxlength="300" placeholder="Mô tả ý nghĩa và hướng dẫn học sinh cách chinh phục danh hiệu này."></textarea>
+                  </div>
+                </section>
+
+                <!-- SECTION 2: AUTOMATIC UNLOCK CRITERIA & XP REWARD -->
+                <section class="admin-sheet p-4 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl space-y-4">
+                  <div class="admin-sheet-head pb-2 border-b border-[#2d2d2d]/15">
+                    <h3 class="font-['Epilogue'] font-bold text-base flex items-center gap-2">
+                      <span>⚙️</span>
+                      <span>2. Cấu hình điều kiện mở khóa & Phần thưởng</span>
+                    </h3>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="admin-field">
+                      <label for="badge-field-criteriaType">Loại điều kiện mở khóa</label>
+                      <select id="badge-field-criteriaType" class="w-full">
+                        <option value="ALWAYS_UNLOCKED">Luôn mở khóa (Khởi đầu)</option>
+                        <option value="PROFILE_COMPLETED">Cập nhật đủ hồ sơ (3 mục)</option>
+                        <option value="STREAK_DAYS">Chuỗi ngày học tập (Streak)</option>
+                        <option value="MODELS_EXPLORED">Số mô hình 3D khám phá</option>
+                        <option value="REACTION_EXPLORED">Thực nghiệm phản ứng hóa học</option>
+                        <option value="XP_THRESHOLD">Mốc điểm kinh nghiệm XP</option>
+                      </select>
+                    </div>
+
+                    <div class="admin-field">
+                      <label for="badge-field-criteriaValue">
+                        Giá trị ngưỡng (<span id="criteria-unit-label">ngày</span>)
+                      </label>
+                      <input id="badge-field-criteriaValue" type="number" min="0" max="100000" value="0">
+                      <p id="criteria-help-text" class="admin-field-hint">Nhập số ngưỡng cần đạt để mở khóa.</p>
+                    </div>
+
+                    <div class="admin-field">
+                      <label for="badge-field-rewardXp">Thưởng XP khi mở khóa</label>
+                      <input id="badge-field-rewardXp" type="number" min="0" max="5000" step="10" value="50">
+                      <p class="admin-field-hint">+XP cộng vào tiến trình tài khoản</p>
+                    </div>
+                  </div>
+
+                  <!-- Rank / Sort Order Stepper -->
+                  <div class="flex items-center justify-between pt-2 border-t border-[#2d2d2d]/10">
+                    <div>
+                      <p class="font-['Space_Grotesk'] text-xs font-bold">Thứ tự hiển thị trên danh sách</p>
+                      <p class="admin-field-hint">Số nhỏ hơn sẽ đứng trước trong Sổ tay danh hiệu</p>
+                    </div>
+                    <div class="admin-rank-stepper">
+                      <button type="button" id="admin-badge-rank-down" class="catalog-chip font-bold" aria-label="Giảm thứ tự">−</button>
+                      <span id="admin-badge-rank-value" class="font-mono font-bold text-sm">#1</span>
+                      <button type="button" id="admin-badge-rank-up" class="catalog-chip font-bold" aria-label="Tăng thứ tự">+</button>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- SECTION 3: LIVE INTERACTIVE PREVIEW (BENTO CARD STYLE) -->
+                <section class="p-4 bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="font-['Space_Grotesk'] text-xs font-bold uppercase tracking-wider text-[#76716a] flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-[16px] text-primary">visibility</span>
+                      Xem trước huy hiệu (Học sinh sẽ thấy)
+                    </span>
+                    <span id="preview-badge-status" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#dcfce7] text-[#166534] border border-[#2d2d2d]">
+                      Đang bật
+                    </span>
+                  </div>
+
+                  <div class="p-4 rounded-2xl border-2 border-[#2d2d2d] bg-[#fdfbf7] flex items-start gap-4 transition-all" id="badge-live-card">
+                    <!-- Icon Box -->
+                    <div id="preview-icon-box" class="w-14 h-14 rounded-2xl border-2 border-[#2d2d2d] bg-[#e8f5e9] flex items-center justify-center text-3xl sketch-shadow-sm shrink-0 transform -rotate-1">
+                      <span id="preview-icon">🌱</span>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between gap-2">
+                        <span id="preview-category" class="font-['Space_Grotesk'] text-[10px] font-bold text-[#00864c] uppercase tracking-wider">
+                          Nhập môn STEM
+                        </span>
+                        <span id="preview-reward" class="font-['Space_Grotesk'] text-[11px] font-bold text-[#b45309] bg-[#fef3c7] px-2 py-0.5 rounded border border-[#2d2d2d]/30">
+                          +50 XP
+                        </span>
+                      </div>
+                      <h4 id="preview-name" class="font-['Epilogue'] text-base font-bold text-on-surface leading-tight mt-0.5 truncate">
+                        Tân Binh BioVerse
+                      </h4>
+                      <p id="preview-desc" class="font-['Be_Vietnam_Pro'] text-xs text-[#5b403e] line-clamp-2 mt-1">
+                        Đăng ký tài khoản và gia nhập phòng nghiên cứu khoa học BioVerse.
+                      </p>
+                      
+                      <!-- Mock Progress -->
+                      <div class="mt-2.5 pt-2 border-t border-[#2d2d2d]/10 flex items-center justify-between text-[11px] font-['Space_Grotesk'] text-[#76716a]">
+                        <span id="preview-criteria-desc">Điều kiện: Luôn mở khóa</span>
+                        <span class="font-bold text-[#00864c]">Đã đạt 100%</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+              </div>
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="w-full border-t-[2.5px] border-[#2d2d2d] bg-[#fdfbf7] py-4">
+    <div class="w-full px-4 md:px-8 flex items-center justify-between text-xs font-['Space_Grotesk'] font-bold text-[#76716a]">
+      <span>BioVerse STEM • Hệ thống Quản trị Danh hiệu & Thành tựu</span>
+      <a href="/profile" class="hover:underline text-primary">Xem Sổ tay danh hiệu học sinh →</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/pages/adminBadges.js"></script>
+</body>
+</html>
