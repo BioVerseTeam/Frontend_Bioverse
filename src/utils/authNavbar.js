@@ -7,6 +7,7 @@ import { AuthService } from '../features/auth/authService.js';
 import { getProgress } from '../features/progress/progressService.js';
 import { confirmModal } from '../components/modal.js';
 import { applyAdminChrome, isAdmin, isAdminRoute } from './adminGuard.js';
+import { initHeaderNavAnimations } from './siteNav.js';
 
 export function setupNavbarAuth() {
   const user = AuthService.getUser();
@@ -36,6 +37,7 @@ export function setupNavbarAuth() {
     insertAdminNav(isLoggedIn ? user : null);
     insertPricingNav();
   }
+  initHeaderNavAnimations();
 
   const cluster = document.getElementById('header-user-cluster')
     || document.querySelector('header .admin-topbar-identity')
@@ -134,7 +136,7 @@ function insertAdminNav(user) {
   link.id = 'nav-admin-home';
   link.href = '/admin';
   link.dataset.path = 'admin';
-  link.className = 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent';
+  link.className = 'bv-nav-link';
   link.textContent = 'Điều hành';
   nav.appendChild(link);
 }
@@ -145,23 +147,18 @@ function insertPricingNav() {
   const onPage = location.pathname.includes('pricing');
   const existing = nav.querySelector('a[href="/pricing"]');
   if (existing) {
+    existing.className = 'bv-nav-link';
     if (onPage) {
       existing.setAttribute('aria-current', 'page');
-      existing.className = 'px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]';
-      const icon = existing.querySelector('.material-symbols-outlined');
-      if (icon) icon.className = 'material-symbols-outlined text-[16px] text-white';
     }
     return;
   }
 
   const link = document.createElement('a');
   link.href = '/pricing';
-  link.className = onPage
-    ? 'px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]'
-    : 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all border-2 border-transparent';
+  link.className = 'bv-nav-link';
   if (onPage) link.setAttribute('aria-current', 'page');
-  const iconColor = onPage ? 'text-white' : 'text-primary';
-  link.innerHTML = `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[16px] ${iconColor}">loyalty</span>Gói cước</span>`;
+  link.innerHTML = '<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">loyalty</span>Gói cước</span>';
   nav.appendChild(link);
 }
 

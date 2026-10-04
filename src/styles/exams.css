@@ -10,8 +10,23 @@
 /* Custom Answer Card Styles */
 .answer-card {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  cursor: pointer !important;
   user-select: none;
+  position: relative;
+}
+
+.answer-card::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  pointer-events: auto;
+  z-index: -1;
+}
+
+.answer-card * {
+  cursor: inherit !important;
+  pointer-events: none;
 }
 
 .answer-card:hover:not(.disabled) {

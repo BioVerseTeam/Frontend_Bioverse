@@ -1,3 +1,5 @@
+import gsap from 'gsap';
+
 /**
  * Homepage banner linking to the biology catalog.
  */
@@ -8,6 +10,154 @@ export function setupBiologyNav() {
   insertHomeBanner();
   insertReactionNavLink();
   insertReactionBanner();
+  initHeaderNavAnimations();
+}
+
+export function initHeaderNavAnimations() {
+  const nav = document.querySelector('header nav');
+  const links = document.querySelectorAll('header nav a');
+
+  links.forEach((link) => {
+    if (link.dataset.gsapNavBound === 'true') return;
+    link.dataset.gsapNavBound = 'true';
+    link.classList.add('bv-nav-link');
+
+    link.addEventListener('mouseenter', () => {
+      gsap.killTweensOf(link);
+      gsap.to(link, {
+        y: -2.5,
+        scale: 1.04,
+        duration: 0.2,
+        ease: 'back.out(2)',
+        overwrite: 'auto'
+      });
+    });
+
+    link.addEventListener('mouseleave', () => {
+      gsap.killTweensOf(link);
+      gsap.to(link, {
+        y: 0,
+        scale: 1,
+        duration: 0.2,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      });
+    });
+
+    link.addEventListener('mousedown', () => {
+      gsap.to(link, {
+        y: 1,
+        scale: 0.97,
+        duration: 0.08,
+        ease: 'power1.inOut'
+      });
+    });
+
+    link.addEventListener('mouseup', () => {
+      gsap.to(link, {
+        y: -2.5,
+        scale: 1.04,
+        duration: 0.12,
+        ease: 'power2.out'
+      });
+    });
+  });
+
+  // Watch for any links added dynamically to header nav (e.g. admin, pricing)
+  if (nav && !nav.dataset.gsapObserverBound) {
+    nav.dataset.gsapObserverBound = 'true';
+    const observer = new MutationObserver(() => {
+      initHeaderNavAnimations();
+    });
+    observer.observe(nav, { childList: true });
+  }
+
+  // Micro-interactions for other interactive elements in header
+  const brandLogo = document.querySelector('header a[data-path="home"]');
+  if (brandLogo && !brandLogo.dataset.gsapBound) {
+    brandLogo.dataset.gsapBound = 'true';
+    brandLogo.addEventListener('mouseenter', () => {
+      gsap.to(brandLogo.querySelector('img, div'), {
+        rotate: 0,
+        scale: 1.08,
+        duration: 0.22,
+        ease: 'back.out(2)'
+      });
+    });
+    brandLogo.addEventListener('mouseleave', () => {
+      gsap.to(brandLogo.querySelector('img, div'), {
+        rotate: -2,
+        scale: 1,
+        duration: 0.2,
+        ease: 'power2.out'
+      });
+    });
+  }
+
+  const xpBadge = document.getElementById('header-user-xp')?.closest('.rounded-full');
+  if (xpBadge && !xpBadge.dataset.gsapBound) {
+    xpBadge.dataset.gsapBound = 'true';
+    xpBadge.addEventListener('mouseenter', () => {
+      gsap.to(xpBadge, {
+        scale: 1.05,
+        y: -2,
+        duration: 0.2,
+        ease: 'back.out(2)'
+      });
+    });
+    xpBadge.addEventListener('mouseleave', () => {
+      gsap.to(xpBadge, {
+        scale: 1,
+        y: 0,
+        duration: 0.2,
+        ease: 'power2.out'
+      });
+    });
+  }
+
+  const avatar = document.querySelector('header a[href*="login"], header .admin-avatar, header #btn-navbar-logout');
+  if (avatar && !avatar.dataset.gsapBound) {
+    avatar.dataset.gsapBound = 'true';
+    avatar.addEventListener('mouseenter', () => {
+      gsap.to(avatar, {
+        scale: 1.08,
+        y: -2,
+        duration: 0.2,
+        ease: 'back.out(2)'
+      });
+    });
+    avatar.addEventListener('mouseleave', () => {
+      gsap.to(avatar, {
+        scale: 1,
+        y: 0,
+        duration: 0.2,
+        ease: 'power2.out'
+      });
+    });
+  }
+
+  // Header back buttons and workspace tabs
+  const headerActionBtns = document.querySelectorAll('header a[href="/"], header a[href="/sinh-hoc"], header .rx-workspace');
+  headerActionBtns.forEach((btn) => {
+    if (btn.dataset.gsapBound) return;
+    btn.dataset.gsapBound = 'true';
+    btn.addEventListener('mouseenter', () => {
+      gsap.to(btn, {
+        y: -2,
+        scale: 1.03,
+        duration: 0.2,
+        ease: 'power2.out'
+      });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, {
+        y: 0,
+        scale: 1,
+        duration: 0.18,
+        ease: 'power2.out'
+      });
+    });
+  });
 }
 
 function insertReactionNavLink() {
@@ -20,9 +170,7 @@ function insertReactionNavLink() {
     link.href = '/phan-ung';
     link.textContent = 'Phân tử';
     const onPage = location.pathname.includes('phan-ung');
-    link.className = onPage
-      ? 'px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]'
-      : 'px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent';
+    link.className = 'bv-nav-link';
     if (onPage) link.setAttribute('aria-current', 'page');
     if (after) after.after(link);
     else nav.appendChild(link);

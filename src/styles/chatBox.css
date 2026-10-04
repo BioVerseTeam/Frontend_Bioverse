@@ -33,6 +33,20 @@
   position: relative !important;
 }
 
+.bv-chatbox-toggle-btn::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: -6px !important;
+  border-radius: 50% !important;
+  pointer-events: auto !important;
+  z-index: -1 !important;
+}
+
+.bv-chatbox-toggle-btn * {
+  pointer-events: none !important;
+  cursor: inherit !important;
+}
+
 .bv-chatbox-toggle-btn:hover {
   transform: translate(-2px, -2px) !important;
   box-shadow: 6px 6px 0 #2d2d2d !important;
