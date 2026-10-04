@@ -30,6 +30,7 @@ const CLEAN_ROUTES = {
   '/profile': '/pages/profile.html',
   '/admin-plans': '/pages/admin-plans.html',
   '/admin-payments': '/pages/admin-payments.html',
+  '/admin-badges': '/pages/admin-badges.html',
 };
 
 /** Legacy *.html URLs → clean paths (browser address bar). */
@@ -59,6 +60,7 @@ const HTML_REDIRECTS = {
   '/profile.html': '/profile',
   '/admin-plans.html': '/admin-plans',
   '/admin-payments.html': '/admin-payments',
+  '/admin-badges.html': '/admin-badges',
   // Built multi-page assets live under /pages/*.html — redirect if opened directly.
   '/pages/lab.html': '/lab',
   '/pages/login.html': '/login',
@@ -84,6 +86,7 @@ const HTML_REDIRECTS = {
   '/pages/profile.html': '/profile',
   '/pages/admin-plans.html': '/admin-plans',
   '/pages/admin-payments.html': '/admin-payments',
+  '/pages/admin-badges.html': '/admin-badges',
 };
 
 function cleanUrlMiddleware(req, res, next) {
@@ -144,6 +147,7 @@ export default defineConfig({
         adminAcademic: resolve(__dirname, 'pages/admin-academic.html'),
         adminPlans: resolve(__dirname, 'pages/admin-plans.html'),
         adminPayments: resolve(__dirname, 'pages/admin-payments.html'),
+        adminBadges: resolve(__dirname, 'pages/admin-badges.html'),
       }
     }
   },
