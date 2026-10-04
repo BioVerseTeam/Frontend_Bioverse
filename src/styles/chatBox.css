@@ -8,7 +8,7 @@
   bottom: 24px !important;
   right: 24px !important;
   z-index: 999999 !important;
-  font-family: 'Be Vietnam Pro', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: flex-end !important;

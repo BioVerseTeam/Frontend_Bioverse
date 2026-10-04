@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Khảo Thí & Trắc Nghiệm KHTN - BioVerse</title>
   <meta name="description" content="Làm bài kiểm tra, ôn luyện trắc nghiệm môn Khoa học Tự nhiên THCS chuẩn SGK kết hợp mô hình 3D trực quan.">
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="icon" type="image/png" href="/logo-icon.png">
   <link rel="stylesheet" href="/src/sketchbook.css">
   <link rel="stylesheet" href="/src/styles/exams.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,16 +59,100 @@
       theme: {
         extend: {
           colors: {
-            "primary": "#b71422",
-            "primary-container": "#db3237",
             "on-primary": "#ffffff",
+            "surface-container-low": "#f6f3f2",
+            "on-surface": "#1b1c1c",
+            "on-background": "#1b1c1c",
+            "error-container": "#ffdad6",
+            "tertiary-container": "#00864c",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#930014",
+            "on-error-container": "#93000a",
+            "surface-container-high": "#eae7e7",
+            "primary-fixed-dim": "#ffb3ae",
+            "primary-fixed": "#ffdad7",
+            "surface-container": "#f0eded",
+            "surface-variant": "#e4e2e1",
+            "background": "#fcf9f8",
+            "inverse-on-surface": "#f3f0f0",
+            "on-tertiary-fixed": "#00210f",
+            "secondary-fixed-dim": "#a9c7ff",
+            "primary-container": "#db3237",
+            "surface-bright": "#fcf9f8",
+            "on-primary-fixed": "#410004",
+            "on-secondary-fixed-variant": "#0a4689",
+            "surface-dim": "#dcd9d9",
+            "inverse-primary": "#ffb3ae",
+            "outline-variant": "#e4beba",
             "tertiary": "#006a3b",
+            "on-error": "#ffffff",
+            "on-primary-container": "#fffbff",
+            "tertiary-fixed-dim": "#6bdc96",
+            "primary": "#b71422",
+            "on-tertiary-container": "#f6fff4",
+            "secondary": "#2e5ea2",
+            "on-surface-variant": "#5b403e",
+            "surface": "#fcf9f8",
+            "on-tertiary-fixed-variant": "#00522c",
+            "error": "#ba1a1a",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#ba1724",
+            "on-secondary-fixed": "#001b3d",
+            "inverse-surface": "#303030",
+            "tertiary-fixed": "#88f9b0",
+            "secondary-container": "#89b4fe",
+            "surface-container-highest": "#e4e2e1",
+            "on-secondary-container": "#064487",
+            "outline": "#8f6f6d",
+            "secondary-fixed": "#d6e3ff",
             "sketch-border": "#2d2d2d"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "margin-mobile": "1rem",
+            "space-xl": "3rem",
+            "margin": "2rem",
+            "space-lg": "2rem",
+            "space-sm": "0.75rem",
+            "space-md": "1.25rem",
+            "gutter": "1.5rem",
+            "gutter-mobile": "1rem",
+            "space-xs": "0.375rem"
           },
           fontFamily: {
             "headline": ["Epilogue", "sans-serif"],
             "body": ["Be Vietnam Pro", "sans-serif"],
-            "mono": ["Space Grotesk", "monospace"]
+            "mono": ["Space Grotesk", "monospace"],
+            "headline-sm": ["Epilogue"],
+            "body-sm": ["Be Vietnam Pro"],
+            "body-md": ["Be Vietnam Pro"],
+            "headline-lg": ["Epilogue"],
+            "label-md": ["Space Grotesk"],
+            "headline-md": ["Epilogue"],
+            "label-sm": ["Space Grotesk"],
+            "body-lg": ["Be Vietnam Pro"],
+            "title-md": ["Epilogue"],
+            "headline-xl": ["Epilogue"],
+            "label-lg": ["Space Grotesk"]
+          },
+          fontSize: {
+            "headline-sm": ["22px", { "lineHeight": "30px", "fontWeight": "700" }],
+            "body-sm": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "body-md": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+            "headline-lg": ["36px", { "lineHeight": "44px", "fontWeight": "700" }],
+            "label-md": ["14px", { "lineHeight": "18px", "fontWeight": "700" }],
+            "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+            "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "500" }],
+            "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "headline-xl": ["44px", { "lineHeight": "52px", "fontWeight": "800" }],
+            "label-lg": ["16px", { "lineHeight": "20px", "fontWeight": "700" }]
           }
         }
       }
@@ -76,48 +160,41 @@
   </script>
 </head>
 
-<body class="sketch-paper font-body text-[#1b1c1c] min-h-screen flex flex-col">
+<body class="sketch-paper font-body-md text-body-md text-on-surface min-h-screen flex flex-col">
 
   <!-- =========================================================================
-       HEADER TOÀN TRANG
+       HEADER TOÀN TRANG (ĐỒNG BỘ VỚI SINH HỌC & TOÀN HỆ THỐNG BIOVERSE)
        ========================================================================= -->
   <header class="fixed top-0 left-0 right-0 z-50 bg-[#fdfbf7]/95 border-b-[2.5px] border-[#2d2d2d] backdrop-blur-sm">
-    <div class="h-20 w-full px-4 md:px-8 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-4 min-w-0">
-        <a class="flex items-center gap-2 group shrink-0" href="/">
-          <div class="w-10 h-10 rounded-lg bg-[#b71422] border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center transform -rotate-2 group-hover:rotate-0 transition-transform">
-            <span class="material-symbols-outlined text-white text-[24px]">quiz</span>
+    <div class="h-20 w-full px-margin flex items-center justify-between gap-gutter">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex items-center gap-space-xs group" data-path="home" href="/" title="BioVerse - Khám phá Khoa học – Kiến tạo tương lai">
+          <div class="w-10 h-10 rounded-lg bg-white border-2 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center p-1 transform -rotate-2 group-hover:rotate-0 transition-transform overflow-hidden">
+            <img src="/logo-icon.png" alt="BioVerse Logo" class="w-full h-full object-contain" />
           </div>
           <div class="flex flex-col">
-            <span class="font-headline text-[20px] md:text-[22px] font-extrabold tracking-tight text-[#b71422] uppercase leading-tight">BioVerse</span>
-            <span class="font-mono text-[11px] md:text-[12px] text-[#5b403e] font-bold tracking-wide">Khảo Thí STEM THCS</span>
+            <span class="font-headline-sm text-headline-sm tracking-tight text-primary uppercase">BioVerse</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium tracking-wide">Sổ tay STEM THCS</span>
           </div>
         </a>
-
-        <div class="hidden sm:flex items-center gap-2">
-          <a href="/" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-[#2d2d2d] rounded-xl font-mono text-xs font-bold hover:bg-[#f6f3f2] sketch-shadow-sm transition-transform active:translate-y-0.5">
-            <span class="material-symbols-outlined text-[16px]">home</span>
-            Trang Chủ
-          </a>
-          <a href="/sinh-hoc" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-[#2d2d2d] rounded-xl font-mono text-xs font-bold hover:bg-[#e8f5e9] sketch-shadow-sm transition-transform active:translate-y-0.5">
-            <span class="material-symbols-outlined text-[16px]">view_in_ar</span>
-            Kho mô hình 3D
-          </a>
-        </div>
+        <nav class="hidden lg:flex items-center gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]">
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="home" href="/">Khám Phá</a>
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="lessons-3d" href="/sinh-hoc">Sinh Học</a>
+          <a aria-current="page" class="px-space-md py-space-xs rounded-xl font-label-md transition-all bg-primary-container text-on-primary-container sketch-shadow-sm border-2 border-[#2d2d2d]" data-path="study-corner" title="Luyện đề trắc nghiệm" href="/exams">Góc Học Tập</a>
+          <a class="px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all border-2 border-transparent" data-path="stem-qa" href="/">Hỏi Đáp STEM</a>
+        </nav>
       </div>
-
-      <!-- Cụm thông tin người dùng / XP -->
-      <div id="header-user-cluster" class="flex items-center gap-3">
-        <div class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm">
-          <span class="material-symbols-outlined text-[#d97706] text-[18px]">workspace_premium</span>
-          <span id="header-user-xp" class="font-mono text-xs font-bold text-[#2d2d2d]">0 XP</span>
+      <div id="header-user-cluster" class="flex items-center gap-space-md">
+        <div class="hidden md:flex items-center gap-space-xs px-space-md py-1.5 bg-[#fff9c4] border-2 border-[#2d2d2d] rounded-full sketch-shadow-sm transform rotate-1">
+          <span class="material-symbols-outlined text-[#ed8936] text-[18px]">award_star</span>
+          <span id="header-user-xp" class="font-label-sm text-label-sm text-on-surface">0 XP</span>
         </div>
         <div class="hidden sm:flex flex-col items-end">
-          <span id="header-user-name" class="font-mono text-xs md:text-sm font-bold text-[#1b1c1c]">Học sinh BioVerse</span>
-          <span id="header-user-grade" class="font-mono text-[11px] text-[#006a3b] font-bold">KHTN 6 - 9</span>
+          <span id="header-user-name" class="font-label-md text-label-md text-on-surface">Khách thăm</span>
+          <span id="header-user-grade" class="font-label-sm text-label-sm text-tertiary font-bold">BioVerse STEM</span>
         </div>
-        <a href="/login" title="Tài khoản / Đăng nhập" class="w-9 h-9 rounded-full bg-[#b71422] flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm hover:opacity-90">
-          <span class="material-symbols-outlined text-white text-[18px]">person</span>
+        <a href="/login" title="Tài khoản / Đăng nhập" class="w-8 h-8 rounded-full bg-primary hover:opacity-90 flex items-center justify-center border-2 border-[#2d2d2d] sketch-shadow-sm">
+          <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
         </a>
       </div>
     </div>
@@ -167,32 +244,141 @@
           </div>
         </div>
 
-        <!-- Thanh Tìm Kiếm & Bộ Lọc Môn Học / Khối Lớp -->
-        <div class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 sketch-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <!-- Ô tìm kiếm từ khóa -->
-          <div class="relative flex-1">
-            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
-            <input type="search" id="search-exam-input" placeholder="Tìm theo tên đề thi, mã đề (Ví dụ: Giữa kì 1, Đề số 1...)" class="w-full pl-10 pr-4 py-2.5 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-sm font-medium outline-none focus:bg-white transition-colors">
-          </div>
-
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- Dropdown Môn Học (Chỉ lấy Tên môn học thuần túy) -->
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-gray-500 text-[20px]">menu_book</span>
-              <select id="filter-exam-subject" class="py-2.5 px-3 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-sm font-mono font-bold outline-none cursor-pointer">
-                <option value="">Tất cả môn học</option>
-              </select>
+        <!-- BỘ LỌC ĐA NĂNG CHUẨN UI/UX PRO MAX -->
+        <div id="exam-filter-hub" class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-5 md:p-6 sketch-shadow flex flex-col gap-5">
+          
+          <!-- Hàng 1: Ô tìm kiếm từ khóa + Bộ chọn sắp xếp + Lọc môn học + Tác vụ -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+            <!-- Ô tìm kiếm từ khóa kèm nút xóa tức thì -->
+            <div class="relative flex-1">
+              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#76716a] text-[20px]">search</span>
+              <input type="search" id="search-exam-input" placeholder="Tìm theo tên đề thi, mã đề (Ví dụ: Giữa kì 1, Đề số 1, KHTN 6...)" 
+                class="w-full pl-10 pr-10 py-2.5 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-sm font-['Be_Vietnam_Pro'] font-medium outline-none focus:bg-white focus:shadow-[3px_3px_0px_#2d5da1] transition-all">
+              <button type="button" id="btn-clear-search" hidden class="absolute right-3 top-1/2 -translate-y-1/2 text-[#76716a] hover:text-[#b71422] p-1 rounded-full flex items-center justify-center transition-colors" title="Xóa tìm kiếm">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+              </button>
             </div>
 
-            <!-- Nút Lịch sử thi -->
-            <button type="button" id="btn-open-history" class="px-3.5 py-2.5 bg-[#fdfbf7] hover:bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-mono text-xs font-bold flex items-center gap-1.5 transition-transform active:translate-y-0.5" title="Xem lịch sử làm bài thi">
-              <span class="material-symbols-outlined text-[18px] text-[#0284c7]">history</span>
-              <span class="hidden sm:inline">Lịch sử làm bài</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <!-- Dropdown Môn Học -->
+              <div class="relative flex items-center">
+                <select id="filter-exam-subject" class="py-2.5 pl-3 pr-8 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-xs md:text-sm font-['Space_Grotesk'] font-bold outline-none cursor-pointer hover:bg-white transition-colors appearance-none">
+                  <option value="">Tất cả môn học</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 pointer-events-none text-[18px] text-[#76716a]">expand_more</span>
+              </div>
 
-            <!-- Nút làm mới danh sách -->
-            <button type="button" id="btn-reload-exams" class="p-2.5 bg-[#fdfbf7] hover:bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-bold flex items-center justify-center transition-transform active:translate-y-0.5" title="Làm mới danh sách">
-              <span class="material-symbols-outlined text-[20px]">refresh</span>
+              <!-- Dropdown Sắp Xếp -->
+              <div class="relative flex items-center">
+                <select id="sort-exam-select" class="py-2.5 pl-3 pr-8 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-xs md:text-sm font-['Space_Grotesk'] font-bold outline-none cursor-pointer hover:bg-white transition-colors appearance-none">
+                  <option value="default">Sắp xếp: Mặc định</option>
+                  <option value="name_asc">Tên đề: A → Z</option>
+                  <option value="duration_desc">Thời gian: Nhiều → Ít</option>
+                  <option value="questions_desc">Số câu hỏi: Nhiều nhất</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 pointer-events-none text-[18px] text-[#76716a]">sort</span>
+              </div>
+
+              <!-- Nút Lịch sử thi -->
+              <button type="button" id="btn-open-history" class="px-3.5 py-2.5 bg-[#fdfbf7] hover:bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-['Space_Grotesk'] text-xs font-bold flex items-center gap-1.5 transition-transform active:translate-y-0.5" title="Xem lịch sử làm bài thi">
+                <span class="material-symbols-outlined text-[18px] text-[#0284c7]">history</span>
+                <span class="hidden sm:inline">Lịch sử thi</span>
+              </button>
+
+              <!-- Nút làm mới danh sách -->
+              <button type="button" id="btn-reload-exams" class="p-2.5 bg-[#fdfbf7] hover:bg-white border-2 border-[#2d2d2d] rounded-xl sketch-shadow-sm font-bold flex items-center justify-center transition-transform active:translate-y-0.5" title="Làm mới danh sách">
+                <span id="reload-icon" class="material-symbols-outlined text-[20px] text-[#2d2d2d]">refresh</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Đường kẻ phân cách nét đứt phong cách sổ tay -->
+          <div class="w-full border-t border-dashed border-[#dcd5cb]"></div>
+
+          <!-- Hàng 2: Bộ lọc Khối Lớp (Pill Chips) -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-1.5 min-w-[110px] text-xs font-['Space_Grotesk'] font-bold text-[#5b403e] uppercase tracking-wider shrink-0">
+              <span class="material-symbols-outlined text-[18px] text-[#0284c7]">school</span>
+              Khối Lớp:
+            </div>
+            <div id="filter-grade-group" class="flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo khối lớp">
+              <button type="button" data-grade="" class="exam-filter-chip is-active">
+                <span>Tất cả lớp</span>
+                <span class="chip-count" id="count-grade-all">42</span>
+              </button>
+              <button type="button" data-grade="6" class="exam-filter-chip">
+                <span>Lớp 6</span>
+                <span class="chip-count" id="count-grade-6">18</span>
+              </button>
+              <button type="button" data-grade="7" class="exam-filter-chip">
+                <span>Lớp 7</span>
+                <span class="chip-count" id="count-grade-7">8</span>
+              </button>
+              <button type="button" data-grade="8" class="exam-filter-chip">
+                <span>Lớp 8</span>
+                <span class="chip-count" id="count-grade-8">8</span>
+              </button>
+              <button type="button" data-grade="9" class="exam-filter-chip">
+                <span>Lớp 9</span>
+                <span class="chip-count" id="count-grade-9">8</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hàng 3: Bộ lọc Kỳ Thi (Exam Type Chips) -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-1.5 min-w-[110px] text-xs font-['Space_Grotesk'] font-bold text-[#5b403e] uppercase tracking-wider shrink-0">
+              <span class="material-symbols-outlined text-[18px] text-[#00864c]">event_available</span>
+              Kỳ Thi:
+            </div>
+            <div id="filter-type-group" class="flex flex-wrap items-center gap-2" role="group" aria-label="Lọc theo kỳ thi">
+              <button type="button" data-type="" class="exam-filter-chip is-active">
+                <span>Tất cả kỳ thi</span>
+                <span class="chip-count" id="count-type-all">42</span>
+              </button>
+              <button type="button" data-type="GK1" class="exam-filter-chip">
+                <span>Giữa kì 1 (GK1)</span>
+                <span class="chip-count" id="count-type-gk1">10</span>
+              </button>
+              <button type="button" data-type="HK1" class="exam-filter-chip">
+                <span>Học kì 1 (HK1)</span>
+                <span class="chip-count" id="count-type-hk1">12</span>
+              </button>
+              <button type="button" data-type="GK2" class="exam-filter-chip">
+                <span>Giữa kì 2 (GK2)</span>
+                <span class="chip-count" id="count-type-gk2">10</span>
+              </button>
+              <button type="button" data-type="HK2" class="exam-filter-chip">
+                <span>Học kì 2 (HK2)</span>
+                <span class="chip-count" id="count-type-hk2">8</span>
+              </button>
+              <button type="button" data-type="OTHER" class="exam-filter-chip">
+                <span>Ôn tập / Khác</span>
+                <span class="chip-count" id="count-type-other">2</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Thanh Trạng Thái & Số Lượng Kết Quả -->
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 border-dashed border-[#2d2d2d] pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-3 h-8 bg-[#b71422] rounded-sm border border-[#2d2d2d]"></span>
+            <div>
+              <h2 class="font-['Epilogue'] text-xl md:text-2xl font-bold tracking-tight text-[#1b1c1c]">Đề Khảo Thí & Ôn Luyện</h2>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5">
+            <span class="font-['Space_Grotesk'] text-xs font-bold bg-[#fff9c4] border-2 border-[#2d2d2d] px-3 py-1 rounded-xl sketch-shadow-sm flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-[#b71422]">assignment</span>
+              Đang hiển thị <span id="exam-results-count" class="text-[#b71422] font-black text-sm">42</span> / <span id="exam-total-count">42</span> đề
+            </span>
+
+            <button type="button" id="btn-clear-filters" hidden class="inline-flex items-center gap-1 px-3 py-1 bg-[#fee2e2] hover:bg-[#fecaca] text-[#b71422] border-2 border-[#2d2d2d] rounded-xl text-xs font-['Space_Grotesk'] font-bold sketch-shadow-sm transition-transform active:translate-y-0.5" title="Đặt lại bộ lọc về mặc định">
+              <span class="material-symbols-outlined text-[16px]">filter_alt_off</span>
+              Xóa bộ lọc
             </button>
           </div>
         </div>
@@ -205,6 +391,47 @@
 
         <div id="exams-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Các thẻ đề thi sẽ được render tại đây -->
+        </div>
+
+        <!-- THANH PHÂN TRANG (NEO-BRUTALIST PAGINATION) -->
+        <div id="exam-pagination-bar" class="bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-4 md:p-5 sketch-shadow flex flex-col sm:flex-row items-center justify-between gap-4 mt-2" hidden>
+          <!-- Thông tin phân trang & Bộ chọn số lượng mỗi trang -->
+          <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <span class="text-xs md:text-sm font-['Space_Grotesk'] font-bold text-[#5b403e]">
+              Trang <span id="pagination-current-page" class="text-[#b71422] font-black">1</span> / <span id="pagination-total-pages" class="text-[#1b1c1c] font-black">1</span> 
+              <span class="text-[#76716a] font-normal text-xs ml-1">(Tổng <span id="pagination-total-items" class="font-bold text-[#1b1c1c]">0</span> đề)</span>
+            </span>
+
+            <div class="flex items-center gap-1.5 ml-2">
+              <label for="pagination-page-size" class="text-xs font-mono font-semibold text-[#76716a] hidden sm:inline">Hiển thị:</label>
+              <select id="pagination-page-size" class="py-1 px-2.5 bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl text-xs font-['Space_Grotesk'] font-bold outline-none cursor-pointer hover:bg-white transition-colors">
+                <option value="9" selected>9 đề / trang (3x3)</option>
+                <option value="6">6 đề / trang</option>
+                <option value="12">12 đề / trang</option>
+                <option value="18">18 đề / trang</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Các nút chuyển trang -->
+          <div class="flex items-center gap-1.5 flex-wrap justify-center" id="pagination-controls">
+            <!-- Nút Trước -->
+            <button type="button" id="btn-page-prev" class="px-3 py-1.5 bg-[#fdfbf7] hover:bg-white text-[#1b1c1c] border-2 border-[#2d2d2d] rounded-xl text-xs font-['Space_Grotesk'] font-bold sketch-shadow-sm flex items-center gap-1 transition-transform active:translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none cursor-pointer" disabled>
+              <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+              <span class="hidden sm:inline">Trước</span>
+            </button>
+
+            <!-- Container các nút số trang: 1, 2, 3... -->
+            <div id="pagination-page-numbers" class="flex items-center gap-1.5">
+              <!-- Render động -->
+            </div>
+
+            <!-- Nút Tiếp -->
+            <button type="button" id="btn-page-next" class="px-3 py-1.5 bg-[#fdfbf7] hover:bg-white text-[#1b1c1c] border-2 border-[#2d2d2d] rounded-xl text-xs font-['Space_Grotesk'] font-bold sketch-shadow-sm flex items-center gap-1 transition-transform active:translate-y-0.5 disabled:opacity-40 disabled:pointer-events-none cursor-pointer">
+              <span class="hidden sm:inline">Sau</span>
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            </button>
+          </div>
         </div>
 
       </section>
