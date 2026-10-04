@@ -79,3 +79,9 @@ export async function getModelById(id) {
 export async function getModelBySlug(slug) {
   return request(`/slug/${encodeURIComponent(slug)}`);
 }
+
+export async function getLabs() {
+  const data = await request('/labs');
+  return Array.isArray(data) ? data : [];
+}
+

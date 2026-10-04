@@ -46,10 +46,12 @@
     { "source": "/checkout.html", "destination": "/checkout", "permanent": true },
     { "source": "/admin-plans.html", "destination": "/admin-plans", "permanent": true },
     { "source": "/admin-payments.html", "destination": "/admin-payments", "permanent": true },
+    { "source": "/admin-badges.html", "destination": "/admin-badges", "permanent": true },
     { "source": "/pages/pricing.html", "destination": "/pricing", "permanent": true },
     { "source": "/pages/checkout.html", "destination": "/checkout", "permanent": true },
     { "source": "/pages/admin-plans.html", "destination": "/admin-plans", "permanent": true },
-    { "source": "/pages/admin-payments.html", "destination": "/admin-payments", "permanent": true }
+    { "source": "/pages/admin-payments.html", "destination": "/admin-payments", "permanent": true },
+    { "source": "/pages/admin-badges.html", "destination": "/admin-badges", "permanent": true }
   ],
   "rewrites": [
     { "source": "/lab", "destination": "/pages/lab.html" },
@@ -74,6 +76,7 @@
     { "source": "/admin-exams", "destination": "/pages/admin-exams.html" },
     { "source": "/admin-academic", "destination": "/pages/admin-academic.html" },
     { "source": "/admin-plans", "destination": "/pages/admin-plans.html" },
-    { "source": "/admin-payments", "destination": "/pages/admin-payments.html" }
+    { "source": "/admin-payments", "destination": "/pages/admin-payments.html" },
+    { "source": "/admin-badges", "destination": "/pages/admin-badges.html" }
   ]
 }

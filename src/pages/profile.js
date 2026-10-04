@@ -15,9 +15,10 @@ import {
   requestChangePasswordOtp,
   changeUserPassword
 } from '../api/userProfileApi.js';
+import { listPublicBadges } from '../api/badgeApi.js';
 
-// 12 Danh Hiệu Khoa Học STEM BioVerse (Thiết kế mở rộng theo chuẩn RPG / Gamification)
-const STEM_BADGES = [
+// 12 Danh Hiệu Khoa Học STEM BioVerse Mặc Định (Thiết kế mở rộng theo chuẩn RPG / Gamification)
+const DEFAULT_STEM_BADGES = [
   // Nhóm 1: Khởi đầu & Nhập môn (Starter)
   {
     id: 'badge-starter',
@@ -237,6 +238,130 @@ const STEM_BADGES = [
   }
 ];
 
+let STEM_BADGES = [...DEFAULT_STEM_BADGES];
+
+/**
+ * Ánh xạ huy hiệu từ API sang cấu trúc hiển thị trên giao diện học viên
+ */
+function mapApiBadgeToDefinition(apiBadge) {
+  const target = Number(apiBadge.criteriaValue) || 1;
+  const criteriaType = apiBadge.criteriaType || 'ALWAYS_UNLOCKED';
+
+  let checkUnlocked = () => true;
+  let progressText = () => 'Đã hoàn thành 100%';
+  let progressPct = () => 100;
+
+  switch (criteriaType) {
+    case 'ALWAYS_UNLOCKED':
+      checkUnlocked = () => true;
+      progressText = () => 'Đã hoàn thành 100%';
+      progressPct = () => 100;
+      break;
+
+    case 'PROFILE_COMPLETED':
+      checkUnlocked = (u) => Boolean(u?.fullName && u?.dateOfBirth && u?.avatarUrl);
+      progressText = (u) => {
+        let count = 0;
+        if (u?.fullName) count++;
+        if (u?.dateOfBirth) count++;
+        if (u?.avatarUrl) count++;
+        return count >= 3 ? 'Hoàn tất hồ sơ 3/3' : `Đã điền ${count}/3 mục`;
+      };
+      progressPct = (u) => {
+        let count = 0;
+        if (u?.fullName) count++;
+        if (u?.dateOfBirth) count++;
+        if (u?.avatarUrl) count++;
+        return Math.round((count / 3) * 100);
+      };
+      break;
+
+    case 'STREAK_DAYS':
+      checkUnlocked = (u) => (u?.currentStreak || 0) >= target || (u?.longestStreak || 0) >= target;
+      progressText = (u) => {
+        const best = Math.max(u?.currentStreak || 0, u?.longestStreak || 0);
+        return best >= target ? `Đã hoàn thành (${best} ngày)` : `${best}/${target} ngày streak`;
+      };
+      progressPct = (u) => {
+        const best = Math.max(u?.currentStreak || 0, u?.longestStreak || 0);
+        return Math.min(100, Math.round((best / target) * 100));
+      };
+      break;
+
+    case 'MODELS_EXPLORED':
+      checkUnlocked = (u, p) => {
+        const count = p?.modelsExplored?.length || 0;
+        return count >= target || (target === 1 && (p?.xp || 0) >= 100);
+      };
+      progressText = (u, p) => {
+        const count = p?.modelsExplored?.length || 0;
+        return count >= target ? `Đã khám phá (${count}/${target} mô hình)` : `Đã xem: ${count}/${target} mô hình`;
+      };
+      progressPct = (u, p) => {
+        const count = p?.modelsExplored?.length || 0;
+        return Math.min(100, Math.round((count / target) * 100));
+      };
+      break;
+
+    case 'REACTION_EXPLORED':
+      checkUnlocked = (u, p) => (p?.modelsExplored || []).includes('reaction') || (p?.xp || 0) >= 180;
+      progressText = (u, p) => {
+        const hasReaction = (p?.modelsExplored || []).includes('reaction') || (p?.xp || 0) >= 180;
+        return hasReaction ? 'Đã thực hành phản ứng' : 'Chưa thực nghiệm phản ứng';
+      };
+      progressPct = (u, p) => ((p?.modelsExplored || []).includes('reaction') || (p?.xp || 0) >= 180) ? 100 : 0;
+      break;
+
+    case 'XP_THRESHOLD':
+    default:
+      checkUnlocked = (u, p) => (p?.xp || 0) >= target;
+      progressText = (u, p) => {
+        const xp = p?.xp || 0;
+        return xp >= target ? `Đạt mốc (${xp} XP)` : `${xp}/${target.toLocaleString('vi-VN')} XP`;
+      };
+      progressPct = (u, p) => Math.min(100, Math.round(((p?.xp || 0) / target) * 100));
+      break;
+  }
+
+  return {
+    id: apiBadge.code || `badge-${apiBadge.id}`,
+    dbId: apiBadge.id,
+    name: apiBadge.name,
+    icon: apiBadge.icon || '🏅',
+    filterTag: apiBadge.filterTag || 'starter',
+    categoryName: apiBadge.categoryName || 'STEM BioVerse',
+    desc: apiBadge.description || '',
+    bgUnlocked: apiBadge.bgUnlocked || 'bg-[#e8f5e9]',
+    borderUnlocked: apiBadge.borderUnlocked || 'border-[#2e7d32]',
+    criteriaType,
+    criteriaValue: apiBadge.criteriaValue,
+    xpReward: apiBadge.xpReward || 50,
+    checkUnlocked,
+    progressText,
+    progressPct
+  };
+}
+
+/**
+ * Tải danh hiệu từ API công khai để cập nhật động cấu hình do Quản trị viên tùy biến
+ */
+async function syncBadgesFromApi(user) {
+  try {
+    const list = await listPublicBadges();
+    if (Array.isArray(list) && list.length > 0) {
+      STEM_BADGES = list.map(mapApiBadgeToDefinition);
+      const activeUser = user || currentUserData || AuthService.getUser();
+      if (activeUser) {
+        renderPinnedBadges(activeUser);
+        renderBadgeBookContent(activeUser, false);
+        renderBadgesGallery(activeUser, false);
+      }
+    }
+  } catch (err) {
+    console.warn('Không thể đồng bộ danh hiệu từ máy chủ, tiếp tục dùng danh mục mặc định:', err);
+  }
+}
+
 let activeBadgeFilter = 'all';
 let activeBookCategory = 'all';
 const PINNED_BADGES_KEY = 'bioverse_user_pinned_badges';
@@ -330,6 +455,7 @@ function initProfilePage() {
 
   // 3. Đồng bộ dữ liệu mới nhất từ máy chủ ngầm trong nền
   loadUserProfile();
+  syncBadgesFromApi(cachedUser);
 }
 
 if (document.readyState === 'loading') {
@@ -350,6 +476,7 @@ async function loadUserProfile() {
     pendingAvatarUrl = data.avatarUrl || null;
     renderProfile(data);
     triggerPageEntranceOnce();
+    syncBadgesFromApi(data);
   } catch (err) {
     console.warn('Lỗi tải hồ sơ cá nhân mới từ API:', err);
     // Fallback to local stored user if network fails
@@ -1450,9 +1577,10 @@ function renderBadgesGallery(user, animateStagger = false) {
   if (!container) return;
 
   const progress = getProgress();
-  const unlockedCount = STEM_BADGES.filter(b => b.checkUnlocked(user, progress)).length;
+  const unlockedBadges = STEM_BADGES.filter(b => b.checkUnlocked(user, progress));
+  const unlockedCount = unlockedBadges.length;
   const totalBadges = STEM_BADGES.length;
-  const pct = Math.round((unlockedCount / totalBadges) * 100);
+  const pct = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
 
   // Cập nhật header thống kê
   const statCountEl = document.getElementById('badges-gallery-stat-count');
@@ -1464,8 +1592,9 @@ function renderBadgesGallery(user, animateStagger = false) {
   const barEl = document.getElementById('badges-gallery-progress-bar');
   if (barEl) barEl.style.width = `${pct}%`;
 
+  const totalBonusXp = unlockedBadges.reduce((sum, b) => sum + (Number(b.xpReward) || 50), 0);
   const bonusEl = document.getElementById('badges-gallery-xp-bonus');
-  if (bonusEl) bonusEl.textContent = `Thưởng: +${unlockedCount * 50} XP`;
+  if (bonusEl) bonusEl.textContent = `Thưởng: +${totalBonusXp} XP`;
 
   const motivateEl = document.getElementById('badges-gallery-motivate');
   if (motivateEl) {
@@ -1602,6 +1731,8 @@ function openBadgeDetailModal(badge, user, progress) {
   if (iconEl) iconEl.textContent = badge.icon;
   if (descEl) descEl.textContent = badge.desc;
   if (progValEl) progValEl.textContent = progText;
+  const rewardValEl = document.getElementById('badge-modal-reward-val');
+  if (rewardValEl) rewardValEl.textContent = `+${badge.xpReward || 50} XP`;
 
   if (iconWrap) {
     iconWrap.className = `w-20 h-20 rounded-2xl border-3 border-[#2d2d2d] sketch-shadow-sm flex items-center justify-center text-4xl mb-3 ${isUnlocked ? badge.bgUnlocked : 'bg-[#f0eded] grayscale'}`;
