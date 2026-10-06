@@ -22,7 +22,9 @@ BioVerse được thiết kế theo mô hình **Kiến Trúc Hướng Miền (Fe
 bio_3d/
 ├── index.html                    # Trang Chủ BioVerse Sổ Tay STEM (Duy nhất tại root)
 │
-├── pages/                        # Thư mục gom toàn bộ các trang web con
+│   ├── sinh-hoc.html             # Danh mục thư viện mô hình Sinh học 3D
+│   ├── vat-ly.html               # Danh mục thư viện mô hình Vật lý 3D
+│   ├── mo-hinh.html              # Trình hiển thị và tương tác mô hình 3D chi tiết
 │   ├── lab.html                  # Phòng Thí Nghiệm Mô Phỏng 3D
 │   ├── phan-ung.html             # Studio hoạt ảnh phản ứng phân tử
 │   ├── exams.html                # Trang Trắc Nghiệm Ôn Tập
@@ -94,6 +96,9 @@ bio_3d/
 │   │
 │   └── pages/                    # Entrypoints JavaScript cho từng trang HTML (100% no inline JS)
 │       ├── home.js               # Điều khiển Trang Chủ (index.html)
+│       ├── sinhHoc.js            # Điều khiển Kho mô hình Sinh học (pages/sinh-hoc.html)
+│       ├── vatLy.js              # Điều khiển Kho mô hình Vật lý (pages/vat-ly.html)
+│       ├── moHinh.js             # Điều phối Viewer 3D và chú giải (pages/mo-hinh.html)
 │       ├── lab.js                # Điều phối chính của Lab 3D (pages/lab.html)
 │       ├── phanUng.js            # Studio xem / làm hoạt ảnh phân tử (pages/phan-ung.html)
 │       ├── exams.js              # Điều phối trang Trắc nghiệm (pages/exams.html)
