@@ -12,6 +12,7 @@ import { ModelViewer, resolveModelUrl, parseJsonField } from '../features/model/
 import { looksScientific, looksVietnamese } from '../features/model/partNames.js';
 import { getEligibleGameStructures } from '../features/model/anatomyStructures.js';
 import { FindThePartGame } from '../features/model/findThePartGame.js';
+import { physicsQuizModal } from '../features/physics/PhysicsQuizModal.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -21,6 +22,7 @@ let pinFrame = 0;
 let pinXTo = null;
 let pinYTo = null;
 let gameInstance = null;
+let isPhysics = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   setupNavbarAuth();
@@ -111,13 +113,20 @@ async function loadSpecimen() {
 
   try {
     const model = slug ? await getModelBySlug(slug) : await getModelById(id);
+
     if (!model) {
-      showError('Không tìm thấy mô hình', 'Mẫu vật có thể đã bị ẩn.');
+      showError('Không tìm thấy mô hình', 'Mẫu vật có thể đã bị ẩn hoặc không tồn tại trên hệ thống.');
       return;
     }
 
+    isPhysics = model.subject === 'PHYSICS';
+
     renderMeta(model);
     trackProgress(model);
+
+    if (isPhysics) {
+      applyPhysicsModeUi(model);
+    }
 
     const url = resolveModelUrl(model.modelUrl);
     if (!url) {
@@ -126,8 +135,8 @@ async function loadSpecimen() {
     }
 
     viewer = new ModelViewer('canvas-container', {
-      onPartClick: handlePartClick,
-      onHover: handleHover,
+      onPartClick: isPhysics ? null : handlePartClick,
+      onHover: isPhysics ? null : handleHover,
       onLoadProgress: (pct) => {
         const bar = document.getElementById('loading-bar');
         const text = document.getElementById('loading-text');
@@ -136,13 +145,17 @@ async function loadSpecimen() {
       },
       onReady: (parts) => {
         hideLoading();
-        renderParts(parts, { animate: true });
-        initGameMode(model, parts);
+        if (!isPhysics) {
+          renderParts(parts, { animate: true });
+          initGameMode(model, parts);
+        }
       },
       onError: () => {
         showError('Không tải được file 3D', 'Kiểm tra file trên R2 hoặc CORS, rồi thử lại.');
       },
-      onPartsChange: (parts) => renderParts(parts)
+      onPartsChange: (parts) => {
+        if (!isPhysics) renderParts(parts);
+      }
     });
 
     viewer.load(url, {
@@ -157,11 +170,83 @@ async function loadSpecimen() {
   }
 }
 
+function applyPhysicsModeUi(model) {
+  // 1. Ẩn nút "Tách bộ phận"
+  const btnExplode = document.getElementById('btn-explode');
+  if (btnExplode) btnExplode.style.display = 'none';
+
+  // 2. Ẩn nút "Mờ mạnh hơn"
+  const btnIsolate = document.getElementById('btn-isolate');
+  if (btnIsolate) btnIsolate.style.display = 'none';
+
+  // 3. Ẩn nút "🎮 Thử thách"
+  const btnGame = document.getElementById('btn-game');
+  if (btnGame) btnGame.style.display = 'none';
+
+  // 4. Ẩn tiêu đề "Bộ phận" và danh sách liệt kê bộ phận
+  const partsHead = document.querySelector('.specimen-parts-head');
+  if (partsHead) partsHead.style.display = 'none';
+
+  const partsList = document.getElementById('parts-list');
+  if (partsList) partsList.style.display = 'none';
+
+  // 5. Ẩn hộp ghi chú bộ phận
+  const partNote = document.getElementById('part-note');
+  if (partNote) partNote.style.display = 'none';
+
+  // 6. Cập nhật gợi ý thao tác
+  const hintEl = document.querySelector('.specimen-hint');
+  if (hintEl) {
+    hintEl.textContent = 'Kéo chuột để xoay 360° · Cuộn chuột để phóng to / thu nhỏ mô hình thí nghiệm';
+  }
+
+  // 7. Cập nhật nút quay lại trên header và footer
+  const backBtn = document.querySelector('header a[href*="sinh-hoc"]');
+  if (backBtn) {
+    backBtn.href = '/vat-ly';
+    backBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">arrow_back</span> Kho mô hình Vật lý`;
+  }
+  const bottomBackBtn = document.querySelector('footer a[href*="sinh-hoc"], .specimen-page a[href*="sinh-hoc"]');
+  if (bottomBackBtn) {
+    bottomBackBtn.href = '/vat-ly';
+    bottomBackBtn.textContent = 'Về kho Vật lý';
+  }
+
+  // 8. Kích hoạt nút "⚡ Thử thách Quiz 3D" trên Toolbar
+  const btnQuiz = document.getElementById('btn-physics-quiz');
+  if (btnQuiz) {
+    btnQuiz.style.display = 'inline-flex';
+    btnQuiz.onclick = () => {
+      physicsQuizModal.startQuiz({
+        slug: model?.slug,
+        id: model?.id,
+        modelName: model?.name || 'Mô hình vật lý'
+      });
+    };
+  }
+
+  // 9. Kích hoạt Card Quiz trong Sidebar
+  const quizCard = document.getElementById('physics-quiz-card-container');
+  if (quizCard) {
+    quizCard.style.display = 'block';
+    const btnStart = document.getElementById('btn-start-physics-quiz');
+    if (btnStart) {
+      btnStart.onclick = () => {
+        physicsQuizModal.startQuiz({
+          slug: model?.slug,
+          id: model?.id,
+          modelName: model?.name || 'Mô hình vật lý'
+        });
+      };
+    }
+  }
+}
+
 function renderMeta(model) {
   document.title = `${model.name || 'Mô hình 3D'} - BioVerse`;
   setText('model-name', model.name || 'Mô hình 3D');
   setText('model-latin', specimenLatin(model));
-  setText('model-category', model.category || 'Sinh học');
+  setText('model-category', model.category || (isPhysics ? 'Vật lý' : 'Sinh học'));
 
   const meta = document.getElementById('model-meta');
   if (meta) {
@@ -170,6 +255,19 @@ function renderMeta(model) {
     if (model.badgeText) pills.push(model.badgeText);
     if (model.viewsCount != null) pills.push(`${model.viewsCount} lượt xem`);
     meta.innerHTML = pills.map((label) => `<span class="specimen-pill">${escapeHtml(label)}</span>`).join('');
+  }
+
+  if (model.subject === 'PHYSICS') {
+    const backBtn = document.querySelector('header a[href="/sinh-hoc"]');
+    if (backBtn) {
+      backBtn.href = '/vat-ly';
+      backBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">arrow_back</span> Kho mô hình Vật lý`;
+    }
+    const bottomBackBtn = document.querySelector('footer a[href="/sinh-hoc"], .specimen-page a[href="/sinh-hoc"]');
+    if (bottomBackBtn) {
+      bottomBackBtn.href = '/vat-ly';
+      bottomBackBtn.textContent = 'Về kho Vật lý';
+    }
   }
 
   const copy = document.getElementById('model-copy');
