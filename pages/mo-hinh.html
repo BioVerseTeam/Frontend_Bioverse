@@ -78,6 +78,10 @@
           <span class="material-symbols-outlined">sports_esports</span>
           <span id="btn-game-label">🎮 Thử thách</span>
         </button>
+        <button type="button" id="btn-physics-quiz" class="specimen-tool-btn specimen-tool-btn--quiz" style="display: none; background: #fff9c4; border-color: #2d2d2d; color: #b45309;" title="Làm bài kiểm tra trắc nghiệm 3D Vật lý">
+          <span class="material-symbols-outlined text-[#ed8936]">quiz</span>
+          <span id="btn-physics-quiz-label" class="font-bold">⚡ Thử thách Quiz 3D</span>
+        </button>
       </div>
 
       <p class="specimen-hint">Kéo để xoay · Cuộn để phóng to · Bấm một bộ phận: phần đó nổi viền, phần còn lại mờ đi</p>
@@ -90,6 +94,25 @@
           <div class="specimen-meta" id="model-meta"></div>
         </div>
         <div class="specimen-copy" id="model-copy"></div>
+
+        <!-- KHU VỰC THỬ THÁCH QUIZ VẬT LÝ 3D -->
+        <div id="physics-quiz-card-container" style="display: none;" class="p-4 mx-3 my-3 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-[#2d2d2d] rounded-2xl shadow-[3px_3px_0_#2d2d2d]">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-[#fed7aa] border border-[#2d2d2d] flex items-center justify-center text-sm font-bold shadow-[1px_1px_0_#2d2d2d]">⚡</span>
+              <h3 class="font-['Epilogue'] text-sm font-bold text-gray-900 m-0">Kiểm tra kiến thức 3D</h3>
+            </div>
+            <span class="px-2 py-0.5 bg-white border border-[#2d2d2d] rounded-full text-[10px] font-bold font-['Space_Grotesk'] text-[#c2410c]">5 Câu hỏi</span>
+          </div>
+          <p class="font-['Be_Vietnam_Pro'] text-xs text-gray-600 mb-3 leading-relaxed">
+            Luyện tập ngay câu hỏi trắc nghiệm tương tác về mô hình này để củng cố bài học và nhận tới <strong class="text-[#c2410c]">+50 XP</strong>!
+          </p>
+          <button type="button" id="btn-start-physics-quiz" class="w-full py-2.5 px-3 bg-[#ed8936] hover:bg-[#dd6b20] text-white font-['Space_Grotesk'] font-bold text-xs rounded-xl border-2 border-[#2d2d2d] shadow-[2px_2px_0_#2d2d2d] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span class="material-symbols-outlined text-[18px]">play_circle</span>
+            Bắt đầu làm Quiz ngay
+          </button>
+        </div>
+
         <section id="part-note" class="specimen-note" hidden aria-live="polite">
           <div class="specimen-note-head">
             <span id="note-dot" class="specimen-note-dot"></span>
