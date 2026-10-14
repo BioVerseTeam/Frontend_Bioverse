@@ -13,6 +13,7 @@ import {
   clearAllAuth
 } from '../../utils/storage.js';
 import { authFetch, refreshAccessToken } from '../../api/httpClient.js';
+import { analytics } from '../../services/analytics.js';
 
 const API_BASE = '/api/auth';
 
@@ -91,6 +92,17 @@ export const AuthService = {
     });
 
     setCurrentUser(user);
+    try {
+      analytics.identify(user.id, {
+        email: user.email,
+        fullName: user.fullName || user.name,
+        role: user.role,
+        grade: user.grade,
+      });
+      analytics.trackLogin('password', user.role);
+    } catch (anErr) {
+      console.warn('[Analytics] Login tracking note:', anErr);
+    }
     return user;
   },
 
@@ -189,6 +201,17 @@ export const AuthService = {
     setCurrentUser(user);
     sessionStorage.removeItem('bioverse_otp_email');
     sessionStorage.removeItem('bioverse_otp_flow');
+    try {
+      analytics.identify(user.id, {
+        email: user.email,
+        fullName: user.fullName || user.name,
+        role: user.role,
+        grade: user.grade,
+      });
+      analytics.trackRegister(user.grade);
+    } catch (anErr) {
+      console.warn('[Analytics] Verify register tracking note:', anErr);
+    }
     return user;
   },
 
@@ -339,6 +362,13 @@ export const AuthService = {
       } catch (e) {
         console.warn('Backend logout warning:', e);
       }
+    }
+
+    try {
+      analytics.track('logout');
+      analytics.reset();
+    } catch (anErr) {
+      console.warn('[Analytics] Logout tracking note:', anErr);
     }
 
     clearAllAuth();
