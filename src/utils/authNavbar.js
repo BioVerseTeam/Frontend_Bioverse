@@ -8,6 +8,7 @@ import { getProgress } from '../features/progress/progressService.js';
 import { confirmModal } from '../components/modal.js';
 import { applyAdminChrome, isAdmin, isAdminRoute } from './adminGuard.js';
 import { initHeaderNavAnimations } from './siteNav.js';
+import { analytics } from '../services/analytics.js';
 
 export function setupNavbarAuth() {
   const user = AuthService.getUser();
@@ -55,6 +56,13 @@ export function setupNavbarAuth() {
   }
 
   if (isLoggedIn && user) {
+    analytics.identify(user.id, {
+      email: user.email,
+      fullName: user.name || user.fullName,
+      role: user.role,
+      grade: user.grade,
+    });
+
     const renderUserIdentity = (targetUser) => {
       if (!targetUser) return;
       if (isProfilePage) {

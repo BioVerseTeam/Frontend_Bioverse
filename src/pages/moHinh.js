@@ -12,6 +12,7 @@ import { ModelViewer, resolveModelUrl, parseJsonField } from '../features/model/
 import { looksScientific, looksVietnamese } from '../features/model/partNames.js';
 import { getEligibleGameStructures } from '../features/model/anatomyStructures.js';
 import { FindThePartGame } from '../features/model/findThePartGame.js';
+import { analytics } from '../services/analytics.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -418,6 +419,11 @@ function trackProgress(model) {
     icon: 'biotech'
   });
   if (!seen) addXP(40);
+  try {
+    analytics.trackModelView(model.id, model.name, model.subject === 'CHEMISTRY' ? 'chemistry' : 'biology');
+  } catch (anErr) {
+    console.warn('[Analytics] Track model view note:', anErr);
+  }
 }
 
 function hideLoading() {
