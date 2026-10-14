@@ -11,6 +11,7 @@ import { recordExamResult } from '../progress/progressService.js';
 import { AuthService } from '../auth/authService.js';
 import { setupNavbarAuth } from '../../utils/authNavbar.js';
 import { setupBiologyNav } from '../../utils/siteNav.js';
+import { analytics } from '../../services/analytics.js';
 import { gsap } from 'gsap';
 
 const API_BASE_URL = '/api';
@@ -741,6 +742,12 @@ async function startExamTaking(exam) {
   lastAttemptId = null;
   reviewQuestionsData = null;
 
+  try {
+    analytics.trackExamStart(exam.id, exam.name || exam.code, exam.totalQuestions || 0);
+  } catch (anErr) {
+    console.warn('[Analytics] Track exam start note:', anErr);
+  }
+
   // Auto enter fullscreen for dedicated exam experience
   enterFullscreen();
 
@@ -1417,6 +1424,17 @@ async function submitExam(isAuto = false) {
     window.dispatchEvent(new CustomEvent('bioverse_progress_updated'));
   } catch (err) {
     console.warn('Không thể lưu kết quả bài làm vào local storage:', err);
+  }
+
+  try {
+    analytics.trackExamSubmit(
+      currentExam?.id || 'unknown_exam',
+      resultData.score10,
+      resultData.timeSpentSeconds || timeSpentSeconds,
+      resultData.score10 >= 5.0
+    );
+  } catch (anErr) {
+    console.warn('[Analytics] Track exam submit note:', anErr);
   }
 
   // Display Result Card
