@@ -100,6 +100,58 @@ function bindUi() {
     hideGameExitModal();
     exitGameMode();
   });
+
+  // Mobile Bottom Sheet controls
+  document.getElementById('btn-toggle-bottom-sheet')?.addEventListener('click', toggleBottomSheet);
+  document.getElementById('btn-close-bottom-sheet')?.addEventListener('click', closeBottomSheet);
+  document.getElementById('specimen-sheet-backdrop')?.addEventListener('click', closeBottomSheet);
+  document.getElementById('btn-toast-expand')?.addEventListener('click', openBottomSheet);
+  document.getElementById('btn-toast-close')?.addEventListener('click', hidePartToast);
+
+  // Fullscreen Canvas toggle
+  const btnFullscreen = document.getElementById('btn-fullscreen-toggle');
+  btnFullscreen?.addEventListener('click', () => {
+    document.body.classList.toggle('is-fullscreen');
+    const isFull = document.body.classList.contains('is-fullscreen');
+    const icon = document.getElementById('fullscreen-icon');
+    if (icon) icon.textContent = isFull ? 'fullscreen_exit' : 'fullscreen';
+    setTimeout(() => {
+      viewer?._handleResize?.();
+    }, 150);
+  });
+}
+
+function openBottomSheet() {
+  const sidebar = document.querySelector('.specimen-sidebar');
+  const backdrop = document.getElementById('specimen-sheet-backdrop');
+  const icon = document.getElementById('mobile-sheet-icon');
+  sidebar?.classList.add('is-expanded');
+  backdrop?.classList.add('is-open');
+  if (icon) icon.textContent = 'expand_more';
+  hidePartToast();
+}
+
+function closeBottomSheet() {
+  const sidebar = document.querySelector('.specimen-sidebar');
+  const backdrop = document.getElementById('specimen-sheet-backdrop');
+  const icon = document.getElementById('mobile-sheet-icon');
+  sidebar?.classList.remove('is-expanded');
+  backdrop?.classList.remove('is-open');
+  if (icon) icon.textContent = 'expand_less';
+}
+
+function toggleBottomSheet() {
+  const sidebar = document.querySelector('.specimen-sidebar');
+  if (sidebar?.classList.contains('is-expanded')) {
+    closeBottomSheet();
+  } else {
+    openBottomSheet();
+  }
+}
+
+function hidePartToast() {
+  const toast = document.getElementById('specimen-part-toast');
+  if (toast) toast.hidden = true;
 }
 
 async function loadSpecimen() {
@@ -249,6 +301,9 @@ function renderMeta(model) {
   setText('model-latin', specimenLatin(model));
   setText('model-category', model.category || (isPhysics ? 'Vật lý' : 'Sinh học'));
 
+  const sheetTitle = document.getElementById('mobile-sheet-title');
+  if (sheetTitle) sheetTitle.textContent = model.name || 'Mô hình 3D';
+
   const meta = document.getElementById('model-meta');
   if (meta) {
     const pills = [];
@@ -288,6 +343,12 @@ function renderParts(parts, { animate = false } = {}) {
   const list = document.getElementById('parts-list');
   const count = document.getElementById('parts-count');
   if (count) count.textContent = String(parts?.length || 0);
+
+  const mobileBtnText = document.getElementById('mobile-sheet-btn-text');
+  if (mobileBtnText) {
+    mobileBtnText.textContent = parts?.length ? `Bộ phận (${parts.length})` : 'Chi tiết';
+  }
+
   if (!list) return;
   if (!parts?.length) {
     list.innerHTML = '<p class="font-[\'Be_Vietnam_Pro\'] text-sm text-[#5b403e] px-2">Mô hình này chưa tách bộ phận (một khối mesh).</p>';
@@ -357,10 +418,34 @@ function handlePartClick(part) {
   syncPartList();
   if (!part) {
     hideNote();
+    hidePartToast();
     return;
   }
   showNote(part);
   startPinFollow(part);
+
+  // Mobile feedback: update bottom bar & show floating toast if sheet is closed
+  if (window.innerWidth <= 900) {
+    const sheetDot = document.getElementById('mobile-sheet-dot');
+    const sheetTitle = document.getElementById('mobile-sheet-title');
+    if (sheetDot && part.color) sheetDot.style.background = part.color;
+    if (sheetTitle) sheetTitle.textContent = part.name;
+
+    const sidebar = document.querySelector('.specimen-sidebar');
+    if (!sidebar?.classList.contains('is-expanded')) {
+      const toast = document.getElementById('specimen-part-toast');
+      const toastDot = document.getElementById('part-toast-dot');
+      const toastName = document.getElementById('part-toast-name');
+      const toastDesc = document.getElementById('part-toast-desc');
+
+      if (toast && toastName) {
+        if (toastDot && part.color) toastDot.style.background = part.color;
+        toastName.textContent = part.name;
+        if (toastDesc) toastDesc.textContent = part.description || defaultDescription(part);
+        toast.hidden = false;
+      }
+    }
+  }
 }
 
 function handleHover(part, screen) {
@@ -412,6 +497,7 @@ function hideNote() {
   copy?.classList.remove('is-collapsed');
   pin?.classList.add('hidden');
   cancelAnimationFrame(pinFrame);
+  hidePartToast();
 }
 
 function startPinFollow(part) {

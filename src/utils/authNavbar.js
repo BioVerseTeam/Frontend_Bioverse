@@ -9,6 +9,7 @@ import { confirmModal } from '../components/modal.js';
 import { applyAdminChrome, isAdmin, isAdminRoute } from './adminGuard.js';
 import { initHeaderNavAnimations } from './siteNav.js';
 import { analytics } from '../services/analytics.js';
+import { setupMobileNavigation } from './mobileNav.js';
 
 export function setupNavbarAuth() {
   const user = AuthService.getUser();
@@ -39,6 +40,7 @@ export function setupNavbarAuth() {
     insertPricingNav();
   }
   initHeaderNavAnimations();
+  setupMobileNavigation(isLoggedIn ? user : null, isLoggedIn);
 
   const cluster = document.getElementById('header-user-cluster')
     || document.querySelector('header .admin-topbar-identity')
@@ -148,6 +150,7 @@ export function setupNavbarAuth() {
       if (freshUser) {
         renderUserIdentity(freshUser);
         renderHeaderStreak(freshUser);
+        setupMobileNavigation(freshUser, true);
         window.dispatchEvent(new CustomEvent('bioverse_streak_updated', { detail: freshUser }));
       }
     }).catch(() => {});
@@ -159,6 +162,7 @@ export function setupNavbarAuth() {
         const updatedUser = e.detail;
         if (updatedUser) {
           renderUserIdentity(updatedUser);
+          setupMobileNavigation(updatedUser, true);
         }
       });
     }

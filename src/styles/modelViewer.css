@@ -467,26 +467,230 @@
   display: none;
 }
 
+/* ============================================================
+   RESPONSIVE MOBILE 3D STAGE & BOTTOM SHEET (UI/UX PRO MAX)
+   ============================================================ */
+
+/* Desktop defaults: hide mobile-only elements */
+.specimen-mobile-sheet-bar,
+.specimen-part-toast,
+.specimen-sheet-backdrop,
+.mobile-sheet-header {
+  display: none !important;
+}
+
 @media (max-width: 900px) {
+  /* Show mobile controls */
+  .specimen-mobile-sheet-bar,
+  .mobile-sheet-header {
+    display: flex !important;
+  }
+
+  .specimen-stage {
+    height: calc(100dvh - 56px);
+    margin-top: 56px;
+  }
+
   .specimen-overlay {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto;
-    padding: 10px;
+    grid-template-rows: auto 1fr;
+    padding: 8px;
+    gap: 8px;
   }
 
-  .specimen-sidebar {
+  /* Sleek Horizontal Scrollable Toolbar */
+  .specimen-toolbar {
     grid-column: 1;
-    grid-row: 4;
-    max-height: 40vh;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px;
+    padding: 6px 8px;
+    background: rgba(253, 251, 247, 0.94);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 2px solid #2d2d2d;
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 #2d2d2d;
+    max-width: 100%;
+  }
+  .specimen-toolbar::-webkit-scrollbar {
+    display: none;
   }
 
+  .specimen-tool-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    min-height: 36px;
+  }
+
+  /* Compact hint above bottom bar */
   .specimen-hint {
-    grid-row: 3;
+    position: absolute;
+    bottom: calc(max(10px, env(safe-area-inset-bottom, 10px)) + 52px);
+    left: 10px;
+    right: 10px;
+    z-index: 10;
+    max-width: calc(100% - 20px);
+    font-size: 11px;
+    padding: 6px 10px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 2px 2px 0 #2d2d2d;
+    margin: 0 auto;
+  }
+
+  /* Mobile Bottom Bar for 3D Viewport */
+  .specimen-mobile-sheet-bar {
+    position: absolute;
+    bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    left: 10px;
+    right: 10px;
+    z-index: 25;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    background: rgba(253, 251, 247, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2.5px solid #2d2d2d;
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 #2d2d2d;
+    padding: 4px;
+  }
+
+  .specimen-sheet-trigger-bar {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 7px 10px;
+    text-align: left;
+    width: 100%;
+  }
+
+  /* Floating Part Toast (when student taps a 3D part) */
+  .specimen-part-toast {
+    position: absolute;
+    bottom: calc(max(10px, env(safe-area-inset-bottom, 10px)) + 52px);
+    left: 10px;
+    right: 10px;
+    z-index: 26;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff9c4;
+    border: 2px solid #2d2d2d;
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 #2d2d2d;
+    animation: toastSpring 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .specimen-part-toast[hidden] {
+    display: none !important;
+  }
+
+  /* Mobile Bottom Sheet Backdrop */
+  .specimen-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(45, 45, 45, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 38;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .specimen-sheet-backdrop.is-open {
+    display: block !important;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Sidebar transforms into bottom sheet drawer */
+  .specimen-sidebar {
+    position: fixed;
+    inset-x: 0;
+    bottom: 0;
+    z-index: 39;
+    background: #fdfbf7;
+    border: 2.5px solid #2d2d2d;
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 24px rgba(45, 45, 45, 0.2);
+    max-height: 80vh;
+    transform: translateY(105%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    pointer-events: auto;
+  }
+  .specimen-sidebar.is-expanded {
+    transform: translateY(0);
+  }
+
+  .mobile-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px 2px;
+  }
+  .sheet-drag-handle {
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    background: #2d2d2d;
+    margin: 0 auto;
+    opacity: 0.35;
+  }
+  .mobile-sheet-close-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: 1.5px solid #2d2d2d;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
   }
 
   .specimen-copy {
-    max-height: 12vh;
+    max-height: 16vh;
   }
+
+  .specimen-parts {
+    padding-bottom: 24px;
+  }
+}
+
+@keyframes toastSpring {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Fullscreen Immersive 3D Mode */
+body.is-fullscreen header {
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+body.is-fullscreen .specimen-stage {
+  height: 100dvh !important;
+  margin-top: 0 !important;
 }
 
 /* ============================================================
