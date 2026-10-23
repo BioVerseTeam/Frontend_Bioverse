@@ -88,10 +88,14 @@ function bindControls() {
     });
   }
 
+  const gradeGroup = document.querySelector('[role="group"][aria-label="Lọc theo khối lớp"]');
+  if (gradeGroup) enableHorizontalWheelScroll(gradeGroup);
+
   document.querySelectorAll('[data-grade]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const value = btn.dataset.grade;
       applyFilters({ grade: value ? Number(value) : null, page: 0 });
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     });
   });
 
@@ -117,6 +121,29 @@ function bindControls() {
   });
 }
 
+const DEFAULT_PHYSICS_CATEGORIES = [
+  'Cơ học',
+  'Nhiệt học',
+  'Quang học',
+  'Điện học',
+  'Từ học',
+  'Âm học',
+  'Áp suất',
+  'Lực & Chuyển động',
+  'Năng lượng & Công'
+];
+
+function enableHorizontalWheelScroll(el) {
+  if (!el || el.dataset.wheelBound) return;
+  el.dataset.wheelBound = 'true';
+  el.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
+}
+
 function applyFilters(next) {
   Object.assign(state, next);
   writeFiltersToUrl();
@@ -140,6 +167,9 @@ function syncCategoryChips() {
     const active = value === state.category;
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     btn.classList.toggle('is-active', active);
+    if (active) {
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   });
 }
 
@@ -150,22 +180,30 @@ async function loadCategories() {
   const wrap = document.getElementById('catalog-categories');
   if (!wrap) return;
 
+  enableHorizontalWheelScroll(wrap);
+
+  let categories = [];
   try {
-    const categories = await physicsModelApi.getCategories();
-    const chips = [
-      chipButton('', 'Tất cả thể loại', !state.category),
-      ...categories.map((name) => chipButton(name, name, state.category === name))
-    ];
-    wrap.innerHTML = chips.join('');
-    wrap.querySelectorAll('[data-category]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        applyFilters({ category: btn.dataset.category || null, page: 0 });
-      });
-    });
+    categories = await physicsModelApi.getCategories();
   } catch (err) {
-    console.warn('Lỗi khi tải thể loại vật lý từ backend:', err);
-    wrap.innerHTML = `<span class="text-xs text-[#76716a] font-['Space_Grotesk']">Đang kết nối backend...</span>`;
+    console.warn('Lỗi khi tải thể loại vật lý từ backend, chuyển sang danh mục mặc định:', err);
   }
+
+  if (!Array.isArray(categories) || categories.length === 0) {
+    categories = DEFAULT_PHYSICS_CATEGORIES;
+  }
+
+  const chips = [
+    chipButton('', 'Tất cả thể loại', !state.category),
+    ...categories.map((name) => chipButton(name, name, state.category === name))
+  ];
+  wrap.innerHTML = chips.join('');
+  wrap.querySelectorAll('[data-category]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      applyFilters({ category: btn.dataset.category || null, page: 0 });
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
+  });
 }
 
 function chipButton(value, label, active) {

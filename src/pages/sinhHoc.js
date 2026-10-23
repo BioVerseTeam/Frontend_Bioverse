@@ -89,10 +89,14 @@ function bindControls() {
     });
   }
 
+  const gradeGroup = document.querySelector('[role="group"][aria-label="Lọc theo khối lớp"]');
+  if (gradeGroup) enableHorizontalWheelScroll(gradeGroup);
+
   document.querySelectorAll('[data-grade]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const value = btn.dataset.grade;
       applyFilters({ grade: value ? Number(value) : null, page: 0 });
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     });
   });
 
@@ -132,12 +136,43 @@ function syncGradeChips() {
   });
 }
 
+const DEFAULT_CATEGORIES = [
+  'Hệ thần kinh',
+  'Hệ tuần hoàn',
+  'Hệ hô hấp',
+  'Hệ tiêu hóa',
+  'Giải phẫu',
+  'Cơ quan nội tạng',
+  'Tế bào',
+  'Phân bào',
+  'Thực vật',
+  'Vi sinh vật',
+  'Động vật nguyên sinh',
+  'Hệ vận động',
+  'Hóa học thực nghiệm',
+  'Sinh học tế bào'
+];
+
+function enableHorizontalWheelScroll(el) {
+  if (!el || el.dataset.wheelBound) return;
+  el.dataset.wheelBound = 'true';
+  el.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
+}
+
 function syncCategoryChips() {
   document.querySelectorAll('[data-category]').forEach((btn) => {
     const value = btn.dataset.category || null;
     const active = value === state.category;
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     btn.classList.toggle('is-active', active);
+    if (active) {
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   });
 }
 
@@ -145,22 +180,30 @@ async function loadCategories() {
   const wrap = document.getElementById('catalog-categories');
   if (!wrap) return;
 
+  enableHorizontalWheelScroll(wrap);
+
+  let categories = [];
   try {
-    const categories = await getCategories(SUBJECT);
-    const chips = [
-      chipButton('', 'Tất cả thể loại', !state.category),
-      ...(categories || []).map((name) => chipButton(name, name, state.category === name))
-    ];
-    wrap.innerHTML = chips.join('');
-    wrap.querySelectorAll('[data-category]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        applyFilters({ category: btn.dataset.category || null, page: 0 });
-      });
-    });
+    categories = await getCategories(SUBJECT);
   } catch (err) {
-    wrap.innerHTML = `<p class="font-body-sm text-sm text-[#5b403e]">Không tải được danh sách thể loại.</p>`;
-    console.warn(err);
+    console.warn('Lỗi khi tải danh sách thể loại từ backend, chuyển sang danh mục mặc định:', err);
   }
+
+  if (!Array.isArray(categories) || categories.length === 0) {
+    categories = DEFAULT_CATEGORIES;
+  }
+
+  const chips = [
+    chipButton('', 'Tất cả thể loại', !state.category),
+    ...categories.map((name) => chipButton(name, name, state.category === name))
+  ];
+  wrap.innerHTML = chips.join('');
+  wrap.querySelectorAll('[data-category]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      applyFilters({ category: btn.dataset.category || null, page: 0 });
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
+  });
 }
 
 function chipButton(value, label, active) {
