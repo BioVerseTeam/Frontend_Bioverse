@@ -7,42 +7,55 @@ import { setupBiologyNav } from '../utils/siteNav.js';
 const FALLBACK_PLANS = [
   {
     id: 1,
-    name: 'Gói Tháng',
+    name: 'Student 1 month',
     slug: 'monthly',
     description: 'Truy cập đầy đủ nội dung trong 30 ngày',
     durationDays: 30,
-    price: 2000,
-    originalPrice: 49000,
-    discountPercentage: 96,
+    price: 69000,
+    originalPrice: 89000,
+    discountPercentage: 22,
     features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Học trên mọi thiết bị'],
     status: 'ACTIVE',
     sortOrder: 1
   },
   {
     id: 2,
-    name: 'Gói Quý',
+    name: 'Student 3 months',
     slug: 'quarterly',
     description: 'Tiết kiệm hơn khi học theo học kỳ',
     durationDays: 90,
-    price: 129000,
-    originalPrice: 237000,
-    discountPercentage: 46,
+    price: 199000,
+    originalPrice: 267000,
+    discountPercentage: 25,
     features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Ưu tiên hỗ trợ', 'Mở khoá toàn bộ Lab'],
     status: 'ACTIVE',
     sortOrder: 2
   },
   {
     id: 3,
-    name: 'Gói Năm',
+    name: 'Student 6 months',
+    slug: 'semi-annual',
+    description: 'Gói học tập bán niên 180 ngày toàn diện',
+    durationDays: 180,
+    price: 389000,
+    originalPrice: 534000,
+    discountPercentage: 27,
+    features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Ưu tiên hỗ trợ', 'Mở khoá toàn bộ Lab'],
+    status: 'ACTIVE',
+    sortOrder: 3
+  },
+  {
+    id: 4,
+    name: 'Student 1 year',
     slug: 'yearly',
     description: 'Học cả năm với mức giá tốt nhất',
     durationDays: 365,
-    price: 399000,
-    originalPrice: 948000,
-    discountPercentage: 58,
+    price: 749000,
+    originalPrice: 1068000,
+    discountPercentage: 30,
     features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Ưu tiên hỗ trợ', 'Mọi tính năng mới sớm nhất'],
     status: 'ACTIVE',
-    sortOrder: 3
+    sortOrder: 4
   }
 ];
 
