@@ -114,12 +114,12 @@
 
         <div>
           <label class="block mb-1 text-gray-700">Tên gói cước *</label>
-          <input type="text" id="plan-name" required placeholder="VD: Gói Tháng, Gói Học Kỳ..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+          <input type="text" id="plan-name" required placeholder="VD: Student 1 month, Student 3 months..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
         </div>
 
         <div>
           <label class="block mb-1 text-gray-700">Mã Slug (tùy chọn, tự sinh nếu để trống)</label>
-          <input type="text" id="plan-slug" placeholder="monthly, quarterly, yearly..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+          <input type="text" id="plan-slug" placeholder="monthly, quarterly, semi-annual, yearly..." class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -128,6 +128,7 @@
             <select id="plan-duration" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal bg-white">
               <option value="MONTHLY">Tháng (MONTHLY)</option>
               <option value="QUARTERLY">Quý (QUARTERLY)</option>
+              <option value="SEMI_ANNUAL">6 Tháng (SEMI_ANNUAL)</option>
               <option value="YEARLY">Năm (YEARLY)</option>
             </select>
           </div>
@@ -140,11 +141,11 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block mb-1 text-gray-700">Giá bán (VND) *</label>
-            <input type="number" id="plan-price" required min="0" step="1000" placeholder="49000" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+            <input type="number" id="plan-price" required min="0" step="1000" placeholder="69000" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
           </div>
           <div>
             <label class="block mb-1 text-gray-700">Giá gốc (VND, để gạch ngang)</label>
-            <input type="number" id="plan-original-price" min="0" step="1000" placeholder="79000" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
+            <input type="number" id="plan-original-price" min="0" step="1000" placeholder="89000" class="w-full border-2 border-[#2d2d2d] rounded-xl p-2.5 font-normal">
           </div>
         </div>
 
