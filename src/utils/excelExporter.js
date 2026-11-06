@@ -156,7 +156,6 @@ function escapeXml(str) {
 export function formatFeedbacksForExport(feedbacks = []) {
   return feedbacks.map((f, idx) => ({
     'STT': idx + 1,
-    'Mã ID': f.id,
     'Ngày gửi': formatDate(f.createdAt),
     'Người gửi': f.userName || 'Khách ẩn danh',
     'Email liên hệ': f.userEmail || '—',
