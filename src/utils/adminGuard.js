@@ -40,6 +40,12 @@ export const ADMIN_NAV = [
       { href: '/admin-plans', path: 'admin-plans', label: 'Gói cước', icon: 'loyalty' },
       { href: '/admin-payments', path: 'admin-payments', label: 'Thanh toán & Sub', icon: 'payments' }
     ]
+  },
+  {
+    label: 'Tương tác',
+    items: [
+      { href: '/admin-feedbacks', path: 'admin-feedbacks', label: 'Góp ý người dùng', icon: 'rate_review' }
+    ]
   }
 ];
 
@@ -130,6 +136,9 @@ export function currentAdminPath() {
   if (path.includes('admin-academic')) return 'admin-academic';
   if (path.includes('admin-users')) return 'admin-users';
   if (path.includes('admin-roles')) return 'admin-roles';
+  if (path.includes('admin-plans')) return 'admin-plans';
+  if (path.includes('admin-payments')) return 'admin-payments';
+  if (path.includes('admin-feedbacks')) return 'admin-feedbacks';
   return 'admin';
 }
 
@@ -312,7 +321,8 @@ function pageTitle(current) {
     'admin-users': 'Người dùng',
     'admin-roles': 'Vai trò',
     'admin-plans': 'Gói cước Premium',
-    'admin-payments': 'Thanh toán & Subscriptions'
+    'admin-payments': 'Thanh toán & Subscriptions',
+    'admin-feedbacks': 'Góp ý người dùng'
   };
   return titles[current] || 'Phòng điều hành';
 }

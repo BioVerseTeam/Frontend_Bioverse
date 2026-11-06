@@ -102,6 +102,7 @@ function bindDesk() {
     if (key === 'm') window.location.href = '/admin-models';
     if (key === 'u') window.location.href = '/admin-users';
     if (key === 'r') window.location.href = '/admin-roles';
+    if (key === 'f') window.location.href = '/admin-feedbacks';
     if (key === 'n') window.location.href = '/admin-models?create=1';
   });
 }
@@ -549,6 +550,9 @@ function updateJump(raw) {
   }
   if (q.length >= 2 && ['vai trò', 'vai tro', 'role', 'quyền'].some((term) => term.includes(q) || q.includes(term))) {
     extras.push({ href: '/admin-roles', title: 'Mở vai trò', detail: 'Tạo hoặc sửa role', group: 'Lối tắt' });
+  }
+  if (q.length >= 2 && ['góp ý', 'gop y', 'feedback', 'báo lỗi', 'bao loi', 'phản hồi', 'phan hoi', 'excel'].some((term) => term.includes(q) || q.includes(term))) {
+    extras.push({ href: '/admin-feedbacks', title: 'Hòm thư góp ý & Báo lỗi', detail: 'Xem phản hồi người dùng & xuất Excel', group: 'Lối tắt' });
   }
 
   const roles = state.roles

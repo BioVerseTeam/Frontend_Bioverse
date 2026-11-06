@@ -1,0 +1,427 @@
+/* ============================================================
+   BIOVERSE USER FEEDBACK WIDGET - NEO-BRUTALIST SKETCHBOOK
+   ============================================================ */
+
+/* 1. Floating Launcher Button */
+.bv-feedback-launcher {
+  position: fixed;
+  bottom: 24px;
+  right: 94px;
+  z-index: 99998;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #1b1c1c;
+  border: 2.5px solid #2d2d2d;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  border-radius: 9999px;
+  padding: 8px 16px 8px 12px;
+  cursor: pointer;
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+  user-select: none;
+}
+
+.bv-feedback-launcher:hover {
+  background: #fdfbf7;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #2d2d2d;
+}
+
+.bv-feedback-launcher:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #2d2d2d;
+}
+
+.bv-feedback-launcher-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #db3237;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #2d2d2d;
+  flex-shrink: 0;
+}
+
+.bv-feedback-launcher-icon .material-symbols-outlined {
+  font-size: 18px;
+}
+
+@media (max-width: 640px) {
+  .bv-feedback-launcher {
+    bottom: 92px;
+    right: 24px;
+    padding: 8px 12px;
+  }
+}
+
+/* 2. Modal Backdrop & Container */
+.bv-feedback-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(27, 28, 28, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bv-feedback-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bv-feedback-modal {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fdfbf7;
+  background-image: radial-gradient(#2d2d2d 0.75px, transparent 0.75px);
+  background-size: 16px 16px;
+  border: 2.5px solid #2d2d2d;
+  box-shadow: 7px 7px 0 #2d2d2d;
+  border-radius: 20px;
+  padding: 24px 28px;
+  font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+  color: #1b1c1c;
+  transform: translateY(20px) scale(0.95);
+  box-sizing: border-box;
+}
+
+/* 3. Header */
+.bv-feedback-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px dashed #d5cfc4;
+}
+
+.bv-feedback-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bv-feedback-stamp {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #b71422;
+  border: 2px solid #2d2d2d;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transform: rotate(-3deg);
+  flex-shrink: 0;
+}
+
+.bv-feedback-title {
+  margin: 0;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1b1c1c;
+  letter-spacing: -0.02em;
+}
+
+.bv-feedback-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #5b403e;
+  line-height: 1.4;
+}
+
+.bv-feedback-close {
+  background: transparent;
+  border: 2px solid #2d2d2d;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #2d2d2d;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.bv-feedback-close:hover {
+  background: #ffdad6;
+  color: #b71422;
+  transform: rotate(90deg);
+}
+
+/* 4. Category Selector */
+.bv-feedback-section-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5b403e;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bv-feedback-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.bv-feedback-chip {
+  background: #ffffff;
+  border: 1.5px solid #2d2d2d;
+  border-radius: 9999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d2d2d;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 1.5px 1.5px 0 #2d2d2d;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.bv-feedback-chip:hover {
+  background: #f6f3f2;
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0 #2d2d2d;
+}
+
+.bv-feedback-chip.is-active {
+  background: #b71422;
+  color: #ffffff;
+  border-color: #2d2d2d;
+  box-shadow: 2px 2px 0 #2d2d2d;
+}
+
+/* 5. Rating Stars */
+.bv-feedback-rating-wrapper {
+  background: #ffffff;
+  border: 2px solid #2d2d2d;
+  box-shadow: 2px 2px 0 #2d2d2d;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bv-feedback-stars-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bv-feedback-star {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: color 0.15s ease, transform 0.15s ease;
+  line-height: 1;
+}
+
+.bv-feedback-star .material-symbols-outlined {
+  font-size: 30px;
+  font-variation-settings: 'FILL' 1;
+}
+
+.bv-feedback-star.is-lit {
+  color: #f59e0b;
+}
+
+.bv-feedback-star:hover {
+  transform: scale(1.15);
+}
+
+.bv-feedback-rating-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b71422;
+  min-height: 18px;
+}
+
+/* 6. Form Fields */
+.bv-feedback-field {
+  margin-bottom: 14px;
+}
+
+.bv-feedback-input,
+.bv-feedback-textarea {
+  width: 100%;
+  background: #ffffff;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px;
+  color: #1b1c1c;
+  outline: none;
+  box-sizing: border-box;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.bv-feedback-input:focus,
+.bv-feedback-textarea:focus {
+  border-color: #b71422;
+  box-shadow: 3px 3px 0 #b71422;
+}
+
+.bv-feedback-textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.bv-feedback-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 480px) {
+  .bv-feedback-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bv-feedback-device-tag {
+  background: #f6f3f2;
+  border: 1px dashed #76716a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #5b403e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+/* 7. Action Footer */
+.bv-feedback-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.bv-feedback-btn-cancel {
+  background: transparent;
+  border: 2px solid #2d2d2d;
+  border-radius: 12px;
+  padding: 9px 18px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2d2d2d;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bv-feedback-btn-cancel:hover {
+  background: #eae7e7;
+}
+
+.bv-feedback-btn-submit {
+  background: #b71422;
+  color: #ffffff;
+  border: 2px solid #2d2d2d;
+  box-shadow: 3px 3px 0 #2d2d2d;
+  border-radius: 12px;
+  padding: 9px 22px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.bv-feedback-btn-submit:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #2d2d2d;
+}
+
+.bv-feedback-btn-submit:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #2d2d2d;
+}
+
+.bv-feedback-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 8. Success Screen */
+.bv-feedback-success {
+  text-align: center;
+  padding: 30px 10px;
+}
+
+.bv-feedback-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #00864c;
+  color: #ffffff;
+  border: 2.5px solid #2d2d2d;
+  box-shadow: 4px 4px 0 #2d2d2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+.bv-feedback-success-icon .material-symbols-outlined {
+  font-size: 36px;
+}
+
+.bv-feedback-success-title {
+  font-family: 'Epilogue', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1b1c1c;
+  margin: 0 0 8px 0;
+}
+
+.bv-feedback-success-desc {
+  font-size: 13px;
+  color: #5b403e;
+  max-width: 380px;
+  margin: 0 auto 20px auto;
+  line-height: 1.5;
+}
