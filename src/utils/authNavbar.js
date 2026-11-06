@@ -10,6 +10,7 @@ import { applyAdminChrome, isAdmin, isAdminRoute } from './adminGuard.js';
 import { initHeaderNavAnimations } from './siteNav.js';
 import { analytics } from '../services/analytics.js';
 import { setupMobileNavigation } from './mobileNav.js';
+import { initFeedbackWidget } from '../components/feedbackWidget.js';
 
 export function setupNavbarAuth() {
   const user = AuthService.getUser();
@@ -38,6 +39,11 @@ export function setupNavbarAuth() {
   } else {
     insertAdminNav(isLoggedIn ? user : null);
     insertPricingNav();
+    try {
+      initFeedbackWidget();
+    } catch (e) {
+      console.warn('Feedback widget init note:', e);
+    }
   }
   initHeaderNavAnimations();
   setupMobileNavigation(isLoggedIn ? user : null, isLoggedIn);
