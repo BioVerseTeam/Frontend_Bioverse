@@ -231,7 +231,7 @@ function renderTable(feedbacks) {
     <table class="w-full text-left text-xs border-collapse">
       <thead>
         <tr class="bg-[#f9f7f2] border-b-2 border-[#2d2d2d] text-gray-700 font-bold uppercase tracking-wider text-[11px]">
-          <th class="p-3 w-16 text-center">ID</th>
+          <th class="p-3 w-14 text-center">STT</th>
           <th class="p-3 w-48">Người gửi</th>
           <th class="p-3 w-36">Chủ đề</th>
           <th class="p-3 w-28 text-center">Đánh giá</th>
@@ -242,9 +242,11 @@ function renderTable(feedbacks) {
         </tr>
       </thead>
       <tbody id="feedback-table-body" class="divide-y divide-gray-200">
-        ${feedbacks.map((f, idx) => `
+        ${feedbacks.map((f, idx) => {
+          const stt = currentPage * pageSize + idx + 1;
+          return `
           <tr class="hover:bg-[#fdfbf7] transition-colors feedback-row" data-id="${f.id}">
-            <td class="p-3 text-center font-mono font-bold text-gray-600">#${f.id}</td>
+            <td class="p-3 text-center font-mono font-bold text-gray-700">${stt}</td>
             <td class="p-3">
               <div class="font-bold text-[#1b1c1c]">${escapeHtml(f.userName || 'Khách ẩn danh')}</div>
               <div class="text-[11px] text-gray-500 font-mono">${escapeHtml(f.userEmail || '—')}</div>
@@ -275,7 +277,8 @@ function renderTable(feedbacks) {
               </button>
             </td>
           </tr>
-        `).join('')}
+        `;
+        }).join('')}
       </tbody>
     </table>
   `;
@@ -339,7 +342,7 @@ function updatePagination() {
   // Prev button
   const prevBtn = document.createElement('button');
   prevBtn.type = 'button';
-  prevBtn.className = `px-3 py-1.5 rounded-lg border border-[#2d2d2d] bg-white font-bold text-xs flex items-center ${currentPage === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100'}`;
+  prevBtn.className = `px-3 py-1.5 rounded-lg border border-[#2d2d2d] bg-white font-bold text-xs flex items-center gap-0.5 ${currentPage === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer shadow-sm'}`;
   prevBtn.disabled = currentPage === 0;
   prevBtn.innerHTML = '<span class="material-symbols-outlined text-[14px]">chevron_left</span> Trước';
   prevBtn.addEventListener('click', () => {
@@ -350,16 +353,44 @@ function updatePagination() {
   });
   controls.appendChild(prevBtn);
 
-  // Page indicator
-  const pageTag = document.createElement('span');
-  pageTag.className = 'px-3 py-1 font-mono font-bold text-xs';
-  pageTag.textContent = `${currentPage + 1} / ${totalPages || 1}`;
-  controls.appendChild(pageTag);
+  // Numbered page buttons
+  if (totalPages > 1) {
+    const maxButtons = 5;
+    let startPage = Math.max(0, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + maxButtons);
+    if (endPage - startPage < maxButtons) {
+      startPage = Math.max(0, endPage - maxButtons);
+    }
+
+    for (let p = startPage; p < endPage; p++) {
+      const pBtn = document.createElement('button');
+      pBtn.type = 'button';
+      const isActive = p === currentPage;
+      pBtn.className = `w-7 h-7 rounded-lg border font-mono text-xs font-bold transition-all cursor-pointer ${
+        isActive 
+          ? 'bg-[#b71422] text-white border-[#2d2d2d] shadow-sm scale-105' 
+          : 'bg-white text-gray-700 border-[#2d2d2d] hover:bg-gray-100'
+      }`;
+      pBtn.textContent = String(p + 1);
+      pBtn.addEventListener('click', () => {
+        if (p !== currentPage) {
+          currentPage = p;
+          loadData();
+        }
+      });
+      controls.appendChild(pBtn);
+    }
+  } else {
+    const pageTag = document.createElement('span');
+    pageTag.className = 'px-3 py-1 font-mono font-bold text-xs text-gray-700';
+    pageTag.textContent = `Trang 1 / 1`;
+    controls.appendChild(pageTag);
+  }
 
   // Next button
   const nextBtn = document.createElement('button');
   nextBtn.type = 'button';
-  nextBtn.className = `px-3 py-1.5 rounded-lg border border-[#2d2d2d] bg-white font-bold text-xs flex items-center ${currentPage >= totalPages - 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100'}`;
+  nextBtn.className = `px-3 py-1.5 rounded-lg border border-[#2d2d2d] bg-white font-bold text-xs flex items-center gap-0.5 ${currentPage >= totalPages - 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer shadow-sm'}`;
   nextBtn.disabled = currentPage >= totalPages - 1;
   nextBtn.innerHTML = 'Sau <span class="material-symbols-outlined text-[14px]">chevron_right</span>';
   nextBtn.addEventListener('click', () => {
