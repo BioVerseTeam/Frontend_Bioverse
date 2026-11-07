@@ -4,6 +4,14 @@ import { alertModal, confirmModal, showToast } from '../components/modal.js';
 import { setupNavbarAuth } from '../utils/authNavbar.js';
 import { setupBiologyNav } from '../utils/siteNav.js';
 
+const UNIFIED_FEATURES = [
+  'Lý thuyết 3D',
+  'Bài tập & đề thi',
+  'Chat AI',
+  'Ưu tiên hỗ trợ',
+  'Mở khoá toàn bộ Lab'
+];
+
 const FALLBACK_PLANS = [
   {
     id: 1,
@@ -14,7 +22,7 @@ const FALLBACK_PLANS = [
     price: 69000,
     originalPrice: 89000,
     discountPercentage: 22,
-    features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Học trên mọi thiết bị'],
+    features: [...UNIFIED_FEATURES],
     status: 'ACTIVE',
     sortOrder: 1
   },
@@ -27,7 +35,7 @@ const FALLBACK_PLANS = [
     price: 199000,
     originalPrice: 267000,
     discountPercentage: 25,
-    features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Ưu tiên hỗ trợ', 'Mở khoá toàn bộ Lab'],
+    features: [...UNIFIED_FEATURES],
     status: 'ACTIVE',
     sortOrder: 2
   },
@@ -40,7 +48,7 @@ const FALLBACK_PLANS = [
     price: 389000,
     originalPrice: 534000,
     discountPercentage: 27,
-    features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Ưu tiên hỗ trợ', 'Mở khoá toàn bộ Lab'],
+    features: [...UNIFIED_FEATURES],
     status: 'ACTIVE',
     sortOrder: 3
   },
@@ -53,7 +61,7 @@ const FALLBACK_PLANS = [
     price: 749000,
     originalPrice: 1068000,
     discountPercentage: 30,
-    features: ['Lý thuyết 3D', 'Bài tập & đề thi', 'Chat AI', 'Ưu tiên hỗ trợ', 'Mọi tính năng mới sớm nhất'],
+    features: [...UNIFIED_FEATURES],
     status: 'ACTIVE',
     sortOrder: 4
   }
@@ -108,7 +116,9 @@ async function loadPlans() {
 
   container.innerHTML = plans.map((plan, index) => {
     const isPopular = plan.slug === 'quarterly' || index === 1;
-    const features = Array.isArray(plan.features) ? plan.features : [];
+    const features = (Array.isArray(plan.features) && plan.features.length >= 5)
+      ? plan.features
+      : UNIFIED_FEATURES;
 
     return `
       <div class="relative flex flex-col justify-between bg-white border-[2.5px] border-[#2d2d2d] rounded-2xl p-6 md:p-8 sketch-shadow transition-transform hover:-translate-y-1.5 ${isPopular ? 'ring-4 ring-primary ring-offset-2' : ''}">
