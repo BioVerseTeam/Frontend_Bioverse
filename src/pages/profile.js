@@ -16,6 +16,7 @@ import {
   changeUserPassword
 } from '../api/userProfileApi.js';
 import { listPublicBadges } from '../api/badgeApi.js';
+import { getMySubscription } from '../api/subscriptionApi.js';
 
 // 12 Danh Hiệu Khoa Học STEM BioVerse Mặc Định (Thiết kế mở rộng theo chuẩn RPG / Gamification)
 const DEFAULT_STEM_BADGES = [
@@ -456,6 +457,103 @@ function initProfilePage() {
   // 3. Đồng bộ dữ liệu mới nhất từ máy chủ ngầm trong nền
   loadUserProfile();
   syncBadgesFromApi(cachedUser);
+  loadSubscriptionInfo();
+}
+
+/**
+ * Tải và hiển thị thông tin gói cước đang sử dụng của học sinh
+ */
+async function loadSubscriptionInfo() {
+  const cardBadge = document.getElementById('sub-card-badge');
+  const cardContent = document.getElementById('sub-card-content');
+  const premiumRoleBadge = document.getElementById('profile-badge-premium');
+  if (!cardContent) return;
+
+  try {
+    const sub = await getMySubscription();
+    if (sub?.isPremium && !sub?.isFreeAccessMode && sub?.activeSubscription) {
+      if (premiumRoleBadge) {
+        premiumRoleBadge.classList.remove('hidden');
+        premiumRoleBadge.classList.add('inline-flex');
+      }
+      if (cardBadge) {
+        cardBadge.className = "font-['Space_Grotesk'] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#2e7d32] bg-[#e8f5e9] text-[#2e7d32]";
+        cardBadge.textContent = 'Đang kích hoạt';
+      }
+      const planName = sub.activeSubscription.plan?.name || 'Gói Student';
+      const days = sub.daysRemaining != null ? sub.daysRemaining : 0;
+      const expireDate = sub.expiresAt
+        ? new Date(sub.expiresAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        : 'Vô thời hạn';
+
+      cardContent.innerHTML = `
+        <div class="flex items-baseline justify-between mb-2">
+          <h4 class="font-['Epilogue'] text-base sm:text-lg font-black text-[#1b1c1c]">${planName}</h4>
+          <span class="font-['Space_Grotesk'] text-xs font-bold text-primary">Còn ${days} ngày</span>
+        </div>
+        <div class="bg-[#fdfbf7] border border-[#2d2d2d]/20 rounded-xl p-3 text-xs space-y-1.5 text-[#5b403e]">
+          <div class="flex justify-between">
+            <span>Ngày hết hạn:</span>
+            <span class="font-bold text-[#1b1c1c]">${expireDate}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Đặc quyền:</span>
+            <span class="font-bold text-[#2e7d32]">Mở khoá toàn bộ 3D & Lab</span>
+          </div>
+        </div>
+        <a href="/pricing" class="w-full mt-3 neo-btn neo-btn-secondary rounded-xl py-2 text-xs font-bold flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">autorenew</span>
+          <span>Gia hạn / Đổi gói cước</span>
+        </a>
+      `;
+    } else if (sub?.isFreeAccessMode) {
+      if (cardBadge) {
+        cardBadge.className = "font-['Space_Grotesk'] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#0284c7] bg-[#e0f2fe] text-[#0284c7]";
+        cardBadge.textContent = 'Trải nghiệm mở';
+      }
+      cardContent.innerHTML = `
+        <div class="flex items-baseline justify-between mb-1">
+          <h4 class="font-['Epilogue'] text-base font-black text-[#1b1c1c]">BioVerse Free Access</h4>
+          <span class="font-['Space_Grotesk'] text-xs font-bold text-[#0284c7]">Đang mở</span>
+        </div>
+        <p class="text-xs text-[#5b403e] mb-3">
+          Hệ thống đang mở trải nghiệm toàn bộ tài nguyên mô hình 3D, bài tập và phòng Lab cho tất cả học sinh.
+        </p>
+        <a href="/pricing" class="w-full neo-btn neo-btn-secondary rounded-xl py-2 text-xs font-bold flex items-center justify-center gap-1.5">
+          <span>Xem các gói Student</span>
+        </a>
+      `;
+    } else {
+      if (cardBadge) {
+        cardBadge.className = "font-['Space_Grotesk'] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#76716a] bg-[#f5f5f5] text-[#76716a]";
+        cardBadge.textContent = 'Miễn phí';
+      }
+      cardContent.innerHTML = `
+        <div class="flex items-baseline justify-between mb-1">
+          <h4 class="font-['Epilogue'] text-base font-black text-[#1b1c1c]">Tài khoản Tiêu chuẩn</h4>
+          <span class="font-['Space_Grotesk'] text-xs font-bold text-[#76716a]">Free</span>
+        </div>
+        <p class="text-xs text-[#5b403e] mb-3">
+          Nâng cấp lên gói Student để mở khóa toàn bộ mô hình 3D, phòng thí nghiệm ảo và AI BioBot không giới hạn.
+        </p>
+        <a href="/pricing" class="w-full neo-btn neo-btn-primary rounded-xl py-2.5 text-xs font-bold flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">shopping_bag</span>
+          <span>Khám phá các gói Student</span>
+        </a>
+      `;
+    }
+  } catch (err) {
+    console.warn('Could not load profile subscription card:', err);
+    if (cardBadge) {
+      cardBadge.textContent = 'Tiêu chuẩn';
+    }
+    cardContent.innerHTML = `
+      <div class="flex items-baseline justify-between mb-1">
+        <h4 class="font-['Epilogue'] text-base font-black text-[#1b1c1c]">Tài khoản Tiêu chuẩn</h4>
+      </div>
+      <a href="/pricing" class="text-xs font-bold text-primary hover:underline mt-1 inline-block">Xem bảng giá gói cước</a>
+    `;
+  }
 }
 
 if (document.readyState === 'loading') {
