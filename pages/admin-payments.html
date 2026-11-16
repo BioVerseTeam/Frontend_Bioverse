@@ -57,26 +57,93 @@
 
         <div id="admin-workspace" hidden>
           <div class="relative bg-white sketch-border p-5 md:p-7">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
-                <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-2">Giao dịch & Subscriptions</h1>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e8f5e9] text-[#1b5e20] border border-[#2d2d2d]">
+                    Tài chính & Doanh thu
+                  </span>
+                  <span class="text-xs text-gray-500 font-mono" id="last-updated-text"></span>
+                </div>
+                <h1 class="font-['Epilogue'] text-[28px] md:text-[36px] font-extrabold tracking-tight leading-none mb-1">Giao dịch & Subscriptions</h1>
                 <p class="font-['Be_Vietnam_Pro'] text-sm text-[#5b403e]">Theo dõi lịch sử đơn thanh toán PayOS và tài khoản sở hữu gói Premium.</p>
               </div>
 
-              <!-- Tabs switch -->
-              <div class="flex bg-[#f9f7f2] border-2 border-[#2d2d2d] rounded-xl p-1 shrink-0 text-xs font-bold">
-                <button id="tab-payments-btn" class="px-4 py-2 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all">
-                  Đơn thanh toán PayOS
+              <!-- Top Action Cluster -->
+              <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+                <button type="button" id="export-excel-btn" class="neo-btn rounded-xl px-4 py-2.5 text-xs font-bold flex items-center gap-1.5 bg-[#e8f5e9] hover:bg-[#c8e6c9] text-[#1b5e20] border-2 border-[#2d2d2d] sketch-shadow-sm transition-all" title="Tải file Excel danh sách các giao dịch thành công">
+                  <span class="material-symbols-outlined text-[18px]">table_view</span>
+                  <span>Xuất Excel đơn thành công</span>
                 </button>
-                <button id="tab-subs-btn" class="px-4 py-2 rounded-lg text-gray-600 hover:text-black transition-all">
-                  Người dùng có gói
-                </button>
+
+                <!-- Tabs switch -->
+                <div class="flex bg-[#f9f7f2] border-2 border-[#2d2d2d] rounded-xl p-1 shrink-0 text-xs font-bold">
+                  <button id="tab-payments-btn" class="px-3.5 py-1.5 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all">
+                    Đơn thanh toán PayOS
+                  </button>
+                  <button id="tab-subs-btn" class="px-3.5 py-1.5 rounded-lg text-gray-600 hover:text-black transition-all">
+                    Người dùng có gói
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Metric Cards Strip -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6" id="stats-summary-grid">
+              
+              <!-- Total Revenue -->
+              <div class="bg-[#f0fdf4] border-2 border-[#2d2d2d] rounded-xl p-4 sketch-shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[#166534] text-xs font-semibold mb-1">
+                  <span>Tổng doanh thu</span>
+                  <span class="material-symbols-outlined text-[20px] text-[#15803d]">payments</span>
+                </div>
+                <div class="flex items-baseline gap-1.5">
+                  <span id="stat-total-revenue" class="font-['Space_Grotesk'] text-xl md:text-2xl font-bold text-[#14532d]">0đ</span>
+                </div>
+                <p class="text-[11px] text-[#166534] mt-1 font-medium">Giao dịch thành công (PAID)</p>
+              </div>
+
+              <!-- Successful Payments Count -->
+              <div class="bg-[#fdfbf7] border-2 border-[#2d2d2d] rounded-xl p-4 sketch-shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-gray-500 text-xs font-semibold mb-1">
+                  <span>Đơn thành công</span>
+                  <span class="material-symbols-outlined text-[20px] text-[#2e7d32]">verified</span>
+                </div>
+                <div class="flex items-baseline gap-1.5">
+                  <span id="stat-paid-count" class="font-['Space_Grotesk'] text-xl md:text-2xl font-bold text-[#1b1c1c]">0</span>
+                  <span class="text-[11px] text-gray-500">đơn hoàn tất</span>
+                </div>
+                <p id="stat-paid-ratio" class="text-[11px] text-gray-500 mt-1">Đang nạp...</p>
+              </div>
+
+              <!-- Month Revenue -->
+              <div class="bg-[#eff6ff] border-2 border-[#2d2d2d] rounded-xl p-4 sketch-shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[#1e40af] text-xs font-semibold mb-1">
+                  <span>Doanh thu tháng này</span>
+                  <span class="material-symbols-outlined text-[20px] text-[#2563eb]">calendar_month</span>
+                </div>
+                <div class="flex items-baseline gap-1.5">
+                  <span id="stat-month-revenue" class="font-['Space_Grotesk'] text-xl md:text-2xl font-bold text-[#1e3a8a]">0đ</span>
+                </div>
+                <p id="stat-month-label" class="text-[11px] text-[#1e40af] mt-1 font-medium">Tháng hiện tại</p>
+              </div>
+
+              <!-- Today Revenue -->
+              <div class="bg-[#fffbeb] border-2 border-[#2d2d2d] rounded-xl p-4 sketch-shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between text-[#92400e] text-xs font-semibold mb-1">
+                  <span>Doanh thu hôm nay</span>
+                  <span class="material-symbols-outlined text-[20px] text-[#d97706]">today</span>
+                </div>
+                <div class="flex items-baseline gap-1.5">
+                  <span id="stat-today-revenue" class="font-['Space_Grotesk'] text-xl md:text-2xl font-bold text-[#78350f]">0đ</span>
+                </div>
+                <p class="text-[11px] text-[#92400e] mt-1 font-medium">Giao dịch trong ngày</p>
               </div>
             </div>
 
             <!-- Filter & Search Toolbar -->
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <select id="status-filter" class="border-2 border-[#2d2d2d] rounded-xl px-3 py-2 text-xs bg-white font-semibold">
                   <option value="">Tất cả trạng thái</option>
                   <option value="PAID">Đã thanh toán (PAID)</option>
@@ -84,6 +151,10 @@
                   <option value="CANCELLED">Đã hủy (CANCELLED)</option>
                   <option value="FAILED">Thất bại (FAILED)</option>
                 </select>
+                <button type="button" id="filter-paid-quick-btn" class="border-2 border-[#2d2d2d] rounded-xl px-3 py-2 text-xs font-bold flex items-center gap-1 bg-white hover:bg-[#e8f5e9] text-[#2e7d32] transition-colors" title="Lọc nhanh danh sách đơn đã thanh toán thành công">
+                  <span class="material-symbols-outlined text-[16px]">verified</span>
+                  <span>Chỉ đơn thành công</span>
+                </button>
                 <button id="refresh-btn" class="neo-btn neo-btn-secondary rounded-xl px-3 py-2 text-xs font-bold flex items-center gap-1">
                   <span class="material-symbols-outlined text-[16px]">refresh</span>
                   Làm mới

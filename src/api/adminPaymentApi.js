@@ -47,3 +47,16 @@ export async function getAdminSubscriptions({ status = null, keyword = null, pag
   const res = await authFetch(`${ADMIN_SUBSCRIPTIONS}?${params.toString()}`);
   return parseResponse(res);
 }
+
+export async function getAdminPaymentSummary() {
+  const res = await authFetch(`${ADMIN_PAYMENTS}/summary`);
+  return parseResponse(res);
+}
+
+export async function getAdminPaymentExport({ status = null } = {}) {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+
+  const res = await authFetch(`${ADMIN_PAYMENTS}/export?${params.toString()}`);
+  return parseResponse(res);
+}
