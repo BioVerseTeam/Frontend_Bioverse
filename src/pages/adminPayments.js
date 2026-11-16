@@ -1,6 +1,13 @@
 import { setupNavbarAuth } from '../utils/authNavbar.js';
 import { requireAdmin } from '../utils/adminGuard.js';
-import { getAdminPayments, getAdminSubscriptions } from '../api/adminPaymentApi.js';
+import {
+  getAdminPayments,
+  getAdminSubscriptions,
+  getAdminPaymentSummary,
+  getAdminPaymentExport
+} from '../api/adminPaymentApi.js';
+import { exportToExcelFile, formatPaymentsForExport } from '../utils/excelExporter.js';
+import { showToast } from '../components/modal.js';
 
 let currentTab = 'payments'; // 'payments' | 'subscriptions'
 let currentPage = 0;
@@ -169,6 +176,97 @@ function updatePagination() {
   if (next) next.disabled = currentPage >= totalPages - 1;
 }
 
+async function loadPaymentSummary() {
+  try {
+    const summary = await getAdminPaymentSummary();
+    if (!summary) return;
+
+    const totalRevEl = document.getElementById('stat-total-revenue');
+    const paidCountEl = document.getElementById('stat-paid-count');
+    const paidRatioEl = document.getElementById('stat-paid-ratio');
+    const monthRevEl = document.getElementById('stat-month-revenue');
+    const monthLblEl = document.getElementById('stat-month-label');
+    const todayRevEl = document.getElementById('stat-today-revenue');
+    const lastUpdatedEl = document.getElementById('last-updated-text');
+
+    if (totalRevEl) totalRevEl.textContent = formatVND(summary.totalRevenue);
+    if (paidCountEl) paidCountEl.textContent = Number(summary.paidCount || 0).toLocaleString('vi-VN');
+
+    if (paidRatioEl) {
+      const total = summary.totalTransactions || 0;
+      const paid = summary.paidCount || 0;
+      const pct = total > 0 ? Math.round((paid / total) * 100) : 0;
+      paidRatioEl.textContent = `Tỷ lệ thành công: ${pct}% / ${total} đơn`;
+    }
+
+    if (monthRevEl) monthRevEl.textContent = formatVND(summary.monthRevenue);
+    if (monthLblEl) {
+      const now = new Date();
+      monthLblEl.textContent = `Tháng ${now.getMonth() + 1}/${now.getFullYear()}`;
+    }
+
+    if (todayRevEl) todayRevEl.textContent = formatVND(summary.todayRevenue);
+
+    if (lastUpdatedEl) {
+      const now = new Date();
+      lastUpdatedEl.textContent = `Cập nhật: ${now.toLocaleTimeString('vi-VN')}`;
+    }
+  } catch (err) {
+    console.warn('Failed to load payment summary metrics:', err);
+  }
+}
+
+async function handleExportExcel() {
+  const exportBtn = document.getElementById('export-excel-btn');
+  if (!exportBtn) return;
+
+  const originalHtml = exportBtn.innerHTML;
+  exportBtn.disabled = true;
+  exportBtn.innerHTML = `
+    <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+    <span>Đang xuất Excel...</span>
+  `;
+
+  try {
+    // Gọi API lấy toàn bộ các đơn thanh toán thành công (PAID)
+    const payments = await getAdminPaymentExport({ status: 'PAID' });
+    if (!Array.isArray(payments) || payments.length === 0) {
+      showToast('Không có giao dịch thành công nào để xuất file.', 'warning');
+      return;
+    }
+
+    const exportData = formatPaymentsForExport(payments);
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const filename = `BioVerse_GiaoDich_ThanhCong_${dateStr}.xls`;
+
+    exportToExcelFile(exportData, filename, 'Giao dịch thành công');
+    showToast(`Đã xuất thành công ${payments.length} giao dịch ra file Excel!`, 'success');
+  } catch (err) {
+    console.error('Export excel error:', err);
+    showToast(`Lỗi xuất file Excel: ${err.message}`, 'error');
+  } finally {
+    exportBtn.disabled = false;
+    exportBtn.innerHTML = originalHtml;
+  }
+}
+
+function filterOnlyPaid() {
+  const tabPayments = document.getElementById('tab-payments-btn');
+  const tabSubs = document.getElementById('tab-subs-btn');
+  const filter = document.getElementById('status-filter');
+
+  currentTab = 'payments';
+  currentPage = 0;
+  if (tabPayments) tabPayments.className = 'px-3.5 py-1.5 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all';
+  if (tabSubs) tabSubs.className = 'px-3.5 py-1.5 rounded-lg text-gray-600 hover:text-black transition-all';
+
+  if (filter) {
+    filter.value = 'PAID';
+  }
+  loadData();
+}
+
 function bindEvents() {
   const tabPayments = document.getElementById('tab-payments-btn');
   const tabSubs = document.getElementById('tab-subs-btn');
@@ -177,20 +275,30 @@ function bindEvents() {
   const refresh = document.getElementById('refresh-btn');
   const prev = document.getElementById('prev-page-btn');
   const next = document.getElementById('next-page-btn');
+  const exportBtn = document.getElementById('export-excel-btn');
+  const quickPaidBtn = document.getElementById('filter-paid-quick-btn');
+
+  if (exportBtn) {
+    exportBtn.addEventListener('click', handleExportExcel);
+  }
+
+  if (quickPaidBtn) {
+    quickPaidBtn.addEventListener('click', filterOnlyPaid);
+  }
 
   tabPayments.addEventListener('click', () => {
     currentTab = 'payments';
     currentPage = 0;
-    tabPayments.className = 'px-4 py-2 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all';
-    tabSubs.className = 'px-4 py-2 rounded-lg text-gray-600 hover:text-black transition-all';
+    tabPayments.className = 'px-3.5 py-1.5 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all';
+    tabSubs.className = 'px-3.5 py-1.5 rounded-lg text-gray-600 hover:text-black transition-all';
     loadData();
   });
 
   tabSubs.addEventListener('click', () => {
     currentTab = 'subscriptions';
     currentPage = 0;
-    tabSubs.className = 'px-4 py-2 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all';
-    tabPayments.className = 'px-4 py-2 rounded-lg text-gray-600 hover:text-black transition-all';
+    tabSubs.className = 'px-3.5 py-1.5 rounded-lg bg-white border border-[#2d2d2d] sketch-shadow-sm transition-all';
+    tabPayments.className = 'px-3.5 py-1.5 rounded-lg text-gray-600 hover:text-black transition-all';
     loadData();
   });
 
@@ -210,6 +318,7 @@ function bindEvents() {
 
   refresh.addEventListener('click', () => {
     loadData();
+    loadPaymentSummary();
   });
 
   prev.addEventListener('click', () => {
@@ -241,4 +350,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   bindEvents();
   loadData();
+  loadPaymentSummary();
 });

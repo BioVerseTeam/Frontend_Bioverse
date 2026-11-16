@@ -187,6 +187,33 @@ function formatDate(dtStr) {
   }
 }
 
+export function formatPaymentsForExport(payments = []) {
+  return payments.map((p, idx) => ({
+    'STT': idx + 1,
+    'Mã đơn hàng': `#${p.orderCode}`,
+    'Người mua': p.userFullName || '—',
+    'Email tài khoản': p.userEmail || '—',
+    'Gói cước': p.planName || '—',
+    'Số tiền (VNĐ)': p.amount != null ? Number(p.amount).toLocaleString('vi-VN') + 'đ' : '0đ',
+    'Trạng thái': paymentStatusName(p.status),
+    'Phương thức': p.method || 'PayOS',
+    'Thời gian khởi tạo': formatDate(p.createdAt),
+    'Thời gian thanh toán': formatDate(p.paidAt),
+    'Mã GD Cổng': p.payosTransactionId || '—'
+  }));
+}
+
+function paymentStatusName(st) {
+  const map = {
+    PAID: 'Đã thanh toán',
+    PENDING: 'Đang chờ',
+    CANCELLED: 'Đã hủy',
+    EXPIRED: 'Hết hạn',
+    FAILED: 'Thất bại'
+  };
+  return map[st] || st || '—';
+}
+
 function categoryName(cat) {
   const map = {
     BUG: 'Báo lỗi kỹ thuật',
